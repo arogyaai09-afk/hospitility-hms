@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Hospital Management System Backend Developer Plan</title>
+  <style>
+    @page {
+      margin: 18mm 16mm;
+    }
+
+    body {
+      color: #1f2933;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11pt;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    h1 {
+      border-bottom: 2px solid #1f6f8b;
+      color: #102a43;
+      font-size: 24pt;
+      margin: 0 0 8mm;
+      padding-bottom: 5mm;
+    }
+
+    h2 {
+      color: #164e63;
+      font-size: 16pt;
+      margin: 8mm 0 3mm;
+    }
+
+    h3 {
+      color: #243b53;
+      font-size: 13pt;
+      margin: 6mm 0 2mm;
+    }
+
+    p {
+      margin: 0 0 3mm;
+    }
+
+    ul, ol {
+      margin: 0 0 4mm 6mm;
+      padding: 0;
+    }
+
+    li {
+      margin: 1.4mm 0;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin: 3mm 0 5mm;
+      width: 100%;
+    }
+
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 2mm;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #e0f2fe;
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    code {
+      background: #eef2f7;
+      border-radius: 3px;
+      color: #111827;
+      font-family: Consolas, Monaco, monospace;
+      padding: 0.2mm 1mm;
+    }
+
+    .meta {
+      color: #52606d;
+      margin-bottom: 7mm;
+    }
+
+    .page-break {
+      break-before: page;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hospital Management System Backend Developer Plan</h1>
+  <p class="meta">Prepared on: 2026-06-02</p>
+
+  <h2>1. Project Overview</h2>
+  <p>The HMS backend is a Node.js Koa API using MongoDB through Mongoose. The current codebase follows a modular MVC-inspired structure where each business area has its own model, service, controller, and route files.</p>
+  <p>The API is versioned under <code>/api/v1</code> and already includes authentication, tenant management, doctors, staff, patients, beds, emergencies, appointments, admissions, discharges, and invoices.</p>
+
+  <h2>2. Current Technology Stack</h2>
+  <ul>
+    <li>Runtime: Node.js</li>
+    <li>Framework: Koa</li>
+    <li>Database: MongoDB</li>
+    <li>ODM: Mongoose</li>
+    <li>Authentication: JWT access token and refresh token</li>
+    <li>Password hashing: bcryptjs</li>
+    <li>API style: REST</li>
+    <li>Deployment readiness: Docker and docker-compose files are present</li>
+  </ul>
+
+  <h2>3. Existing Folder Structure</h2>
+  <ul>
+    <li><code>config/</code>: environment and MongoDB connection configuration.</li>
+    <li><code>src/middlewares/</code>: authentication, authorization, and error handling middleware.</li>
+    <li><code>src/modules/</code>: feature modules.</li>
+    <li><code>src/utils/</code>: response and logging helpers.</li>
+    <li><code>docs/</code>: architecture and API documentation.</li>
+  </ul>
+  <p>Each module generally follows this pattern: model, service, controller, and routes.</p>
+
+  <h2>4. User Roles</h2>
+  <table>
+    <thead>
+      <tr><th>Role</th><th>Current Status</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>admin</code></td><td>Active</td><td>Platform owner. Can manage tenants and cross-tenant setup.</td></tr>
+      <tr><td><code>tenant</code></td><td>Active</td><td>Hospital or clinic owner/admin. Scoped to one tenant.</td></tr>
+      <tr><td><code>doctor</code></td><td>Active</td><td>Clinical user. Can view and manage patient workflow routes currently allowed to doctors.</td></tr>
+      <tr><td><code>staff</code></td><td>Active</td><td>Operational user such as receptionist, nurse, billing, or ward staff.</td></tr>
+      <tr><td><code>patient</code></td><td>Defined but not fully exposed</td><td>Patient login role exists in schema, but patient-facing routes are not yet implemented.</td></tr>
+    </tbody>
+  </table>
+  <p>Recommendation: Use <code>patient</code> as the fourth primary user type if the product needs patient portal access. If the fourth type should be receptionist, nurse, accountant, or pharmacist, keep <code>staff</code> as the main role and add a <code>staff.role</code> or permission profile.</p>
+
+  <h2>5. Current Key Data Models and Fields</h2>
+  <h3>User</h3>
+  <p>Current fields: <code>name</code>, <code>email</code>, <code>password</code>, <code>role</code>, <code>tenantId</code>, <code>refreshToken</code>, <code>createdAt</code>.</p>
+  <p>Recommended additions: <code>status</code>, <code>phone</code>, <code>lastLoginAt</code>, <code>createdBy</code>, <code>updatedAt</code>, <code>passwordChangedAt</code>.</p>
+
+  <h3>Tenant</h3>
+  <p>Current fields: <code>name</code>, <code>state</code>, <code>country</code>, <code>metadata</code>, <code>createdAt</code>.</p>
+  <p>Recommended additions: <code>code</code>, <code>address</code>, <code>city</code>, <code>pincode</code>, <code>phone</code>, <code>email</code>, <code>registrationNumber</code>, <code>logoUrl</code>, <code>status</code>, <code>subscriptionPlan</code>, <code>settings</code>, <code>updatedAt</code>.</p>
+
+  <h3>Doctor</h3>
+  <p>Current fields: <code>name</code>, <code>specialization</code>, <code>phone</code>, <code>email</code>, <code>userId</code>, <code>tenantId</code>, <code>createdAt</code>.</p>
+  <p>Recommended additions: <code>doctorCode</code>, <code>department</code>, <code>qualification</code>, <code>registrationNumber</code>, <code>consultationFee</code>, <code>availability</code>, <code>status</code>, <code>updatedAt</code>.</p>
+
+  <h3>Staff</h3>
+  <p>Current fields: <code>name</code>, <code>role</code>, <code>phone</code>, <code>email</code>, <code>tenantId</code>, <code>createdAt</code>.</p>
+  <p>Recommended additions: <code>staffCode</code>, <code>userId</code>, <code>department</code>, <code>designation</code>, <code>shift</code>, <code>permissions</code>, <code>status</code>, <code>updatedAt</code>.</p>
+
+  <h3>Patient</h3>
+  <p>Current fields: <code>userId</code>, <code>patientCode</code>, <code>name</code>, <code>dateOfBirth</code>, <code>gender</code>, <code>phone</code>, <code>email</code>, <code>address</code>, <code>emergencyContact</code>, <code>medicalHistory</code>, <code>tenantId</code>, <code>createdAt</code>.</p>
+  <p>Recommended additions: <code>bloodGroup</code>, <code>age</code>, <code>nationality</code>, <code>idProofType</code>, <code>idProofNumber</code>, <code>allergies</code>, <code>currentMedications</code>, <code>insuranceProvider</code>, <code>insurancePolicyNumber</code>, <code>status</code>, <code>updatedAt</code>.</p>
+
+  <h3>Bed</h3>
+  <p>Current fields: <code>bedNumber</code>, <code>ward</code>, <code>type</code>, <code>status</code>, <code>tenantId</code>, <code>assignedAdmissionId</code>, <code>createdAt</code>.</p>
+  <p>Recommended additions: <code>floor</code>, <code>roomNumber</code>, <code>dailyCharge</code>, <code>notes</code>, compound unique index on <code>tenantId + bedNumber</code>, <code>updatedAt</code>.</p>
+  <p>Important: <code>bedNumber</code> is currently globally unique. In a multi-tenant system, this should usually be unique per tenant instead.</p>
+
+  <h3>Appointment</h3>
+  <p>Current fields: <code>patientId</code>, <code>patientName</code>, <code>patientType</code>, <code>appointmentType</code>, <code>visitReason</code>, <code>doctorId</code>, <code>status</code>, <code>tenantId</code>, <code>createdBy</code>, <code>createdAt</code>.</p>
+  <p>Recommended additions: <code>appointmentCode</code>, <code>scheduledAt</code>, <code>department</code>, <code>tokenNumber</code>, <code>consultationFee</code>, <code>paymentStatus</code>, <code>notes</code>, <code>updatedAt</code>.</p>
+
+  <h3>Admission</h3>
+  <p>Current fields: <code>patientName</code>, <code>admissionType</code>, <code>appointmentId</code>, <code>bedNumber</code>, <code>doctorId</code>, <code>tenantId</code>, <code>status</code>, <code>admittedAt</code>, <code>dischargedAt</code>.</p>
+  <p>Recommended additions: <code>patientId</code>, <code>admissionCode</code>, <code>bedId</code>, <code>admissionReason</code>, <code>attendantName</code>, <code>attendantPhone</code>, <code>estimatedStayDays</code>, <code>notes</code>, <code>createdBy</code>, <code>updatedAt</code>.</p>
+
+  <h3>Emergency, Discharge, Invoice</h3>
+  <p>Emergency should add case codes, triage notes, vitals, attendant details, and converted admission links. Discharge should add diagnosis, medications, follow-up, prepared by, approved by, and attachments. Invoice should add invoice number, patientId, line items, tax, discount, totals, paid amount, balance, payment reference, paid date, and createdBy.</p>
+
+  <h2 class="page-break">6. Current API Modules</h2>
+  <ul>
+    <li>Auth: login, refresh, register, profile.</li>
+    <li>Tenant: create tenant, list tenants, show tenant.</li>
+    <li>Doctor: create doctor, list doctors.</li>
+    <li>Staff: create staff, list staff.</li>
+    <li>Patient: create patient, list patients, show patient.</li>
+    <li>Bed: create bed, list beds, list available beds.</li>
+    <li>Emergency: create emergency case, list emergencies, admit emergency.</li>
+    <li>Appointment: create appointment, list appointments.</li>
+    <li>Admission: convert OPD to admission, create IPD admission, list admissions, discharge admission.</li>
+    <li>Discharge: create discharge summary.</li>
+    <li>Invoice: create invoice, list invoices, update payment status.</li>
+  </ul>
+
+  <h2>7. Multi-Tenant Strategy</h2>
+  <p>Most business models include <code>tenantId</code>. Tenant users are expected to access only their own tenant data. Admin users can manage tenants.</p>
+  <p>Recommended improvements: add a shared tenant-scope helper, add compound indexes, make admin tenant selection consistent, force doctor and staff users to use token tenant scope, and never trust request body <code>tenantId</code> for non-admin users.</p>
+
+  <h2>8. Role-Based Access Plan</h2>
+  <table>
+    <thead>
+      <tr><th>Module</th><th>Admin</th><th>Tenant</th><th>Doctor</th><th>Staff</th><th>Patient</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Tenants</td><td>Full</td><td>Own tenant only</td><td>No</td><td>No</td><td>No</td></tr>
+      <tr><td>Users</td><td>Full</td><td>Tenant users</td><td>Limited profile</td><td>Limited profile</td><td>Own profile</td></tr>
+      <tr><td>Doctors</td><td>Full</td><td>Full within tenant</td><td>Own profile</td><td>View</td><td>View assigned</td></tr>
+      <tr><td>Staff</td><td>Full</td><td>Full within tenant</td><td>View limited</td><td>Own profile</td><td>No</td></tr>
+      <tr><td>Patients</td><td>Full</td><td>Full within tenant</td><td>Assigned or tenant patients</td><td>Create/update operational fields</td><td>Own record</td></tr>
+      <tr><td>Appointments</td><td>Full</td><td>Full within tenant</td><td>Assigned schedule</td><td>Create/manage</td><td>Own appointments</td></tr>
+      <tr><td>Admissions</td><td>Full</td><td>Full within tenant</td><td>Assigned patients</td><td>Create/update workflow</td><td>Own admissions read-only</td></tr>
+      <tr><td>Beds</td><td>Full</td><td>Full within tenant</td><td>View</td><td>Manage</td><td>No</td></tr>
+      <tr><td>Emergency</td><td>Full</td><td>Full within tenant</td><td>Manage clinical status</td><td>Create/manage intake</td><td>No</td></tr>
+      <tr><td>Invoices</td><td>Full</td><td>Full within tenant</td><td>View limited</td><td>Create/update payment</td><td>Own invoices</td></tr>
+      <tr><td>Discharge</td><td>Full</td><td>Full within tenant</td><td>Create/approve</td><td>Assist</td><td>Own summary</td></tr>
+    </tbody>
+  </table>
+
+  <h2>9. Important Issues Found</h2>
+  <ol>
+    <li><code>bed.service.js</code> defines <code>assignBedByNumber</code> and <code>releaseBedByNumber</code>, but does not export them. <code>admission.service.js</code> imports both functions, so admission bed assignment can fail at runtime.</li>
+    <li><code>patient</code> role exists in the <code>User</code> model but is not currently allowed in patient-facing routes.</li>
+    <li><code>staff.model.js</code> does not link to <code>User</code>, while doctor and patient records can link to users.</li>
+    <li><code>bedNumber</code> and <code>patientCode</code> are globally unique. For multi-tenant HMS, these should usually be unique per tenant.</li>
+    <li>Admin tenant handling is inconsistent. Doctor routes support admin-selected <code>tenantId</code>, but many other controllers use <code>ctx.state.user.tenantId</code>, which may be empty for admin.</li>
+    <li>Input validation is minimal. Request bodies should be validated before writing to MongoDB.</li>
+    <li>There are no real automated tests yet. The current <code>npm test</code> is a placeholder.</li>
+    <li>Refresh tokens are stored as plain JWT strings. Consider hashing refresh tokens in production.</li>
+  </ol>
+
+  <h2>10. Recommended Backend Build Phases</h2>
+  <h3>Phase 1: Stabilize Foundation</h3>
+  <ul>
+    <li>Fix bed service exports.</li>
+    <li>Add request validation.</li>
+    <li>Add common tenant-scope helper.</li>
+    <li>Add timestamps to schemas.</li>
+    <li>Add indexes for tenant-scoped uniqueness.</li>
+    <li>Add basic integration tests for auth, tenant scoping, patient, bed, and admission workflows.</li>
+  </ul>
+  <h3>Phase 2: User and Permission System</h3>
+  <ul>
+    <li>Finalize four or five user personas.</li>
+    <li>Add user status and profile fields.</li>
+    <li>Link staff records to user accounts.</li>
+    <li>Add patient portal routes if patient login is required.</li>
+    <li>Add permission profile support for staff sub-roles.</li>
+  </ul>
+  <h3>Phase 3: Core Hospital Workflow</h3>
+  <ul>
+    <li>Improve patient registration, doctor schedules, appointment slots, OPD visits, prescriptions, vitals, diagnosis, admission lifecycle, and discharge approval.</li>
+  </ul>
+  <h3>Phase 4: Billing and Payments</h3>
+  <ul>
+    <li>Add invoice line items, receipts, partial payments, refunds, reconciliation, and payment gateway or terminal integration.</li>
+  </ul>
+  <h3>Phase 5: Reporting and Audit</h3>
+  <ul>
+    <li>Add audit logs, dashboards, exports, and operational reports for OPD, admissions, bed occupancy, and revenue.</li>
+  </ul>
+  <h3>Phase 6: Production Readiness</h3>
+  <ul>
+    <li>Add environment-specific config, rate limiting, security headers, monitoring, backups, API versioning policy, CI tests, and deployment pipeline.</li>
+  </ul>
+
+  <h2>11. Suggested Immediate Developer Tasks</h2>
+  <ol>
+    <li>Fix <code>bed.service.js</code> exports for <code>assignBedByNumber</code> and <code>releaseBedByNumber</code>.</li>
+    <li>Decide whether the fourth user type is <code>patient</code> or a staff sub-role such as receptionist.</li>
+    <li>Add validation middleware using a library such as Joi or Zod.</li>
+    <li>Add tenant-aware indexes to all tenant-scoped models.</li>
+    <li>Update admin behavior so admin can operate on selected tenant data consistently.</li>
+    <li>Add patient self-service routes if <code>patient</code> is part of the application scope.</li>
+    <li>Add API tests for login, tenant isolation, patient creation, appointment creation, bed assignment, admission, discharge, and invoice payment.</li>
+  </ol>
+
+  <h2>12. Recommended Fourth User Type</h2>
+  <p>Based on the current codebase, the cleanest four-user setup is: <code>admin</code>, <code>tenant</code>, <code>doctor</code>, and <code>staff</code>.</p>
+  <p>Then define staff sub-roles such as receptionist, nurse, billing, pharmacist, lab technician, and ward manager. If a patient portal is required, keep <code>patient</code> as a fifth login role instead of forcing it into staff workflows.</p>
+
+  <h2>13. Handoff Notes for Developers</h2>
+  <ul>
+    <li>Keep modules small and business-focused.</li>
+    <li>Do not remove <code>tenantId</code> from business documents.</li>
+    <li>Use ObjectId references for cross-module relations where possible.</li>
+    <li>Avoid storing only names when an entity reference exists. For example, admissions should store <code>patientId</code> and may also snapshot <code>patientName</code>.</li>
+    <li>Add validation before adding more routes.</li>
+    <li>Add tests before expanding complex workflows.</li>
+    <li>Keep patient health data private and avoid exposing full data to roles that do not need it.</li>
+  </ul>
+</body>
+</html>

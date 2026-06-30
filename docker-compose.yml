@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    ports:
+      - '4000:4000'
+    env_file:
+      - .env
+    environment:
+      PORT: 4000
+      MONGO_URI: mongodb://mongo:27017/hms_dev
+    depends_on:
+      - mongo
+    volumes:
+      - .:/usr/src/app
+    command: npm run dev
+  mongo:
+    image: mongo:6.0
+    volumes:
+      - mongo-data:/data/db
+volumes:
+  mongo-data:

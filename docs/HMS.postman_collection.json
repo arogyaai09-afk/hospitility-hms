@@ -1,0 +1,1054 @@
+{
+  "info": {
+    "name": "HMS API",
+    "description": "Postman collection for the HMS backend API based on the existing API documentation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tenantId",
+      "value": "60d5ecb74b24c72b8c8b4568",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "60d5ecb74b24c72b8c8b4567",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "user@example.com",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "password123",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "POST /auth/login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json?.data?.accessToken) { pm.collectionVariables.set('accessToken', json.data.accessToken); }",
+                  "if (json?.data?.refreshToken) { pm.collectionVariables.set('refreshToken', json.data.refreshToken); }",
+                  "if (json?.data?.user?.tenantId) { pm.collectionVariables.set('tenantId', json.data.user.tenantId); }",
+                  "if (json?.data?.user?.id) { pm.collectionVariables.set('userId', json.data.user.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /auth/refresh",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /auth/register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"doctor\",\n  \"tenantId\": \"{{tenantId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /auth/profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "profile"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tenants",
+      "item": [
+        {
+          "name": "GET /tenants",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenants"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /tenants",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"City Hospital\",\n  \"state\": \"Maharashtra\",\n  \"country\": \"India\",\n  \"metadata\": {\n    \"address\": \"123 Main St\",\n    \"phone\": \"+91-1234567890\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tenants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenants"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /tenants/:id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenants/{{tenantId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenants",
+                "{{tenantId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctors",
+      "item": [
+        {
+          "name": "GET /doctors",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/doctors?tenantId={{tenantId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctors"
+              ],
+              "query": [
+                {
+                  "key": "tenantId",
+                  "value": "{{tenantId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /doctors",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. Smith\",\n  \"specialization\": \"Cardiology\",\n  \"phone\": \"+91-9876543210\",\n  \"email\": \"smith@hospital.com\",\n  \"userId\": \"{{userId}}\",\n  \"tenantId\": \"{{tenantId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctors",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "doctors"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Patients",
+      "item": [
+        {
+          "name": "GET /patients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /patients",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"patientCode\": \"PAT-1001\",\n  \"name\": \"Jane Doe\",\n  \"dateOfBirth\": \"1990-07-20\",\n  \"gender\": \"female\",\n  \"phone\": \"+91-9876501234\",\n  \"email\": \"jane.doe@example.com\",\n  \"address\": \"45 Ocean Drive\",\n  \"emergencyContact\": \"+91-9876509999\",\n  \"medicalHistory\": \"No known allergies\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/patients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /patients/:id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/patients/60d5ecb74b24c72b8c8b4570",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "patients",
+                "60d5ecb74b24c72b8c8b4570"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admissions",
+      "item": [
+        {
+          "name": "POST /admissions/from-opd",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": \"60d5ecb74b24c72b8c8b4571\",\n  \"bedNumber\": \"B-101\",\n  \"doctorId\": \"60d5ecb74b24c72b8c8b4569\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admissions/from-opd",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admissions",
+                "from-opd"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /admissions/ipd",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientName\": \"Jane Doe\",\n  \"admissionType\": \"IPD\",\n  \"bedNumber\": \"B-102\",\n  \"doctorId\": \"60d5ecb74b24c72b8c8b4569\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admissions/ipd",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admissions",
+                "ipd"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /admissions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admissions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH /admissions/:id/discharge",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admissions/60d5ecb74b24c72b8c8b4572/discharge",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admissions",
+                "60d5ecb74b24c72b8c8b4572",
+                "discharge"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Beds",
+      "item": [
+        {
+          "name": "GET /beds",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/beds",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "beds"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /beds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bedNumber\": \"B-103\",\n  \"ward\": \"General Ward\",\n  \"type\": \"general\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/beds",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "beds"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /beds/available",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/beds/available",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "beds",
+                "available"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "item": [
+        {
+          "name": "GET /appointments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/appointments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /appointments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": \"60d5ecb74b24c72b8c8b4570\",\n  \"patientName\": \"Jane Doe\",\n  \"patientType\": \"local\",\n  \"appointmentType\": \"OPD\",\n  \"visitReason\": \"Routine checkup\",\n  \"doctorId\": \"60d5ecb74b24c72b8c8b4569\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/appointments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "appointments"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Emergencies",
+      "item": [
+        {
+          "name": "GET /emergencies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/emergencies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "emergencies"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /emergencies",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientName\": \"Jane Doe\",\n  \"patientId\": \"60d5ecb74b24c72b8c8b4570\",\n  \"emergencyType\": \"accident\",\n  \"severity\": \"high\",\n  \"assignedDoctor\": \"60d5ecb74b24c72b8c8b4569\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/emergencies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "emergencies"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /emergencies/:id/admit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bedNumber\": \"B-104\",\n  \"doctorId\": \"60d5ecb74b24c72b8c8b4569\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/emergencies/60d5ecb74b24c72b8c8b4576/admit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "emergencies",
+                "60d5ecb74b24c72b8c8b4576",
+                "admit"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Discharge",
+      "item": [
+        {
+          "name": "POST /discharge",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"admissionId\": \"60d5ecb74b24c72b8c8b4572\",\n  \"summary\": \"Patient discharged in stable condition\",\n  \"followUpInstructions\": \"Return after 2 weeks\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/discharge",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "discharge"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoices",
+      "item": [
+        {
+          "name": "GET /invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/invoices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "invoices"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /invoices",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": \"60d5ecb74b24c72b8c8b4570\",\n  \"patientName\": \"Jane Doe\",\n  \"appointmentId\": \"60d5ecb74b24c72b8c8b4575\",\n  \"lineItems\": [\n    {\n      \"description\": \"Consultation\",\n      \"quantity\": 1,\n      \"unitPrice\": 1000,\n      \"amount\": 1000\n    }\n  ],\n  \"subtotalAmount\": 1000,\n  \"discountAmount\": 0,\n  \"taxRate\": 5,\n  \"taxAmount\": 50,\n  \"totalAmount\": 1050,\n  \"paidAmount\": 0,\n  \"balanceAmount\": 1050,\n  \"amount\": 1050,\n  \"paymentType\": \"one_time\",\n  \"paymentMode\": \"cash\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/invoices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "invoices"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /invoices/appointments/:appointmentId",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lineItems\": [\n    {\n      \"description\": \"Consultation\",\n      \"quantity\": 1,\n      \"unitPrice\": 1000,\n      \"amount\": 1000\n    }\n  ],\n  \"subtotalAmount\": 1000,\n  \"discountAmount\": 0,\n  \"taxRate\": 5,\n  \"taxAmount\": 50,\n  \"totalAmount\": 1050,\n  \"amount\": 1050,\n  \"paymentMode\": \"cash\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/invoices/appointments/60d5ecb74b24c72b8c8b4575",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "invoices",
+                "appointments",
+                "60d5ecb74b24c72b8c8b4575"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH /invoices/:id/pay",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1050,\n  \"paymentMode\": \"cash\",\n  \"paymentReference\": \"TXN-1234\",\n  \"paymentTerminalId\": \"TERM-001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/invoices/60d5ecb74b24c72b8c8b4578/pay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "invoices",
+                "60d5ecb74b24c72b8c8b4578",
+                "pay"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /invoices/:id/payments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/invoices/60d5ecb74b24c72b8c8b4578/payments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "invoices",
+                "60d5ecb74b24c72b8c8b4578",
+                "payments"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Taxes",
+      "item": [
+        {
+          "name": "GET /taxes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/taxes?isActive=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "taxes"
+              ],
+              "query": [
+                {
+                  "key": "isActive",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /taxes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"GST\",\n  \"code\": \"GST18\",\n  \"rate\": 18,\n  \"isActive\": true,\n  \"components\": [\n    {\n      \"name\": \"CGST\",\n      \"code\": \"CGST9\",\n      \"rate\": 9,\n      \"type\": \"percentage\"\n    },\n    {\n      \"name\": \"SGST\",\n      \"code\": \"SGST9\",\n      \"rate\": 9,\n      \"type\": \"percentage\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/taxes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "taxes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /taxes/:id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/taxes/60d5ecb74b24c72b8c8b4580",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "taxes",
+                "60d5ecb74b24c72b8c8b4580"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH /taxes/:id",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rate\": 19,\n  \"isActive\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/taxes/60d5ecb74b24c72b8c8b4580",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "taxes",
+                "60d5ecb74b24c72b8c8b4580"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Staff",
+      "item": [
+        {
+          "name": "GET /staff",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/staff",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "staff"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /staff",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Raj Patel\",\n  \"role\": \"staff\",\n  \"phone\": \"+91-9876501111\",\n  \"email\": \"raj.patel@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/staff",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "staff"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
