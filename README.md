@@ -29,3 +29,4 @@ Backend service built with Node.js, Koa, MongoDB and JWT authentication.
 
 ## API documentation
 See `docs/api.md` for route definitions and sample requests.
+# hospitility-hms
