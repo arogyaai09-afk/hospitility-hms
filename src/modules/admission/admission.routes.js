@@ -1,13 +1,12 @@
-const Router = require('koa-router');
-const { authenticate, authorize } = require('../../middlewares/auth.middleware');
-const { ACCESS_GROUPS } = require('../../constants/roles');
-const { admitFromOpd, admitIpd, index, discharge } = require('./admission.controller');
-
-const router = new Router({ prefix: '/admissions' });
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Router = require('koa-router');
+var _a = require('../../middlewares/auth.middleware'), authenticate = _a.authenticate, authorize = _a.authorize;
+var ACCESS_GROUPS = require('../../constants/roles').ACCESS_GROUPS;
+var _b = require('./admission.controller'), admitFromOpd = _b.admitFromOpd, admitIpd = _b.admitIpd, index = _b.index, discharge = _b.discharge;
+var router = new Router({ prefix: '/admissions' });
 router.post('/from-opd', authenticate(), authorize(ACCESS_GROUPS.CLINICAL_OPERATIONS), admitFromOpd);
 router.post('/ipd', authenticate(), authorize(ACCESS_GROUPS.CLINICAL_OPERATIONS), admitIpd);
 router.get('/', authenticate(), authorize(ACCESS_GROUPS.CLINICAL_OPERATIONS), index);
 router.patch('/:id/discharge', authenticate(), authorize(ACCESS_GROUPS.CLINICAL_OPERATIONS), discharge);
-
 module.exports = router;

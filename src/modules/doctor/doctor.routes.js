@@ -1,11 +1,10 @@
-const Router = require('koa-router');
-const { authenticate, authorize } = require('../../middlewares/auth.middleware');
-const { ACCESS_GROUPS } = require('../../constants/roles');
-const { create, index } = require('./doctor.controller');
-
-const router = new Router({ prefix: '/doctors' });
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Router = require('koa-router');
+var _a = require('../../middlewares/auth.middleware'), authenticate = _a.authenticate, authorize = _a.authorize;
+var ACCESS_GROUPS = require('../../constants/roles').ACCESS_GROUPS;
+var _b = require('./doctor.controller'), create = _b.create, index = _b.index;
+var router = new Router({ prefix: '/doctors' });
 router.post('/', authenticate(), authorize(ACCESS_GROUPS.TENANT_ADMINS), create);
 router.get('/', authenticate(), authorize(ACCESS_GROUPS.TENANT_ADMINS), index);
-
 module.exports = router;

@@ -60,8 +60,7 @@ Refresh access token using a refresh token.
 ### POST /auth/register
 Register a new user.
 
-**Authorization:**
-- `admin`, `tenant`, or `staff` via `ACCESS_GROUPS.USER_MANAGERS`
+This endpoint is public and does not require an authentication token.
 
 **Request Body:**
 ```json

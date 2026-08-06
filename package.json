@@ -2,10 +2,11 @@
   "name": "hospital-management-system",
   "version": "1.0.0",
   "description": "Hospital Management System backend using Koa, MongoDB, JWT, and role-based access",
-  "main": "app.js",
+  "main": "dist/app.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
+    "start": "node dist/app.js",
+    "dev": "nodemon --watch . --ext ts --exec ts-node --transpile-only app.ts",
+    "build": "tsc -p tsconfig.json",
     "test": "node -e \"console.log('Test placeholder passed')\""
   },
   "dependencies": {
@@ -21,6 +22,9 @@
     "mongoose": "^7.8.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "@types/node": "^24.13.2",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
   }
 }
