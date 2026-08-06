@@ -11,4 +11,4 @@ router.post('/refresh', refresh);
 router.post('/register', register);
 router.get('/profile', authenticate(), profile);
 
-module.exports = router;
+module.exports = router; 
