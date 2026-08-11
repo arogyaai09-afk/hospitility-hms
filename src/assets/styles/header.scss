@@ -1,0 +1,141 @@
+@import 'variables';
+
+.header {
+  height: $header-height;
+  background: $white;
+  border-bottom: 1px solid $border-color;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: fixed;
+  top: 0;
+  left: $sidebar-width;
+  right: 0;
+  z-index: 99;
+  font-family: $font-family;
+
+  .header-left {
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: $body-bg;
+      border: 1px solid $border-color;
+      border-radius: $radius-md;
+      padding: 7px 14px;
+      width: 260px;
+
+      input {
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: $font-size-base;
+        color: $text-dark;
+        width: 100%;
+        font-family: $font-family;
+
+        &::placeholder { color: $text-light; }
+      }
+
+      .search-icon { color: $text-light; font-size: 14px; }
+
+      .search-shortcut {
+        background: $white;
+        border: 1px solid $border-color;
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: $font-size-xs;
+        color: $text-light;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .btn-ai {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: $primary;
+      color: white;
+      border: none;
+      border-radius: $radius-md;
+      padding: 7px 14px;
+      font-size: $font-size-sm;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: $font-family;
+      transition: background 0.15s;
+
+      &:hover { background: $primary-dark; }
+
+      .ai-dot {
+        width: 6px;
+        height: 6px;
+        background: #4ade80;
+        border-radius: 50%;
+        animation: pulse 1.5s infinite;
+      }
+    }
+
+    .header-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: $radius-md;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: $text-medium;
+      border: 1px solid $border-color;
+      background: $white;
+      position: relative;
+      transition: all 0.15s;
+
+      &:hover {
+        background: $body-bg;
+        color: $text-dark;
+      }
+
+      .badge {
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        width: 16px;
+        height: 16px;
+        background: $danger;
+        border-radius: 50%;
+        font-size: 9px;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        border: 2px solid white;
+      }
+    }
+
+    .theme-toggle {
+      @extend .header-icon-btn;
+    }
+
+    .header-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid $border-color;
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}

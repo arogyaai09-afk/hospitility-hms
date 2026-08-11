@@ -1,0 +1,406 @@
+@import 'variables';
+
+.doctor-details-page {
+  font-family: $font-family;
+
+  // ── BREADCRUMB ─────────────────────────────────────────
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: $font-size-sm;
+    color: $text-medium;
+    margin-bottom: 16px;
+    cursor: pointer;
+    width: fit-content;
+
+    &:hover { color: $primary; }
+    svg { font-size: 14px; }
+  }
+
+  // ── PROFILE HERO CARD ──────────────────────────────────
+  .profile-hero {
+    background: white;
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 16px;
+
+    .hero-img {
+      width: 100px;
+      height: 110px;
+      border-radius: $radius-lg;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #dbeafe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .hero-initials {
+        font-size: 36px;
+        font-weight: 800;
+        color: $primary;
+      }
+    }
+
+    .hero-info {
+      flex: 1;
+
+      .hero-name-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 4px;
+
+        h2 {
+          font-size: $font-size-xl;
+          font-weight: 700;
+          color: $text-dark;
+          margin: 0;
+        }
+
+        .dept-badge {
+          background: #eff6ff;
+          color: $primary;
+          font-size: $font-size-xs;
+          font-weight: 600;
+          padding: 3px 10px;
+          border-radius: 20px;
+        }
+      }
+
+      .hero-degree {
+        font-size: $font-size-sm;
+        color: $text-light;
+        margin-bottom: 10px;
+      }
+
+      .hero-meta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+
+        .meta-item {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: $font-size-sm;
+          color: $text-medium;
+
+          svg { font-size: 15px; color: $text-light; }
+
+          .avail-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: $success;
+            flex-shrink: 0;
+          }
+
+          &.available { color: $success; font-weight: 500; }
+        }
+      }
+    }
+
+    .hero-right {
+      text-align: right;
+      flex-shrink: 0;
+
+      .charge-label {
+        font-size: $font-size-xs;
+        color: $text-light;
+        margin-bottom: 4px;
+      }
+
+      .charge-value {
+        font-size: 26px;
+        font-weight: 800;
+        color: $text-dark;
+        line-height: 1;
+
+        span {
+          font-size: $font-size-sm;
+          font-weight: 500;
+          color: $text-light;
+        }
+      }
+
+      .btn-book {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: $primary;
+        color: white;
+        border: none;
+        border-radius: $radius-md;
+        padding: 10px 20px;
+        font-size: $font-size-sm;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: $font-family;
+        margin-top: 10px;
+        transition: background 0.15s;
+        &:hover { background: $primary-dark; }
+        svg { font-size: 16px; }
+      }
+    }
+  }
+
+  // ── MAIN LAYOUT ────────────────────────────────────────
+  .details-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 16px;
+    align-items: start;
+  }
+
+  // ── LEFT COLUMN ────────────────────────────────────────
+  .details-left {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  // ── CARD ───────────────────────────────────────────────
+  .detail-card {
+    background: white;
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    overflow: hidden;
+
+    .dc-title {
+      font-size: $font-size-md;
+      font-weight: 700;
+      color: $text-dark;
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid $border-color;
+    }
+
+    .dc-body {
+      padding: 16px 20px;
+    }
+  }
+
+  // ── AVAILABILITY ───────────────────────────────────────
+  .avail-card {
+    .avail-tabs-row {
+      display: flex;
+      border-bottom: 1px solid $border-color;
+      overflow-x: auto;
+
+      &::-webkit-scrollbar { height: 0; }
+
+      .avail-tab {
+        padding: 13px 20px;
+        font-size: $font-size-sm;
+        font-weight: 500;
+        color: $text-medium;
+        cursor: pointer;
+        white-space: nowrap;
+        border-bottom: 2px solid transparent;
+        transition: all 0.15s;
+        flex-shrink: 0;
+
+        &:hover { color: $text-dark; }
+
+        &.active {
+          color: $text-dark;
+          font-weight: 700;
+          border-bottom-color: $text-dark;
+        }
+      }
+    }
+
+    .avail-slots-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      padding: 16px 20px;
+
+      .time-slot {
+        background: $body-bg;
+        border: 1px solid $border-color;
+        border-radius: $radius-md;
+        padding: 9px 12px;
+        font-size: $font-size-sm;
+        font-weight: 500;
+        color: $text-dark;
+        text-align: center;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  // ── SHORT BIO ──────────────────────────────────────────
+  .bio-card {
+    .bio-text {
+      font-size: $font-size-sm;
+      color: $text-medium;
+      line-height: 1.7;
+      margin-bottom: 10px;
+
+      &.clamped {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    }
+
+    .bio-toggle {
+      font-size: $font-size-sm;
+      font-weight: 600;
+      color: $primary;
+      cursor: pointer;
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  // ── EDUCATION ─────────────────────────────────────────
+  .edu-card {
+    .edu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      .edu-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+
+        .edu-dot {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          margin-top: 4px;
+          flex-shrink: 0;
+
+          &.filled { background: $primary; }
+          &.outline {
+            background: white;
+            border: 2px solid $primary;
+          }
+        }
+
+        .edu-info {
+          .edu-name {
+            font-size: $font-size-sm;
+            font-weight: 700;
+            color: $text-dark;
+            margin-bottom: 3px;
+          }
+          .edu-date {
+            font-size: $font-size-xs;
+            color: $text-light;
+          }
+        }
+      }
+    }
+  }
+
+  // ── AWARDS & CERTS ────────────────────────────────────
+  .awards-card, .certs-card {
+    .award-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      .award-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+
+        .award-icon {
+          color: $warning;
+          font-size: 18px;
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+
+        .cert-icon {
+          color: $primary;
+          font-size: 18px;
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+
+        .award-info {
+          .award-name {
+            font-size: $font-size-sm;
+            font-weight: 700;
+            color: $text-dark;
+            margin-bottom: 4px;
+          }
+          .award-desc {
+            font-size: $font-size-xs;
+            color: $text-light;
+            line-height: 1.6;
+          }
+        }
+      }
+    }
+  }
+
+  // ── RIGHT COLUMN — ABOUT ──────────────────────────────
+  .about-card {
+    background: white;
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    position: sticky;
+    top: 80px;
+
+    .ac-title {
+      font-size: $font-size-md;
+      font-weight: 700;
+      color: $text-dark;
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid $border-color;
+    }
+
+    .about-list {
+      padding: 8px 0;
+
+      .about-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 20px;
+        border-bottom: 1px solid $border-color;
+
+        &:last-child { border-bottom: none; }
+
+        .about-icon {
+          width: 32px;
+          height: 32px;
+          border-radius: $radius-sm;
+          background: $body-bg;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          svg { font-size: 16px; color: $text-medium; }
+        }
+
+        .about-content {
+          .about-label {
+            font-size: $font-size-xs;
+            color: $text-light;
+            font-weight: 500;
+            margin-bottom: 2px;
+          }
+          .about-value {
+            font-size: $font-size-sm;
+            font-weight: 600;
+            color: $text-dark;
+          }
+        }
+      }
+    }
+  }
+}

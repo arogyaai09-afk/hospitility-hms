@@ -1,0 +1,530 @@
+@import 'variables';
+
+.patient-details-page {
+  font-family: $font-family;
+
+  // ── BREADCRUMB ─────────────────────────────────────────
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: $font-size-sm;
+    color: $text-medium;
+    margin-bottom: 16px;
+    cursor: pointer;
+    width: fit-content;
+    &:hover { color: $primary; }
+    svg { font-size: 14px; }
+  }
+
+  // ── HERO CARD ──────────────────────────────────────────
+  .patient-hero {
+    background: white;
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    margin-bottom: 16px;
+    overflow: hidden;
+    position: relative;
+    min-height: 120px;
+
+    // Abstract background shape (right side)
+    .hero-bg-shape {
+      position: absolute;
+      right: 180px;
+      top: 0;
+      bottom: 0;
+      width: 240px;
+      pointer-events: none;
+
+      svg {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    .hero-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .patient-img {
+        width: 80px;
+        height: 90px;
+        border-radius: $radius-lg;
+        overflow: hidden;
+        background: #dbeafe;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: 800;
+        color: $primary;
+      }
+
+      .patient-info {
+        .patient-id {
+          font-size: $font-size-sm;
+          font-weight: 600;
+          color: $primary;
+          margin-bottom: 4px;
+        }
+
+        .patient-name {
+          font-size: $font-size-xl;
+          font-weight: 800;
+          color: $text-dark;
+          margin-bottom: 6px;
+          line-height: 1.2;
+        }
+
+        .patient-address {
+          font-size: $font-size-sm;
+          color: $text-light;
+          margin-bottom: 8px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          svg { font-size: 14px; }
+        }
+
+        .patient-meta {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          flex-wrap: wrap;
+
+          .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: $font-size-sm;
+            color: $text-medium;
+            svg { font-size: 15px; color: $text-light; }
+          }
+        }
+      }
+    }
+
+    .hero-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+
+      .icon-action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: $radius-md;
+        border: 1px solid $border-color;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: $text-medium;
+        transition: all 0.15s;
+        &:hover { background: $body-bg; color: $text-dark; }
+        svg { font-size: 18px; }
+      }
+
+      .btn-book {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: $primary;
+        color: white;
+        border: none;
+        border-radius: $radius-md;
+        padding: 9px 18px;
+        font-size: $font-size-sm;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: $font-family;
+        transition: background 0.15s;
+        &:hover { background: $primary-dark; }
+        svg { font-size: 15px; }
+      }
+    }
+  }
+
+  // ── TWO-COLUMN CARDS ────────────────────────────────────
+  .info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    .info-card {
+      background: white;
+      border: 1px solid $border-color;
+      border-radius: $radius-lg;
+      padding: 16px 20px;
+
+      .ic-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: $font-size-md;
+        font-weight: 700;
+        color: $text-dark;
+        margin-bottom: 14px;
+        svg { font-size: 17px; color: $text-medium; }
+      }
+
+      // About grid
+      .about-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+
+        .ag-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+
+          .ag-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: $radius-sm;
+            background: $body-bg;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            svg { font-size: 15px; color: $text-medium; }
+          }
+
+          .ag-content {
+            .ag-label { font-size: $font-size-xs; color: $text-light; font-weight: 500; margin-bottom: 2px; }
+            .ag-value  { font-size: $font-size-sm; font-weight: 600; color: $text-dark; }
+          }
+        }
+      }
+
+      // Vital signs grid
+      .vitals-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+
+        .vital-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+
+          .vital-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: $radius-sm;
+            background: $body-bg;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            svg { font-size: 16px; color: $text-medium; }
+          }
+
+          .vital-content {
+            .vital-label { font-size: $font-size-xs; color: $text-light; font-weight: 500; margin-bottom: 3px; }
+            .vital-value {
+              display: flex;
+              align-items: center;
+              gap: 5px;
+              font-size: $font-size-sm;
+              font-weight: 700;
+              color: $text-dark;
+
+              .vital-dot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                flex-shrink: 0;
+                &.green  { background: $success; }
+                &.red    { background: $danger; }
+                &.orange { background: $warning; }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // ── TABS SECTION ───────────────────────────────────────
+  .tabs-card {
+    background: white;
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    overflow: visible;
+
+    .tabs-nav {
+      display: flex;
+      border-bottom: 1px solid $border-color;
+
+      .tab-btn {
+        padding: 14px 24px;
+        font-size: $font-size-sm;
+        font-weight: 500;
+        color: $text-medium;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.15s;
+        background: none;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        font-family: $font-family;
+
+        &:hover { color: $text-dark; }
+        &.active { color: $text-dark; font-weight: 700; border-bottom-color: $text-dark; }
+      }
+    }
+
+    // ── TOOLBAR ──
+    .tab-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      gap: 10px;
+      border-bottom: 1px solid $border-color;
+
+      .tab-toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .tab-search {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: $body-bg;
+          border: 1px solid $border-color;
+          border-radius: $radius-md;
+          padding: 7px 12px;
+          width: 220px;
+
+          svg { font-size: 15px; color: $text-light; }
+          input {
+            border: none; outline: none;
+            background: transparent; font-size: $font-size-sm;
+            font-family: $font-family; width: 100%; color: $text-dark;
+            &::placeholder { color: $text-light; }
+          }
+        }
+
+        // Date range picker button
+        .date-range-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: white;
+          border: 1px solid $border-color;
+          border-radius: $radius-md;
+          padding: 7px 14px;
+          font-size: $font-size-sm;
+          font-weight: 500;
+          color: $text-dark;
+          cursor: pointer;
+          font-family: $font-family;
+          white-space: nowrap;
+          transition: background 0.15s;
+          position: relative;
+
+          &:hover { background: $body-bg; }
+          svg { font-size: 15px; color: $text-light; }
+
+          .date-dropdown {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            background: white;
+            border: 1px solid $border-color;
+            border-radius: $radius-md;
+            box-shadow: $shadow-md;
+            min-width: 180px;
+            z-index: 50;
+            overflow: hidden;
+
+            .dd-item {
+              padding: 10px 16px;
+              font-size: $font-size-sm;
+              color: $text-medium;
+              cursor: pointer;
+              transition: background 0.12s;
+
+              &:hover { background: $body-bg; color: $text-dark; }
+              &.active { background: $primary; color: white; font-weight: 600; }
+            }
+          }
+        }
+      }
+
+      .btn-filter-sm {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: white;
+        border: 1px solid $border-color;
+        border-radius: $radius-md;
+        padding: 7px 14px;
+        font-size: $font-size-sm;
+        font-weight: 500;
+        color: $text-dark;
+        cursor: pointer;
+        font-family: $font-family;
+        &:hover { background: $body-bg; }
+        svg { font-size: 15px; color: $text-medium; }
+      }
+    }
+
+    // ── TABLE ──
+    .tab-table {
+      overflow-x: auto;
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+
+        th {
+          text-align: left;
+          padding: 11px 16px;
+          font-size: $font-size-xs;
+          font-weight: 600;
+          color: $text-light;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          border-bottom: 1px solid $border-color;
+          white-space: nowrap;
+        }
+
+        td {
+          padding: 12px 16px;
+          border-bottom: 1px solid $border-color;
+          font-size: $font-size-sm;
+          color: $text-medium;
+          vertical-align: middle;
+        }
+
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: #fafafa; }
+
+        .doc-cell {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          cursor: pointer;
+
+          &:hover .cell-name { color: $primary; }
+
+          .cell-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700;
+            flex-shrink: 0;
+          }
+
+          .cell-name { font-size: $font-size-sm; font-weight: 600; color: $text-dark; transition: color 0.15s; }
+          .cell-sub  { font-size: $font-size-xs; color: $text-light; }
+        }
+
+        .appt-status {
+          font-size: $font-size-sm;
+          font-weight: 600;
+
+          &.checked-out  { color: $primary; }
+          &.checked-in   { color: $warning; }
+          &.cancelled    { color: $danger; }
+          &.schedule     { color: $info; }
+          &.confirmed    { color: $success; }
+          &.completed    { color: $success; }
+          &.pending      { color: $warning; }
+        }
+
+        .txn-status {
+          display: inline-block;
+          padding: 3px 12px;
+          border-radius: 20px;
+          font-size: $font-size-xs;
+          font-weight: 600;
+
+          &.completed { background: #dcfce7; color: #16a34a; }
+          &.pending   { background: #fef9c3; color: #ca8a04; }
+        }
+
+        .icon-btn {
+          width: 28px; height: 28px;
+          border: 1px solid $border-color;
+          border-radius: $radius-sm;
+          background: white;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer; color: $text-medium;
+          &:hover { background: $body-bg; }
+          svg { font-size: 14px; }
+        }
+      }
+    }
+
+    // ── PAGINATION ──
+    .tab-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-top: 1px solid $border-color;
+
+      .page-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: $font-size-sm;
+        color: $text-medium;
+
+        select {
+          border: 1px solid $border-color;
+          border-radius: $radius-sm;
+          padding: 3px 8px;
+          font-size: $font-size-sm;
+          font-family: $font-family;
+          outline: none;
+          color: $text-dark;
+          background: white;
+          cursor: pointer;
+        }
+      }
+
+      .page-nav {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .page-btn {
+          width: 30px; height: 30px;
+          border: 1px solid $border-color;
+          border-radius: $radius-sm;
+          background: white;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer; color: $text-medium;
+          font-size: $font-size-sm; font-family: $font-family;
+          transition: all 0.15s;
+
+          &:hover { background: $body-bg; }
+          &.active { background: $primary; color: white; border-color: $primary; font-weight: 700; }
+          &:disabled { opacity: 0.4; cursor: not-allowed; }
+          svg { font-size: 13px; }
+        }
+      }
+    }
+  }
+}

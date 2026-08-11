@@ -1,0 +1,347 @@
+@import 'variables';
+
+$sidebar-collapsed-width: 64px;
+
+.sidebar {
+  width: $sidebar-width;
+  min-width: $sidebar-width;
+  height: 100vh;
+  background: $sidebar-bg;
+  border-right: 1px solid $border-color;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  font-family: $font-family;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-thumb { background: $border-color; border-radius: 4px; }
+
+  // ── COLLAPSED STATE ───────────────────────────────────────────
+  &--collapsed {
+    width: $sidebar-collapsed-width;
+    min-width: $sidebar-collapsed-width;
+    overflow: visible; // so tooltip can overflow
+
+    .sidebar-logo {
+      padding: 14px 12px;
+      justify-content: center;
+
+      .logo-wrap {
+        justify-content: center;
+      }
+
+      .sidebar-toggle {
+        position: absolute;
+        right: -12px;
+        top: 18px;
+        width: 24px;
+        height: 24px;
+        background: white;
+        border: 1px solid $border-color;
+        border-radius: 50%;
+        box-shadow: $shadow-sm;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+
+        &:hover { background: $body-bg; }
+      }
+    }
+
+    .nav-section-title { display: none; }
+
+    .nav-item {
+      justify-content: center;
+      padding: 8px 0;
+
+      .nav-left { justify-content: center; }
+    }
+  }
+
+  // ── LOGO ──────────────────────────────────────────────────────
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid $border-color;
+    min-height: $header-height;
+    position: relative;
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        background: $primary;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .logo-text {
+        font-size: $font-size-lg;
+        font-weight: 700;
+        color: $primary;
+        letter-spacing: -0.3px;
+        white-space: nowrap;
+        overflow: hidden;
+        transition: opacity 0.2s, width 0.2s;
+      }
+    }
+
+    .sidebar-toggle {
+      cursor: pointer;
+      color: $text-light;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+      border-radius: 6px;
+      transition: background 0.15s;
+      flex-shrink: 0;
+
+      &:hover { background: $body-bg; color: $text-dark; }
+    }
+  }
+
+  // ── CLINIC INFO ───────────────────────────────────────────────
+  .clinic-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid $border-color;
+    transition: padding 0.25s;
+
+    &--collapsed {
+      justify-content: center;
+      padding: 12px 0;
+
+      .clinic-avatar {
+        margin: 0 auto;
+      }
+    }
+
+    .clinic-avatar {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: $radius-md;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .clinic-text {
+      flex: 1;
+      overflow: hidden;
+
+      .clinic-name {
+        // font-size: $font-size-md;
+        font-size:$font-size-sm;
+        font-weight: 600;
+        color: $text-dark;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .clinic-location {
+        font-size: $font-size-xs;
+        color: $text-light;
+        margin-top: 1px;
+      }
+    }
+
+    .clinic-expand {
+      color: $text-light;
+      cursor: pointer;
+      display: flex;
+      flex-shrink: 0;
+      &:hover { color: $text-dark; }
+    }
+  }
+
+  // ── NAV SECTION ───────────────────────────────────────────────
+  .nav-section {
+    padding: 4px 0;
+
+    .nav-section-title {
+      font-size: $font-size-xs;
+      font-weight: 600;
+      color: $text-light;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 8px 16px 4px;
+      white-space: nowrap;
+    }
+
+    .nav-section-divider {
+      height: 1px;
+      background: $border-color;
+      margin: 6px 12px;
+    }
+
+    // ── NAV ITEM ──────────────────────────────────────────────
+    .nav-item-wrap {
+      position: relative;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      color: $text-medium;
+      font-size: $font-size-base;
+      text-decoration: none;
+      position: relative;
+
+      &:hover {
+        background: #f8fafc;
+        color: $text-dark;
+
+        .nav-tooltip { opacity: 1; pointer-events: auto; transform: translateX(0); }
+      }
+
+      &.active {
+        background: #eff6ff;
+        color: $primary;
+        .nav-icon { color: $primary; }
+        .nav-label { font-weight: 600; color: $primary; }
+      }
+
+      // Icon-only mode when collapsed
+      &--icon-only {
+        padding: 10px 0;
+        justify-content: center;
+
+        .nav-left {
+          justify-content: center;
+          width: 100%;
+        }
+
+        .nav-icon {
+          color: $text-medium;
+        }
+
+        &.active .nav-icon { color: $primary; }
+        &:hover .nav-icon { color: $text-dark; }
+      }
+
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .nav-icon {
+        font-size: 18px;
+        color: $text-light;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        flex-shrink: 0;
+        transition: color 0.15s;
+      }
+
+      .nav-label {
+        font-size: $font-size-base;
+        color: inherit;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .nav-chevron {
+        font-size: 12px !important;
+        color: $text-light;
+        transition: transform 0.2s;
+        flex-shrink: 0;
+        &.open { transform: rotate(90deg); }
+      }
+
+      // ── TOOLTIP (shown on hover when collapsed) ──────────────
+      .nav-tooltip {
+        position: absolute;
+        left: calc(100% + 12px);
+        top: 50%;
+        transform: translateY(-50%) translateX(-6px);
+        background: #1e293b;
+        color: white;
+        font-size: $font-size-xs;
+        font-weight: 600;
+        padding: 5px 10px;
+        border-radius: $radius-sm;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.15s, transform 0.15s;
+        z-index: 200;
+
+        // Arrow
+        &::before {
+          content: '';
+          position: absolute;
+          right: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          border: 5px solid transparent;
+          border-right-color: #1e293b;
+        }
+      }
+    }
+
+    // ── SUB NAV ───────────────────────────────────────────────
+    .nav-sub {
+      padding-left: 44px;
+      overflow: hidden;
+
+      .nav-sub-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px 6px 0;
+        cursor: pointer;
+        font-size: $font-size-sm;
+        color: $text-medium;
+        text-decoration: none;
+        transition: color 0.15s;
+
+        &:hover { color: $text-dark; }
+        &.active { color: $primary; font-weight: 500; }
+
+        &::before {
+          content: '';
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: $border-color;
+          flex-shrink: 0;
+        }
+        &.active::before { background: $primary; }
+      }
+    }
+  }
+}
