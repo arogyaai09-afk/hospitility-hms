@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "HMS API",
-    "description": "Postman collection for the HMS backend API based on the existing API documentation.",
+    "name": "HMS API - v1.1 (Performance Optimized)",
+    "description": "Postman collection for HMS backend API with pagination support and performance optimizations (GZIP compression, connection pooling, .lean() queries)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -39,11 +39,21 @@
       "key": "password",
       "value": "password123",
       "type": "string"
+    },
+    {
+      "key": "page",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "limit",
+      "value": "20",
+      "type": "string"
     }
   ],
   "item": [
     {
-      "name": "Authentication",
+      "name": "🔐 Authentication",
       "item": [
         {
           "name": "POST /auth/login",
@@ -61,13 +71,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
             }
           },
           "event": [
@@ -102,13 +107,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/auth/refresh",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "refresh"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh"]
             }
           }
         },
@@ -120,10 +120,6 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
               }
             ],
             "body": {
@@ -132,13 +128,8 @@
             },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "register"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
             }
           }
         },
@@ -154,20 +145,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/auth/profile",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "profile"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "profile"]
             }
           }
         }
       ]
     },
     {
-      "name": "Tenants",
+      "name": "🏥 Tenants",
       "item": [
         {
           "name": "GET /tenants",
@@ -181,12 +167,8 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/tenants",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "tenants"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["tenants"]
             }
           }
         },
@@ -210,44 +192,18 @@
             },
             "url": {
               "raw": "{{baseUrl}}/tenants",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "tenants"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /tenants/:id",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/tenants/{{tenantId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "tenants",
-                "{{tenantId}}"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["tenants"]
             }
           }
         }
       ]
     },
     {
-      "name": "Doctors",
+      "name": "👨‍⚕️ Doctors",
       "item": [
         {
-          "name": "GET /doctors",
+          "name": "GET /doctors (Paginated)",
           "request": {
             "method": "GET",
             "header": [
@@ -257,17 +213,23 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/doctors?tenantId={{tenantId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "doctors"
-              ],
+              "raw": "{{baseUrl}}/doctors?tenantId={{tenantId}}&page={{page}}&limit={{limit}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctors"],
               "query": [
                 {
                   "key": "tenantId",
                   "value": "{{tenantId}}"
+                },
+                {
+                  "key": "page",
+                  "value": "{{page}}",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limit}}",
+                  "description": "Records per page (default: 20, max: 100)"
                 }
               ]
             }
@@ -289,26 +251,22 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Dr. Smith\",\n  \"specialization\": \"Cardiology\",\n  \"phone\": \"+91-9876543210\",\n  \"email\": \"smith@hospital.com\",\n  \"userId\": \"{{userId}}\",\n  \"tenantId\": \"{{tenantId}}\"\n}"
+              "raw": "{\n  \"name\": \"Dr. Smith\",\n  \"specialization\": \"Cardiology\",\n  \"phone\": \"+91-9876543210\",\n  \"email\": \"smith@hospital.com\",\n  \"tenantId\": \"{{tenantId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/doctors",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "doctors"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["doctors"]
             }
           }
         }
       ]
     },
     {
-      "name": "Patients",
+      "name": "👤 Patients",
       "item": [
         {
-          "name": "GET /patients",
+          "name": "GET /patients (Paginated)",
           "request": {
             "method": "GET",
             "header": [
@@ -318,12 +276,20 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/patients",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "patients"
+              "raw": "{{baseUrl}}/patients?page={{page}}&limit={{limit}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["patients"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limit}}",
+                  "description": "Records per page (default: 20, max: 100)"
+                }
               ]
             }
           }
@@ -344,16 +310,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"patientCode\": \"PAT-1001\",\n  \"name\": \"Jane Doe\",\n  \"dateOfBirth\": \"1990-07-20\",\n  \"gender\": \"female\",\n  \"phone\": \"+91-9876501234\",\n  \"email\": \"jane.doe@example.com\",\n  \"address\": \"45 Ocean Drive\",\n  \"emergencyContact\": \"+91-9876509999\",\n  \"medicalHistory\": \"No known allergies\"\n}"
+              "raw": "{\n  \"name\": \"John Patient\",\n  \"dateOfBirth\": \"1990-01-15\",\n  \"gender\": \"male\",\n  \"phone\": \"+91-9876543210\",\n  \"email\": \"patient@example.com\",\n  \"address\": \"123 Main St, City\",\n  \"emergencyContact\": \"+91-9876543211\",\n  \"patientCode\": \"PAT-001\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/patients",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "patients"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["patients"]
             }
           }
         },
@@ -368,84 +330,19 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/patients/60d5ecb74b24c72b8c8b4570",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "patients",
-                "60d5ecb74b24c72b8c8b4570"
-              ]
+              "raw": "{{baseUrl}}/patients/60d5ecb74b24c72b8c8b4569",
+              "host": ["{{baseUrl}}"],
+              "path": ["patients", "60d5ecb74b24c72b8c8b4569"]
             }
           }
         }
       ]
     },
     {
-      "name": "Admissions",
+      "name": "🛏️ Beds",
       "item": [
         {
-          "name": "POST /admissions/from-opd",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"appointmentId\": \"60d5ecb74b24c72b8c8b4571\",\n  \"bedNumber\": \"B-101\",\n  \"doctorId\": \"60d5ecb74b24c72b8c8b4569\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/admissions/from-opd",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admissions",
-                "from-opd"
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /admissions/ipd",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"patientName\": \"Jane Doe\",\n  \"admissionType\": \"IPD\",\n  \"bedNumber\": \"B-102\",\n  \"doctorId\": \"60d5ecb74b24c72b8c8b4569\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/admissions/ipd",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admissions",
-                "ipd"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /admissions",
+          "name": "GET /beds (Paginated)",
           "request": {
             "method": "GET",
             "header": [
@@ -455,46 +352,26 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admissions",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admissions"
+              "raw": "{{baseUrl}}/beds?page={{page}}&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["beds"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Records per page (default: 50, max: 100)"
+                }
               ]
             }
           }
         },
         {
-          "name": "PATCH /admissions/:id/discharge",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/admissions/60d5ecb74b24c72b8c8b4572/discharge",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admissions",
-                "60d5ecb74b24c72b8c8b4572",
-                "discharge"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Beds",
-      "item": [
-        {
-          "name": "GET /beds",
+          "name": "GET /beds/available",
           "request": {
             "method": "GET",
             "header": [
@@ -504,13 +381,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/beds",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "beds"
-              ]
+              "raw": "{{baseUrl}}/beds/available",
+              "host": ["{{baseUrl}}"],
+              "path": ["beds", "available"]
             }
           }
         },
@@ -530,48 +403,22 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"bedNumber\": \"B-103\",\n  \"ward\": \"General Ward\",\n  \"type\": \"general\"\n}"
+              "raw": "{\n  \"bedNumber\": \"101\",\n  \"ward\": \"General\",\n  \"type\": \"general\",\n  \"status\": \"available\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/beds",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "beds"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /beds/available",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/beds/available",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "beds",
-                "available"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["beds"]
             }
           }
         }
       ]
     },
     {
-      "name": "Appointments",
+      "name": "📅 Appointments",
       "item": [
         {
-          "name": "GET /appointments",
+          "name": "GET /appointments (Paginated)",
           "request": {
             "method": "GET",
             "header": [
@@ -581,12 +428,20 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/appointments",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "appointments"
+              "raw": "{{baseUrl}}/appointments?page={{page}}&limit={{limit}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limit}}",
+                  "description": "Records per page (default: 20, max: 100)"
+                }
               ]
             }
           }
@@ -607,26 +462,22 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"patientId\": \"60d5ecb74b24c72b8c8b4570\",\n  \"patientName\": \"Jane Doe\",\n  \"patientType\": \"local\",\n  \"appointmentType\": \"OPD\",\n  \"visitReason\": \"Routine checkup\",\n  \"doctorId\": \"60d5ecb74b24c72b8c8b4569\"\n}"
+              "raw": "{\n  \"patientId\": \"60d5ecb74b24c72b8c8b4569\",\n  \"patientName\": \"John Patient\",\n  \"patientType\": \"local\",\n  \"appointmentType\": \"OPD\",\n  \"visitReason\": \"Regular checkup\",\n  \"doctorId\": \"60d5ecb74b24c72b8c8b4570\",\n  \"status\": \"scheduled\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/appointments",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "appointments"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments"]
             }
           }
         }
       ]
     },
     {
-      "name": "Emergencies",
+      "name": "🏨 Admissions",
       "item": [
         {
-          "name": "GET /emergencies",
+          "name": "GET /admissions (Paginated)",
           "request": {
             "method": "GET",
             "header": [
@@ -636,284 +487,26 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/emergencies",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "emergencies"
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /emergencies",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"patientName\": \"Jane Doe\",\n  \"patientId\": \"60d5ecb74b24c72b8c8b4570\",\n  \"emergencyType\": \"accident\",\n  \"severity\": \"high\",\n  \"assignedDoctor\": \"60d5ecb74b24c72b8c8b4569\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/emergencies",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "emergencies"
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /emergencies/:id/admit",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"bedNumber\": \"B-104\",\n  \"doctorId\": \"60d5ecb74b24c72b8c8b4569\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/emergencies/60d5ecb74b24c72b8c8b4576/admit",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "emergencies",
-                "60d5ecb74b24c72b8c8b4576",
-                "admit"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Discharge",
-      "item": [
-        {
-          "name": "POST /discharge",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"admissionId\": \"60d5ecb74b24c72b8c8b4572\",\n  \"summary\": \"Patient discharged in stable condition\",\n  \"followUpInstructions\": \"Return after 2 weeks\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/discharge",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "discharge"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Invoices",
-      "item": [
-        {
-          "name": "GET /invoices",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/invoices",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "invoices"
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /invoices",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"patientId\": \"60d5ecb74b24c72b8c8b4570\",\n  \"patientName\": \"Jane Doe\",\n  \"appointmentId\": \"60d5ecb74b24c72b8c8b4575\",\n  \"lineItems\": [\n    {\n      \"description\": \"Consultation\",\n      \"quantity\": 1,\n      \"unitPrice\": 1000,\n      \"amount\": 1000\n    }\n  ],\n  \"subtotalAmount\": 1000,\n  \"discountAmount\": 0,\n  \"taxRate\": 5,\n  \"taxAmount\": 50,\n  \"totalAmount\": 1050,\n  \"paidAmount\": 0,\n  \"balanceAmount\": 1050,\n  \"amount\": 1050,\n  \"paymentType\": \"one_time\",\n  \"paymentMode\": \"cash\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/invoices",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "invoices"
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /invoices/appointments/:appointmentId",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"lineItems\": [\n    {\n      \"description\": \"Consultation\",\n      \"quantity\": 1,\n      \"unitPrice\": 1000,\n      \"amount\": 1000\n    }\n  ],\n  \"subtotalAmount\": 1000,\n  \"discountAmount\": 0,\n  \"taxRate\": 5,\n  \"taxAmount\": 50,\n  \"totalAmount\": 1050,\n  \"amount\": 1050,\n  \"paymentMode\": \"cash\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/invoices/appointments/60d5ecb74b24c72b8c8b4575",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "invoices",
-                "appointments",
-                "60d5ecb74b24c72b8c8b4575"
-              ]
-            }
-          }
-        },
-        {
-          "name": "PATCH /invoices/:id/pay",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"amount\": 1050,\n  \"paymentMode\": \"cash\",\n  \"paymentReference\": \"TXN-1234\",\n  \"paymentTerminalId\": \"TERM-001\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/invoices/60d5ecb74b24c72b8c8b4578/pay",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "invoices",
-                "60d5ecb74b24c72b8c8b4578",
-                "pay"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /invoices/:id/payments",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/invoices/60d5ecb74b24c72b8c8b4578/payments",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "invoices",
-                "60d5ecb74b24c72b8c8b4578",
-                "payments"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Taxes",
-      "item": [
-        {
-          "name": "GET /taxes",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/taxes?isActive=true",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "taxes"
-              ],
+              "raw": "{{baseUrl}}/admissions?page={{page}}&limit={{limit}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admissions"],
               "query": [
                 {
-                  "key": "isActive",
-                  "value": "true"
+                  "key": "page",
+                  "value": "{{page}}",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limit}}",
+                  "description": "Records per page (default: 20, max: 100)"
                 }
               ]
             }
           }
         },
         {
-          "name": "POST /taxes",
+          "name": "POST /admissions (Admit from OPD)",
           "request": {
             "method": "POST",
             "header": [
@@ -928,78 +521,22 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"GST\",\n  \"code\": \"GST18\",\n  \"rate\": 18,\n  \"isActive\": true,\n  \"components\": [\n    {\n      \"name\": \"CGST\",\n      \"code\": \"CGST9\",\n      \"rate\": 9,\n      \"type\": \"percentage\"\n    },\n    {\n      \"name\": \"SGST\",\n      \"code\": \"SGST9\",\n      \"rate\": 9,\n      \"type\": \"percentage\"\n    }\n  ]\n}"
+              "raw": "{\n  \"appointmentId\": \"60d5ecb74b24c72b8c8b4571\",\n  \"bedNumber\": \"101\",\n  \"doctorId\": \"60d5ecb74b24c72b8c8b4570\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/taxes",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "taxes"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /taxes/:id",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/taxes/60d5ecb74b24c72b8c8b4580",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "taxes",
-                "60d5ecb74b24c72b8c8b4580"
-              ]
-            }
-          }
-        },
-        {
-          "name": "PATCH /taxes/:id",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"rate\": 19,\n  \"isActive\": false\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/taxes/60d5ecb74b24c72b8c8b4580",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "taxes",
-                "60d5ecb74b24c72b8c8b4580"
-              ]
+              "raw": "{{baseUrl}}/admissions",
+              "host": ["{{baseUrl}}"],
+              "path": ["admissions"]
             }
           }
         }
       ]
     },
     {
-      "name": "Staff",
+      "name": "👨‍💼 Staff",
       "item": [
         {
-          "name": "GET /staff",
+          "name": "GET /staff (Paginated)",
           "request": {
             "method": "GET",
             "header": [
@@ -1009,12 +546,20 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/staff",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "staff"
+              "raw": "{{baseUrl}}/staff?page={{page}}&limit={{limit}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["staff"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}",
+                  "description": "Page number (default: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limit}}",
+                  "description": "Records per page (default: 20, max: 100)"
+                }
               ]
             }
           }
@@ -1035,16 +580,72 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Raj Patel\",\n  \"role\": \"staff\",\n  \"phone\": \"+91-9876501111\",\n  \"email\": \"raj.patel@example.com\"\n}"
+              "raw": "{\n  \"name\": \"Nurse Jane\",\n  \"role\": \"nurse\",\n  \"phone\": \"+91-9876543210\",\n  \"email\": \"jane@hospital.com\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/staff",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "staff"
-              ]
+              "host": ["{{baseUrl}}"],
+              "path": ["staff"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💳 Invoices",
+      "item": [
+        {
+          "name": "POST /invoices",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": \"60d5ecb74b24c72b8c8b4569\",\n  \"patientName\": \"John Patient\",\n  \"lineItems\": [\n    {\n      \"description\": \"Consultation\",\n      \"quantity\": 1,\n      \"unitPrice\": 500\n    }\n  ],\n  \"subtotalAmount\": 500,\n  \"discountAmount\": 0,\n  \"taxRate\": 18,\n  \"paymentType\": \"one_time\",\n  \"paymentMode\": \"cash\",\n  \"status\": \"pending\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/invoices",
+              "host": ["{{baseUrl}}"],
+              "path": ["invoices"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Discharge",
+      "item": [
+        {
+          "name": "POST /discharge",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"admissionId\": \"60d5ecb74b24c72b8c8b4572\",\n  \"summary\": \"Patient recovered well. No complications observed.\",\n  \"recommendations\": \"Follow up after 1 week. Continue prescribed medications.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/discharge",
+              "host": ["{{baseUrl}}"],
+              "path": ["discharge"]
             }
           }
         }
