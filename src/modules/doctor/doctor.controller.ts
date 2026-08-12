@@ -2,6 +2,7 @@ export {};
 
 const { createDoctor, listDoctors } = require('./doctor.service');
 const { success } = require('../../utils/response');
+const { getPaginationParams } = require('../../utils/pagination');
 
 async function create(ctx) {
   const tenantId = ctx.state.user.role === 'admin' ? ctx.request.body.tenantId : ctx.state.user.tenantId;
@@ -19,8 +20,9 @@ async function index(ctx) {
   if (!tenantId) {
     ctx.throw(400, 'tenantId query parameter is required');
   }
-  const doctors = await listDoctors(tenantId);
-  ctx.body = success(doctors);
+  const { page, limit } = getPaginationParams(ctx);
+  const result = await listDoctors(tenantId, page, limit);
+  ctx.body = success(result.data, 'Doctors retrieved', result.pagination);
 }
 
 module.exports = { create, index };

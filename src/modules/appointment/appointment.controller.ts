@@ -2,6 +2,7 @@ export {};
 
 const { createAppointment, listAppointments } = require('./appointment.service');
 const { success } = require('../../utils/response');
+const { getPaginationParams } = require('../../utils/pagination');
 
 async function create(ctx) {
   const payload = {
@@ -15,8 +16,9 @@ async function create(ctx) {
 }
 
 async function index(ctx) {
-  const appointments = await listAppointments(ctx.state.user.tenantId);
-  ctx.body = success(appointments);
+  const { page, limit } = getPaginationParams(ctx);
+  const result = await listAppointments(ctx.state.user.tenantId, page, limit);
+  ctx.body = success(result.data, 'Appointments retrieved', result.pagination);
 }
 
 module.exports = { create, index };

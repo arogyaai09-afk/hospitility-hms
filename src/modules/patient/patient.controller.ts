@@ -2,6 +2,7 @@ export {};
 
 const { createPatient, listPatients, getPatientById } = require('./patient.service');
 const { success } = require('../../utils/response');
+const { getPaginationParams } = require('../../utils/pagination');
 
 async function create(ctx) {
   const payload = { ...ctx.request.body, tenantId: ctx.state.user.tenantId };
@@ -11,8 +12,9 @@ async function create(ctx) {
 }
 
 async function index(ctx) {
-  const patients = await listPatients(ctx.state.user.tenantId);
-  ctx.body = success(patients);
+  const { page, limit } = getPaginationParams(ctx);
+  const result = await listPatients(ctx.state.user.tenantId, page, limit);
+  ctx.body = success(result.data, 'Patients retrieved', result.pagination);
 }
 
 async function show(ctx) {

@@ -8,8 +8,10 @@ import Koa = require('koa');
 import Router = require('koa-router');
 import bodyParser = require('koa-bodyparser');
 import cors = require('koa2-cors');
-import logger = require('koa-logger');
 import * as dotenv from 'dotenv';
+
+// Performance: Use compress instead of koa-logger for smaller responses
+const compress = require('koa-compress');
 
 dotenv.config();
 
@@ -33,9 +35,10 @@ import taxRoutes = require('./src/modules/tax/tax.routes');
 const app = new Koa();
 const router = new Router({ prefix: '/api/v1' });
 
-app.use(logger());
+// Performance middleware stack (optimized order)
+app.use(compress({ threshold: 1024 })); // Compress responses > 1KB
 app.use(cors());
-app.use(bodyParser());
+app.use(bodyParser({ jsonLimit: '10mb', formLimit: '10mb' }));
 app.use(errorHandler);
 
 router.get('/health', async (ctx: any) => {

@@ -2,6 +2,7 @@ export {};
 
 const Doctor = require('./doctor.model');
 const User = require('../auth/auth.model');
+const { calculateSkip } = require('../../utils/pagination');
 
 async function createDoctor(data) {
   if (data.userId) {
@@ -26,8 +27,28 @@ async function createDoctor(data) {
   return Doctor.create(data);
 }
 
-async function listDoctors(tenantId) {
-  return Doctor.find({ tenantId }).populate('userId', 'name email role tenantId').sort({ createdAt: -1 });
+async function listDoctors(tenantId, page = 1, limit = 20) {
+  const skip = calculateSkip(page, limit);
+  const [doctors, total] = await Promise.all([
+    Doctor.find({ tenantId })
+      .select('name specialization phone email userId createdAt')
+      .populate('userId', 'email')
+      .lean()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Doctor.countDocuments({ tenantId })
+  ]);
+  
+  return {
+    data: doctors,
+    pagination: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit)
+    }
+  };
 }
 
 module.exports = { createDoctor, listDoctors };

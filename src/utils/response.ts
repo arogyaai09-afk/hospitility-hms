@@ -1,5 +1,9 @@
-function success(data, message = 'Success') {
-  return { status: 'success', message, data };
+function success(data, message = 'Success', pagination = null) {
+  const response: any = { status: 'success', message, data };
+  if (pagination) {
+    response.pagination = pagination;
+  }
+  return response;
 }
 
 function error(message = 'Error', data = null) {
