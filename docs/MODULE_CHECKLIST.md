@@ -157,39 +157,10 @@ curl -H "Authorization: Bearer TOKEN" \
 ### For Tax:
 - [ ] Review tax.service.ts
 - [ ] Add .lean() and .select()
-- [ ] Optional: Add pagination if list is large
 - [ ] Test
 - [ ] Commit: `perf: Optimize tax queries`
 
 ---
-
-## 🔧 Implementation Steps (For Each Module)
-
-### Step 1: Update Service File
-1. Open `src/modules/{module}/{module}.service.ts`
-2. Add import at top: `const { calculateSkip } = require('../../utils/pagination');`
-3. Find `list{Module}()` function
-4. Replace body using pattern from patient.service.ts
-5. Test syntax: `npm run build`
-
-### Step 2: Update Controller File
-1. Open `src/modules/{module}/{module}.controller.ts`
-2. Add import: `const { getPaginationParams } = require('../../utils/pagination');`
-3. Find `index()` function
-4. Add pagination logic using patient.controller.ts as template
-5. Test syntax: `npm run build`
-
-### Step 3: Test & Verify
-```bash
-# Start server
-npm run dev
-
-# Test in another terminal
-curl -H "Authorization: Bearer YOUR_TOKEN" \
-  "http://localhost:4000/api/v1/{module}?page=1&limit=20"
-```
-
-### Step 4: Commit
 ```bash
 git add src/modules/{module}/*
 git commit -m "perf: Add pagination to {module} endpoints

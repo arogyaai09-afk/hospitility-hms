@@ -31,6 +31,7 @@ import bedRoutes = require('./src/modules/bed/bed.routes');
 import emergencyRoutes = require('./src/modules/emergency/emergency.routes');
 import invoiceRoutes = require('./src/modules/invoice/invoice.routes');
 import taxRoutes = require('./src/modules/tax/tax.routes');
+import dashboardRoutes = require('./src/modules/dashboard/dashboard.routes');
 
 const app = new Koa();
 const router = new Router({ prefix: '/api/v1' });
@@ -57,6 +58,7 @@ router.use((appointmentRoutes as any).routes());
 router.use((admissionRoutes as any).routes());
 router.use((dischargeRoutes as any).routes());
 router.use((invoiceRoutes as any).routes());
+router.use((dashboardRoutes as any).routes());
 
 app.use(router.routes()).use(router.allowedMethods());
 
