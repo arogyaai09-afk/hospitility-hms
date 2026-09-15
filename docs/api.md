@@ -262,6 +262,92 @@ Create a doctor profile.
 }
 ```
 
+### GET /doctors/:id
+Get a single doctor profile for the current tenant.
+
+**Authorization:**
+- `admin` or `tenant` via `ACCESS_GROUPS.TENANT_ADMINS`
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Doctor retrieved",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4569",
+    "name": "Dr. Smith",
+    "specialization": "Cardiology",
+    "phone": "+91-9876543210",
+    "email": "smith@hospital.com",
+    "userId": "60d5ecb74b24c72b8c8b4567",
+    "tenantId": "60d5ecb74b24c72b8c8b4568",
+    "createdAt": "2023-05-11T10:00:00.000Z"
+  }
+}
+```
+
+### PATCH /doctors/:id
+Update a doctor profile.
+
+**Authorization:**
+- `admin` or `tenant` via `ACCESS_GROUPS.TENANT_ADMINS`
+
+**Request Body:**
+```json
+{
+  "name": "Dr. Smith Updated",
+  "specialization": "Neurology",
+  "phone": "+91-9988776655",
+  "email": "smith.updated@hospital.com"
+}
+```
+
+**Notes:**
+- `tenantId` cannot be changed from this endpoint.
+- `userId` can be reassigned only if the target user belongs to the same tenant and has the `doctor` role.
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Doctor updated",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4569",
+    "name": "Dr. Smith Updated",
+    "specialization": "Neurology",
+    "phone": "+91-9988776655",
+    "email": "smith.updated@hospital.com",
+    "userId": "60d5ecb74b24c72b8c8b4567",
+    "tenantId": "60d5ecb74b24c72b8c8b4568",
+    "createdAt": "2023-05-11T10:00:00.000Z"
+  }
+}
+```
+
+### DELETE /doctors/:id
+Delete a doctor profile from the current tenant.
+
+**Authorization:**
+- `admin` or `tenant` via `ACCESS_GROUPS.TENANT_ADMINS`
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Doctor deleted",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4569",
+    "name": "Dr. Smith Updated",
+    "specialization": "Neurology",
+    "phone": "+91-9988776655",
+    "email": "smith.updated@hospital.com",
+    "userId": "60d5ecb74b24c72b8c8b4567",
+    "tenantId": "60d5ecb74b24c72b8c8b4568",
+    "createdAt": "2023-05-11T10:00:00.000Z"
+  }
+}
+```
+
 ## Patients
 
 ### GET /patients
@@ -1148,6 +1234,84 @@ Create a staff member.
 }
 ```
 
+### GET /staff/:id
+Get a single staff member for the current tenant.
+
+**Authorization:**
+- `admin` or `tenant` via `ACCESS_GROUPS.TENANT_ADMINS`
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Staff member retrieved",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4581",
+    "name": "Raj Patel",
+    "role": "staff",
+    "phone": "+91-9876501111",
+    "email": "raj.patel@example.com",
+    "tenantId": "60d5ecb74b24c72b8c8b4568",
+    "createdAt": "2023-05-11T10:00:00.000Z"
+  }
+}
+```
+
+### PATCH /staff/:id
+Update a staff member.
+
+**Authorization:**
+- `admin` or `tenant` via `ACCESS_GROUPS.TENANT_ADMINS`
+
+**Request Body:**
+```json
+{
+  "name": "Raj Patel Updated",
+  "role": "supervisor",
+  "phone": "+91-9999888777"
+}
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Staff member updated",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4581",
+    "name": "Raj Patel Updated",
+    "role": "supervisor",
+    "phone": "+91-9999888777",
+    "email": "raj.patel@example.com",
+    "tenantId": "60d5ecb74b24c72b8c8b4568",
+    "createdAt": "2023-05-11T10:00:00.000Z"
+  }
+}
+```
+
+### DELETE /staff/:id
+Delete a staff member from the current tenant.
+
+**Authorization:**
+- `admin` or `tenant` via `ACCESS_GROUPS.TENANT_ADMINS`
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Staff member deleted",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4581",
+    "name": "Raj Patel Updated",
+    "role": "supervisor",
+    "phone": "+91-9999888777",
+    "email": "raj.patel@example.com",
+    "tenantId": "60d5ecb74b24c72b8c8b4568",
+    "createdAt": "2023-05-11T10:00:00.000Z"
+  }
+}
+```
+
 ## Patients
 
 ### GET /patients
@@ -1253,6 +1417,73 @@ Authorization: Bearer <accessToken>
     "address": "456 Oak St",
     "emergencyContact": "+91-9876543213",
     "medicalHistory": "No known allergies",
+    "tenantId": "60d5ecb74b24c72b8c8b4568",
+    "createdAt": "2023-05-11T10:00:00.000Z"
+  }
+}
+```
+
+### PATCH /patients/:id
+Update a patient profile.
+
+**Authorization:**
+- `admin`, `tenant`, `doctor`, or `staff` via `ACCESS_GROUPS.CLINICAL_OPERATIONS`
+
+**Request Body:**
+```json
+{
+  "name": "Alice Johnson Updated",
+  "phone": "+91-9876543219",
+  "medicalHistory": "Allergic to penicillin"
+}
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Patient updated",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4571",
+    "userId": "60d5ecb74b24c72b8c8b4567",
+    "patientCode": "PAT001",
+    "name": "Alice Johnson Updated",
+    "dateOfBirth": "1990-01-15T00:00:00.000Z",
+    "gender": "female",
+    "phone": "+91-9876543219",
+    "email": "alice@example.com",
+    "address": "456 Oak St",
+    "emergencyContact": "+91-9876543213",
+    "medicalHistory": "Allergic to penicillin",
+    "tenantId": "60d5ecb74b24c72b8c8b4568",
+    "createdAt": "2023-05-11T10:00:00.000Z"
+  }
+}
+```
+
+### DELETE /patients/:id
+Delete a patient profile from the tenant scope.
+
+**Authorization:**
+- `admin`, `tenant`, `doctor`, or `staff` via `ACCESS_GROUPS.CLINICAL_OPERATIONS`
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Patient deleted",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4571",
+    "userId": "60d5ecb74b24c72b8c8b4567",
+    "patientCode": "PAT001",
+    "name": "Alice Johnson Updated",
+    "dateOfBirth": "1990-01-15T00:00:00.000Z",
+    "gender": "female",
+    "phone": "+91-9876543219",
+    "email": "alice@example.com",
+    "address": "456 Oak St",
+    "emergencyContact": "+91-9876543213",
+    "medicalHistory": "Allergic to penicillin",
     "tenantId": "60d5ecb74b24c72b8c8b4568",
     "createdAt": "2023-05-11T10:00:00.000Z"
   }

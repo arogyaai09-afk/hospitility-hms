@@ -1,6 +1,6 @@
 export {};
 
-const { createStaff, listStaff } = require('./staff.service');
+const { createStaff, listStaff, getStaffById, updateStaff, deleteStaff } = require('./staff.service');
 const { success } = require('../../utils/response');
 const { getPaginationParams } = require('../../utils/pagination');
 
@@ -17,4 +17,19 @@ async function index(ctx) {
   ctx.body = success(result.data, 'Staff retrieved', result.pagination);
 }
 
-module.exports = { create, index };
+async function show(ctx) {
+  const staff = await getStaffById(ctx.params.id, ctx.state.user.tenantId);
+  ctx.body = success(staff, 'Staff member retrieved');
+}
+
+async function update(ctx) {
+  const staff = await updateStaff(ctx.params.id, ctx.state.user.tenantId, ctx.request.body);
+  ctx.body = success(staff, 'Staff member updated');
+}
+
+async function remove(ctx) {
+  const staff = await deleteStaff(ctx.params.id, ctx.state.user.tenantId);
+  ctx.body = success(staff, 'Staff member deleted');
+}
+
+module.exports = { create, index, show, update, remove };

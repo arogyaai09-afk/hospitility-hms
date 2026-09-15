@@ -1,6 +1,6 @@
 export {};
 
-const { createDoctor, listDoctors } = require('./doctor.service');
+const { createDoctor, listDoctors, getDoctorById, updateDoctor, deleteDoctor } = require('./doctor.service');
 const { success } = require('../../utils/response');
 const { getPaginationParams } = require('../../utils/pagination');
 
@@ -25,4 +25,22 @@ async function index(ctx) {
   ctx.body = success(result.data, 'Doctors retrieved', result.pagination);
 }
 
-module.exports = { create, index };
+async function show(ctx) {
+  const tenantId = ctx.state.user.role === 'admin' ? ctx.query.tenantId : ctx.state.user.tenantId;
+  const doctor = await getDoctorById(ctx.params.id, tenantId || ctx.state.user.tenantId);
+  ctx.body = success(doctor, 'Doctor retrieved');
+}
+
+async function update(ctx) {
+  const tenantId = ctx.state.user.role === 'admin' ? ctx.request.body.tenantId : ctx.state.user.tenantId;
+  const doctor = await updateDoctor(ctx.params.id, tenantId || ctx.state.user.tenantId, ctx.request.body);
+  ctx.body = success(doctor, 'Doctor updated');
+}
+
+async function remove(ctx) {
+  const tenantId = ctx.state.user.role === 'admin' ? ctx.query.tenantId : ctx.state.user.tenantId;
+  const doctor = await deleteDoctor(ctx.params.id, tenantId || ctx.state.user.tenantId);
+  ctx.body = success(doctor, 'Doctor deleted');
+}
+
+module.exports = { create, index, show, update, remove };
