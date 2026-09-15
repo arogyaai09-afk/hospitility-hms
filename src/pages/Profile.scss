@@ -1,0 +1,328 @@
+@import '../assets/styles/variables';
+
+.profile-page {
+  padding: 20px;
+
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: white;
+      border: 1px solid $border-color;
+      border-radius: $radius-md;
+      padding: 8px 12px;
+      font-size: $font-size-md;
+      color: $text-medium;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: $body-bg;
+        border-color: $primary;
+        color: $primary;
+      }
+    }
+
+    h1 {
+      font-size: $font-size-2xl;
+      font-weight: 700;
+      color: $text-dark;
+      margin: 0;
+    }
+  }
+}
+
+.profile-container {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+
+  .loading,
+  .error {
+    background: white;
+    padding: 32px;
+    border-radius: $radius-md;
+    text-align: center;
+    grid-column: 1 / -1;
+    font-size: $font-size-lg;
+    color: $text-medium;
+  }
+
+  .error {
+    color: $danger;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+}
+
+.profile-card {
+  background: white;
+  border-radius: $radius-md;
+  padding: 28px;
+  border: 1px solid $border-color;
+
+  .profile-header-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid $border-color;
+
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: $primary;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .profile-info {
+      flex: 1;
+
+      h2 {
+        font-size: $font-size-xl;
+        font-weight: 700;
+        margin: 0 0 6px;
+        color: $text-dark;
+      }
+
+      .role-badge {
+        display: inline-block;
+        background: rgba($primary, 0.1);
+        color: $primary;
+        padding: 4px 10px;
+        border-radius: $radius-sm;
+        font-size: $font-size-sm;
+        font-weight: 600;
+        margin: 0;
+      }
+    }
+
+    .edit-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: $primary;
+      color: white;
+      border: none;
+      border-radius: $radius-md;
+      padding: 10px 16px;
+      font-size: $font-size-md;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: $primary-dark;
+        transform: translateY(-1px);
+      }
+    }
+  }
+
+  .message {
+    padding: 12px 16px;
+    border-radius: $radius-md;
+    font-size: $font-size-md;
+    margin-bottom: 20px;
+
+    &.success {
+      background: rgba($success, 0.1);
+      color: $success;
+      border: 1px solid rgba($success, 0.2);
+    }
+  }
+
+  .profile-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 28px;
+
+    .field-group {
+      label {
+        display: block;
+        font-size: $font-size-sm;
+        font-weight: 600;
+        color: $text-medium;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      p {
+        font-size: $font-size-md;
+        color: $text-dark;
+        margin: 0;
+        padding: 10px 12px;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid $border-color;
+        border-radius: $radius-md;
+        font-size: $font-size-md;
+        font-family: inherit;
+        color: $text-dark;
+        transition: all 0.2s ease;
+
+        &:focus {
+          outline: none;
+          border-color: $primary;
+          box-shadow: 0 0 0 3px rgba($primary, 0.1);
+        }
+      }
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid $border-color;
+
+    .save-btn,
+    .cancel-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border-radius: $radius-md;
+      border: none;
+      font-size: $font-size-md;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      svg {
+        font-size: 18px;
+      }
+    }
+
+    .save-btn {
+      background: $success;
+      color: white;
+
+      &:hover {
+        background: darken($success, 5%);
+      }
+    }
+
+    .cancel-btn {
+      background: $body-bg;
+      color: $text-medium;
+      border: 1px solid $border-color;
+
+      &:hover {
+        background: $border-color;
+      }
+    }
+  }
+}
+
+.profile-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .sidebar-card {
+    background: white;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    padding: 16px;
+
+    h3 {
+      font-size: $font-size-md;
+      font-weight: 700;
+      color: $text-dark;
+      margin: 0 0 12px;
+    }
+
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid $border-color;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .status-label {
+        font-size: $font-size-sm;
+        color: $text-medium;
+      }
+
+      .status-value {
+        font-size: $font-size-md;
+        font-weight: 600;
+        color: $text-dark;
+
+        &.active {
+          color: $success;
+        }
+      }
+    }
+
+    .security-btn {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: $body-bg;
+      border: 1px solid $border-color;
+      border-radius: $radius-md;
+      font-size: $font-size-sm;
+      font-weight: 600;
+      color: $primary;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: $primary;
+        color: white;
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .profile-container {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-card .profile-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-card .profile-header-section {
+    flex-direction: column;
+    text-align: center;
+
+    .profile-info h2 {
+      margin-bottom: 12px;
+    }
+
+    .edit-btn {
+      align-self: center;
+    }
+  }
+}
