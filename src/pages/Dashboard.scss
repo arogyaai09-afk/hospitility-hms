@@ -1,0 +1,30 @@
+.dashboard {
+  .title {
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .stat-card {
+    padding: 25px;
+    flex: 1;
+    border-radius: $radius;
+    display: flex;
+    flex-direction: column;
+
+    .count {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .label {
+      margin-top: 8px;
+      color: $text-light;
+    }
+  }
+}

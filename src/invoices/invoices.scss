@@ -1,0 +1,311 @@
+@import '../assets/styles/variables';
+
+.invoices-page {
+  padding: 20px;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    div h1 {
+      font-size: $font-size-2xl;
+      font-weight: 700;
+      color: $text-dark;
+      margin: 0 0 4px;
+    }
+
+    div p {
+      font-size: $font-size-md;
+      color: $text-medium;
+      margin: 0;
+    }
+
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: $primary;
+      color: white;
+      border: none;
+      border-radius: $radius-md;
+      padding: 10px 16px;
+      font-size: $font-size-md;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: $primary-dark;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba($primary, 0.3);
+      }
+    }
+  }
+
+  .alert {
+    padding: 12px 16px;
+    border-radius: $radius-md;
+    margin-bottom: 20px;
+    font-size: $font-size-md;
+
+    &.alert-error {
+      background: rgba($danger, 0.1);
+      border: 1px solid rgba($danger, 0.2);
+      color: $danger;
+    }
+  }
+
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .summary-card {
+      background: white;
+      border: 1px solid $border-color;
+      border-radius: $radius-md;
+      padding: 16px;
+
+      h4 {
+        font-size: $font-size-sm;
+        font-weight: 600;
+        color: $text-medium;
+        margin: 0 0 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .amount {
+        font-size: $font-size-2xl;
+        font-weight: 700;
+        margin: 0;
+        color: $text-dark;
+
+        &.paid {
+          color: $success;
+        }
+
+        &.pending {
+          color: $warning;
+        }
+      }
+    }
+  }
+
+  .filters-section {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    .search-input,
+    .filter-select {
+      padding: 10px 12px;
+      border: 1px solid $border-color;
+      border-radius: $radius-md;
+      font-size: $font-size-md;
+      font-family: inherit;
+
+      &:focus {
+        outline: none;
+        border-color: $primary;
+        box-shadow: 0 0 0 3px rgba($primary, 0.1);
+      }
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .filter-select {
+      min-width: 150px;
+    }
+  }
+
+  .loading,
+  .empty-state {
+    background: white;
+    padding: 32px;
+    border-radius: $radius-md;
+    text-align: center;
+    font-size: $font-size-lg;
+    color: $text-medium;
+    border: 1px solid $border-color;
+  }
+
+  .invoices-table {
+    background: white;
+    border-radius: $radius-md;
+    border: 1px solid $border-color;
+    overflow: hidden;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      thead {
+        background: $body-bg;
+        border-bottom: 2px solid $border-color;
+
+        th {
+          padding: 12px 16px;
+          text-align: left;
+          font-size: $font-size-sm;
+          font-weight: 600;
+          color: $text-medium;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+      }
+
+      tbody tr {
+        border-bottom: 1px solid $border-color;
+        transition: background 0.2s ease;
+
+        &:hover {
+          background: $body-bg;
+        }
+
+        td {
+          padding: 12px 16px;
+          font-size: $font-size-md;
+          color: $text-dark;
+
+          &.invoice-number {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            color: $primary;
+
+            svg {
+              font-size: 18px;
+            }
+          }
+
+          &.amount {
+            font-weight: 600;
+
+            &.paid {
+              color: $success;
+            }
+
+            &.balance {
+              color: $warning;
+            }
+          }
+
+          .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: $radius-sm;
+            font-size: $font-size-sm;
+            font-weight: 600;
+
+            &.badge-primary {
+              background: rgba($primary, 0.1);
+              color: $primary;
+            }
+
+            &.badge-success {
+              background: rgba($success, 0.1);
+              color: $success;
+            }
+
+            &.badge-warning {
+              background: rgba($warning, 0.1);
+              color: $warning;
+            }
+
+            &.badge-danger {
+              background: rgba($danger, 0.1);
+              color: $danger;
+            }
+
+            &.badge-info {
+              background: rgba($info, 0.1);
+              color: $info;
+            }
+
+            &.badge-secondary {
+              background: rgba($text-medium, 0.1);
+              color: $text-medium;
+            }
+          }
+
+          &.actions {
+            display: flex;
+            gap: 8px;
+
+            .btn-icon {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              width: 36px;
+              height: 36px;
+              border: none;
+              background: $body-bg;
+              border-radius: $radius-md;
+              color: $text-medium;
+              cursor: pointer;
+              transition: all 0.2s ease;
+
+              &:hover {
+                background: $primary;
+                color: white;
+              }
+
+              &.btn-download:hover {
+                background: $success;
+              }
+
+              svg {
+                font-size: 18px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .invoices-page {
+    padding: 12px;
+
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+
+      .btn-primary {
+        align-self: flex-end;
+      }
+    }
+
+    .summary-cards {
+      grid-template-columns: 1fr;
+    }
+
+    .filters-section {
+      flex-direction: column;
+
+      .search-input,
+      .filter-select {
+        width: 100%;
+      }
+    }
+
+    .invoices-table table {
+      font-size: $font-size-sm;
+
+      th, td {
+        padding: 8px 12px;
+      }
+    }
+  }
+}

@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@import 'variables';
+@import 'sidebar';
+@import 'header';
+@import 'dashboard';
+@import 'doctors';
+@import 'addDoctors';
+@import 'doctorDeatil';
+@import 'patient';
+@import 'patientDetails';
+@import 'appointment.scss';
+
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: $font-family;
+  background: $body-bg;
+  color: $text-dark;
+  font-size: $font-size-base;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  margin-left: $sidebar-width;
+  padding-top: $header-height;
+  flex: 1;
+  min-height: 100vh;
+  background: $body-bg;
+
+  .page-content {
+    padding: 20px;
+    min-height: calc(100vh - #{$header-height});
+  }
+}
+
+.footer {
+  background: white;
+  border-top: 1px solid $border-color;
+  padding: 14px 20px;
+  text-align: center;
+  font-size: $font-size-xs;
+  color: $text-light;
+}

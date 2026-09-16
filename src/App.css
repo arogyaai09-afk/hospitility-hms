@@ -1,0 +1,15 @@
+body{
+background:#f5f6fa;
+font-family: "Inter", sans-serif;
+}
+
+.mainContent{
+margin-left:260px;
+padding:20px 30px;
+}
+
+.dashboardGrid{
+display:grid;
+grid-template-columns: repeat(12,1fr);
+gap:20px;
+}

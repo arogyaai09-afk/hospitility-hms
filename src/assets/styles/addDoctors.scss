@@ -1,0 +1,470 @@
+@import 'variables';
+
+.add-doctor-page {
+  font-family: $font-family;
+
+  // ── BREADCRUMB ─────────────────────────────────────────────
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: $font-size-sm;
+    color: $text-light;
+    margin-bottom: 16px;
+
+    .bc-back {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      color: $text-medium;
+      font-weight: 500;
+      &:hover { color: $primary; }
+      svg { font-size: 15px; }
+    }
+
+    .bc-sep { color: $border-color; }
+    .bc-current { color: $text-dark; font-weight: 600; }
+  }
+
+  // ── FORM CARD ──────────────────────────────────────────────
+  .form-card {
+    background: white;
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    margin-bottom: 20px;
+
+    .form-card-title {
+      font-size: $font-size-lg;
+      font-weight: 700;
+      color: $text-dark;
+      padding: 18px 24px 0;
+      margin-bottom: 4px;
+    }
+
+    .form-section {
+      padding: 0 24px 20px;
+
+      .section-title {
+        font-size: $font-size-md;
+        font-weight: 700;
+        color: $text-dark;
+        padding: 16px 0 14px;
+        border-bottom: 1px solid $border-color;
+        margin-bottom: 20px;
+      }
+
+      // ── Profile Image ──
+      .profile-upload {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        margin-bottom: 20px;
+
+        .upload-label {
+          font-size: $font-size-sm;
+          font-weight: 500;
+          color: $text-medium;
+        }
+
+        .upload-circle {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          border: 2px dashed $border-color;
+          background: $body-bg;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: border-color 0.15s, background 0.15s;
+          position: relative;
+          overflow: hidden;
+
+          &:hover {
+            border-color: $primary;
+            background: #eff6ff;
+          }
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+          }
+
+          .upload-icon {
+            color: $text-light;
+            font-size: 22px;
+          }
+
+          .upload-cam {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: rgba(0,0,0,0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px 0;
+            svg { color: white; font-size: 14px; }
+          }
+
+          input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+          }
+        }
+      }
+
+      // ── Form Grid ──
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px 20px;
+        margin-bottom: 16px;
+
+        &.single { grid-template-columns: 1fr; }
+        &.triple { grid-template-columns: 1fr 1fr 1fr; }
+      }
+
+      // ── Form Group ──
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+
+        label {
+          font-size: $font-size-sm;
+          font-weight: 500;
+          color: $text-medium;
+
+          .req { color: $danger; margin-left: 2px; }
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        textarea {
+          width: 100%;
+          border: 1px solid $border-color;
+          border-radius: $radius-md;
+          padding: 9px 12px;
+          font-size: $font-size-sm;
+          color: $text-dark;
+          font-family: $font-family;
+          outline: none;
+          background: white;
+          transition: border-color 0.15s, box-shadow 0.15s;
+          box-sizing: border-box;
+
+          &::placeholder { color: $text-light; }
+          &:focus { border-color: $primary; box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+          &.error { border-color: $danger; }
+          &:disabled { background: $body-bg; color: $text-light; cursor: not-allowed; }
+        }
+
+        textarea {
+          resize: vertical;
+          min-height: 80px;
+        }
+
+        select {
+          width: 100%;
+          border: 1px solid $border-color;
+          border-radius: $radius-md;
+          padding: 9px 12px;
+          font-size: $font-size-sm;
+          color: $text-dark;
+          font-family: $font-family;
+          outline: none;
+          background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%2394a3b8' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 10px center;
+          appearance: none;
+          cursor: pointer;
+          box-sizing: border-box;
+          transition: border-color 0.15s;
+
+          &:focus { border-color: $primary; box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+          &.error { border-color: $danger; }
+        }
+
+        // Input with icon
+        .input-icon-wrap {
+          position: relative;
+
+          input { padding-right: 36px; }
+
+          .input-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: $text-light;
+            display: flex;
+            align-items: center;
+            svg { font-size: 16px; }
+          }
+        }
+
+        .error-msg {
+          font-size: $font-size-xs;
+          color: $danger;
+          margin-top: 2px;
+        }
+      }
+
+      // ── Feature Toggle ──
+      .feature-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        cursor: pointer;
+        width: fit-content;
+
+        .toggle-box {
+          width: 16px;
+          height: 16px;
+          border: 2px solid $border-color;
+          border-radius: 3px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.15s;
+
+          &.checked {
+            background: $primary;
+            border-color: $primary;
+            svg { color: white; font-size: 11px; }
+          }
+        }
+
+        span {
+          font-size: $font-size-sm;
+          color: $text-medium;
+        }
+      }
+    }
+  }
+
+  // ── AVAILABILITY TABS ──────────────────────────────────────
+  .avail-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+
+    .avail-tab {
+      padding: 7px 16px;
+      border-radius: $radius-md;
+      border: 1px solid $border-color;
+      background: white;
+      font-size: $font-size-sm;
+      font-weight: 500;
+      color: $text-medium;
+      cursor: pointer;
+      font-family: $font-family;
+      transition: all 0.15s;
+
+      &:hover { background: $body-bg; }
+      &.active {
+        background: $primary;
+        color: white;
+        border-color: $primary;
+      }
+    }
+  }
+
+  .avail-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+
+    .slot-row {
+      display: grid;
+      grid-template-columns: 180px 1fr 1fr auto;
+      gap: 10px;
+      align-items: center;
+
+      .slot-label {
+        font-size: $font-size-xs;
+        color: $text-light;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .slot-actions {
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+
+        .slot-btn {
+          width: 28px;
+          height: 28px;
+          border-radius: $radius-sm;
+          border: 1px solid $border-color;
+          background: white;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.15s;
+
+          &.add { color: $primary; &:hover { background: #eff6ff; } }
+          &.remove { color: $danger; &:hover { background: #fee2e2; border-color: $danger; } }
+
+          svg { font-size: 15px; }
+        }
+      }
+    }
+
+    .slot-header {
+      display: grid;
+      grid-template-columns: 180px 1fr 1fr auto;
+      gap: 10px;
+      padding-bottom: 4px;
+
+      span {
+        font-size: $font-size-xs;
+        font-weight: 600;
+        color: $text-light;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+    }
+  }
+
+  .btn-apply-all {
+    background: $primary;
+    color: white;
+    border: none;
+    border-radius: $radius-md;
+    padding: 8px 18px;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: $font-family;
+    &:hover { background: $primary-dark; }
+  }
+
+  // ── DYNAMIC ROWS (Education, Awards, Certs) ──────────────
+  .dynamic-section {
+    .dynamic-row {
+      display: grid;
+      gap: 12px;
+      align-items: end;
+      padding-bottom: 12px;
+      border-bottom: 1px solid $border-color;
+      margin-bottom: 12px;
+
+      &:last-child { border-bottom: none; margin-bottom: 0; }
+
+      &.edu-row   { grid-template-columns: 1fr 1fr 160px 160px auto; }
+      &.award-row { grid-template-columns: 1fr 160px auto; }
+      &.cert-row  { grid-template-columns: 1fr 160px auto; }
+
+      .dr-actions {
+        display: flex;
+        gap: 6px;
+        padding-bottom: 2px;
+
+        button {
+          width: 30px;
+          height: 30px;
+          border-radius: $radius-sm;
+          border: 1px solid $border-color;
+          background: white;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.15s;
+
+          &.add-btn    { color: $primary; &:hover { background: #eff6ff; } }
+          &.remove-btn { color: $danger;  &:hover { background: #fee2e2; border-color: $danger; } }
+          svg { font-size: 15px; }
+        }
+      }
+    }
+  }
+
+  // ── APPT DURATION ─────────────────────────────────────────
+  .duration-wrap {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto;
+    gap: 8px;
+    align-items: center;
+
+    .dur-label {
+      font-size: $font-size-xs;
+      color: $text-light;
+      font-weight: 500;
+    }
+
+    input {
+      border: 1px solid $border-color;
+      border-radius: $radius-md;
+      padding: 9px 12px;
+      font-size: $font-size-sm;
+      font-family: $font-family;
+      outline: none;
+      width: 100%;
+      &:focus { border-color: $primary; box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+    }
+  }
+
+  // ── FORM FOOTER ────────────────────────────────────────────
+  .form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    background: white;
+    border-top: 1px solid $border-color;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+
+    .btn-cancel-form {
+      background: white;
+      color: $text-dark;
+      border: 1px solid $border-color;
+      border-radius: $radius-md;
+      padding: 9px 24px;
+      font-size: $font-size-sm;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: $font-family;
+      &:hover { background: $body-bg; }
+    }
+
+    .btn-submit {
+      background: $primary;
+      color: white;
+      border: none;
+      border-radius: $radius-md;
+      padding: 9px 28px;
+      font-size: $font-size-sm;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: $font-family;
+      &:hover { background: $primary-dark; }
+
+      &:disabled {
+        background: #93c5fd;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
