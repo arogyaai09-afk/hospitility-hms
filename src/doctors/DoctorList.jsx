@@ -665,8 +665,8 @@ export default function Doctors() {
 
               email: doctor.email || doctor.userId?.email || mock.email,
 
+              fee: doctor.fees ?? mock.fee,
               // These remain MOCK for now
-              fee: mock.fee,
               status: mock.status,
               avail: mock.avail,
 

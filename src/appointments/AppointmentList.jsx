@@ -17,6 +17,9 @@ import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const appointmentsData = [
@@ -208,130 +211,293 @@ function useOutsideClick(ref, cb) {
   }, [ref, cb]);
 }
 
-// ─── FILTER PANEL ─────────────────────────────────────────────────────────────
-function FilterPanel({ onClose }) {
-  const [f, setF] = useState({
-    patient: "",
-    doctor: "",
-    designation: "",
-    mode: "",
-    date: "",
-    status: "",
+// ─── FILTER FIELD ─────────────────────────────────────────────────────────────
+
+function FilterField({ label, values, onRemove, onAdd, options, placeholder }) {
+  const [input, setInput] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const filteredOptions = options.filter((option) => {
+    const value = String(option);
+
+    return (
+      value.toLowerCase().includes(input.toLowerCase()) &&
+      !values.includes(value)
+    );
   });
-  const set = (k, v) => setF((p) => ({ ...p, [k]: v }));
+
+  const addValue = (value) => {
+    if (!value || values.includes(value)) return;
+
+    onAdd(value);
+    setInput("");
+    setOpen(false);
+  };
+
+  return (
+    <div className="fp-group">
+      <div className="fp-label">
+        {label}
+
+        <span
+          className="fp-reset"
+          onClick={() => {
+            values.forEach((value) => onRemove(value));
+            setInput("");
+          }}
+        >
+          Reset
+        </span>
+      </div>
+
+      <div
+        className="fp-tag-input"
+        style={{
+          position: "relative",
+          minHeight: "42px",
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: "6px",
+          padding: "6px 10px",
+        }}
+        onClick={() => setOpen(true)}
+      >
+        {values.map((value) => (
+          <span className="fp-tag" key={value}>
+            {value}
+
+            <span
+              className="fp-tag-remove"
+              onClick={(event) => {
+                event.stopPropagation();
+                onRemove(value);
+              }}
+            >
+              ×
+            </span>
+          </span>
+        ))}
+
+        <input
+          type="text"
+          value={input}
+          placeholder={values.length === 0 ? placeholder : ""}
+          onFocus={() => setOpen(true)}
+          onChange={(event) => {
+            setInput(event.target.value);
+            setOpen(true);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+
+              if (filteredOptions.length > 0) {
+                addValue(filteredOptions[0]);
+              }
+            }
+
+            if (event.key === "Escape") {
+              setOpen(false);
+            }
+          }}
+          style={{
+            border: "none",
+            outline: "none",
+            flex: "1 1 100px",
+            minWidth: "90px",
+            background: "transparent",
+            padding: "4px 0",
+          }}
+        />
+
+        {open && filteredOptions.length > 0 && (
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: "calc(100% + 5px)",
+              background: "#fff",
+              border: "1px solid #e2e8f0",
+              borderRadius: "8px",
+              boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+              zIndex: 100,
+              maxHeight: "180px",
+              overflowY: "auto",
+            }}
+          >
+            {filteredOptions.map((option) => (
+              <div
+                key={option}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => addValue(option)}
+                style={{
+                  padding: "10px 12px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                }}
+              >
+                {option}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── FILTER PANEL ─────────────────────────────────────────────────────────────
+
+function FilterPanel({ appliedFilters, onApply, onClose, appointments }) {
+  const [filters, setFilters] = useState(appliedFilters);
+
+  const addValue = (key, value) => {
+    setFilters((current) => ({
+      ...current,
+      [key]: [...current[key], value],
+    }));
+  };
+
+  const removeValue = (key, value) => {
+    setFilters((current) => ({
+      ...current,
+      [key]: current[key].filter((item) => item !== value),
+    }));
+  };
+
+  const resetGroup = (key) => {
+    setFilters((current) => ({
+      ...current,
+      [key]: Array.isArray(current[key]) ? [] : "",
+    }));
+  };
+
+  const clearAll = () => {
+    setFilters({
+      patient: [],
+      doctor: [],
+      designation: [],
+      mode: [],
+      status: [],
+      date: "",
+    });
+  };
+
+  const uniquePatients = [
+    ...new Set(appointments.map((appointment) => appointment.patient)),
+  ];
+
+  const uniqueDoctors = [
+    ...new Set(appointments.map((appointment) => appointment.doctor)),
+  ];
+
+  const uniqueDesignations = [
+    ...new Set(appointments.map((appointment) => appointment.dRole)),
+  ].filter(Boolean);
+
+  const uniqueModes = [
+    ...new Set(appointments.map((appointment) => appointment.mode)),
+  ];
+
+  const uniqueStatuses = [
+    ...new Set(appointments.map((appointment) => appointment.status)),
+  ];
 
   return (
     <>
       <div className="filter-overlay" onClick={onClose} />
+
       <div className="filter-panel">
         <div className="fp-header">
           <span className="fp-title">Filter</span>
-          <span
-            className="fp-clear"
-            onClick={() =>
-              setF({
-                patient: "",
-                doctor: "",
-                designation: "",
-                mode: "",
-                date: "",
-                status: "",
-              })
-            }
-          >
+
+          <span className="fp-clear" onClick={clearAll}>
             Clear All
           </span>
         </div>
+
         <div className="fp-body">
-          {[
-            {
-              key: "patient",
-              label: "Patient",
-              opts: [
-                "Alberto Ripley",
-                "Susan Babin",
-                "Carol Lam",
-                "Marsha Noland",
-              ],
-            },
-            {
-              key: "doctor",
-              label: "Doctor",
-              opts: [
-                "Dr. Mick Thompson",
-                "Dr. Sarah Johnson",
-                "Dr. Emily Carter",
-                "Dr. David Lee",
-              ],
-            },
-            {
-              key: "designation",
-              label: "Designation",
-              opts: [
-                "Cardiologist",
-                "Orthopedic Surgeon",
-                "Pediatrician",
-                "Gynecologist",
-              ],
-            },
-            {
-              key: "mode",
-              label: "Mode",
-              opts: ["In-person", "Online", "In-Person"],
-            },
-            {
-              key: "status",
-              label: "Status",
-              opts: [
-                "Checked Out",
-                "Checked In",
-                "Cancelled",
-                "Schedule",
-                "Confirmed",
-              ],
-            },
-          ].map(({ key, label, opts }) => (
-            <div className="fp-group" key={key}>
-              <div className="fp-label">
-                {label}
-                <span className="fp-reset" onClick={() => set(key, "")}>
-                  Reset
-                </span>
-              </div>
-              <div className="fp-select-wrap">
-                <select
-                  value={f[key]}
-                  onChange={(e) => set(key, e.target.value)}
-                >
-                  <option value="">Select</option>
-                  {opts.map((o) => (
-                    <option key={o}>{o}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          ))}
+          <FilterField
+            label="Patient"
+            values={filters.patient}
+            onAdd={(value) => addValue("patient", value)}
+            onRemove={(value) => removeValue("patient", value)}
+            options={uniquePatients}
+            placeholder="Search patient..."
+          />
+
+          <FilterField
+            label="Doctor"
+            values={filters.doctor}
+            onAdd={(value) => addValue("doctor", value)}
+            onRemove={(value) => removeValue("doctor", value)}
+            options={uniqueDoctors}
+            placeholder="Search doctor..."
+          />
+
+          <FilterField
+            label="Designation"
+            values={filters.designation}
+            onAdd={(value) => addValue("designation", value)}
+            onRemove={(value) => removeValue("designation", value)}
+            options={uniqueDesignations}
+            placeholder="Search designation..."
+          />
+
+          <FilterField
+            label="Mode"
+            values={filters.mode}
+            onAdd={(value) => addValue("mode", value)}
+            onRemove={(value) => removeValue("mode", value)}
+            options={uniqueModes}
+            placeholder="Search mode..."
+          />
+
+          <FilterField
+            label="Status"
+            values={filters.status}
+            onAdd={(value) => addValue("status", value)}
+            onRemove={(value) => removeValue("status", value)}
+            options={uniqueStatuses}
+            placeholder="Search status..."
+          />
+
           <div className="fp-group">
             <div className="fp-label">
-              Date *
-              <span className="fp-reset" onClick={() => set("date", "")}>
+              Date
+              <span className="fp-reset" onClick={() => resetGroup("date")}>
                 Reset
               </span>
             </div>
+
             <input
-              type="text"
-              className="fp-date-range"
-              placeholder="03/02/2026 - 03/08/2026"
-              value={f.date}
-              onChange={(e) => set("date", e.target.value)}
+              type="date"
+              className="fp-date-input"
+              value={filters.date}
+              onChange={(event) =>
+                setFilters((current) => ({
+                  ...current,
+                  date: event.target.value,
+                }))
+              }
             />
           </div>
         </div>
+
         <div className="fp-footer">
           <button className="btn-close" onClick={onClose}>
             Close
           </button>
-          <button className="btn-apply" onClick={onClose}>
+
+          <button
+            className="btn-apply"
+            onClick={() => {
+              onApply(filters);
+              onClose();
+            }}
+          >
             Filter
           </button>
         </div>
@@ -560,6 +726,14 @@ export default function Appointments() {
   const [openMenu, setOpenMenu] = useState(null);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(1);
+  const [activeFilters, setActiveFilters] = useState({
+    patient: [],
+    doctor: [],
+    designation: [],
+    mode: [],
+    status: [],
+    date: "",
+  });
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -581,7 +755,10 @@ export default function Appointments() {
 
       const response = await getAppointments();
 
-      const backendData = response?.data?.data || [];
+      const backendData =
+  response?.data?.data ||
+  response?.data ||
+  [];
 
       if (backendData.length > 0) {
         const formattedAppointments = backendData.map((item, index) => ({
@@ -591,7 +768,16 @@ export default function Appointments() {
             ? item.date
             : item.appointmentDate
               ? item.appointmentDate
-              : "Date not available",
+              : item.createdAt
+                ? new Date(item.createdAt).toLocaleString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })
+                : "Date not available",
 
           patient:
             item.patientName || item.patientId?.name || "Unknown Patient",
@@ -643,18 +829,130 @@ export default function Appointments() {
   }, []);
 
   const filtered = appointments
-    .filter(
-      (a) =>
+    .filter((a) => {
+      const searchMatch =
         a.patient.toLowerCase().includes(search.toLowerCase()) ||
         a.doctor.toLowerCase().includes(search.toLowerCase()) ||
         a.mode.toLowerCase().includes(search.toLowerCase()) ||
-        a.status.toLowerCase().includes(search.toLowerCase()),
-    )
+        a.status.toLowerCase().includes(search.toLowerCase());
+
+      const patientMatch =
+        activeFilters.patient.length === 0 ||
+        activeFilters.patient.includes(a.patient);
+
+      const doctorMatch =
+        activeFilters.doctor.length === 0 ||
+        activeFilters.doctor.includes(a.doctor);
+
+      const designationMatch =
+        activeFilters.designation.length === 0 ||
+        activeFilters.designation.includes(a.dRole);
+
+      const modeMatch =
+        activeFilters.mode.length === 0 || activeFilters.mode.includes(a.mode);
+
+      const statusMatch =
+        activeFilters.status.length === 0 ||
+        activeFilters.status.includes(a.status);
+
+      const dateMatch = (() => {
+        if (!activeFilters.date) return true;
+
+        const selectedDate = new Date(`${activeFilters.date}T00:00:00`);
+        const appointmentDate = new Date(a.date);
+
+        if (
+          Number.isNaN(selectedDate.getTime()) ||
+          Number.isNaN(appointmentDate.getTime())
+        ) {
+          return false;
+        }
+
+        return (
+          selectedDate.getFullYear() === appointmentDate.getFullYear() &&
+          selectedDate.getMonth() === appointmentDate.getMonth() &&
+          selectedDate.getDate() === appointmentDate.getDate()
+        );
+      })();
+
+      return (
+        searchMatch &&
+        patientMatch &&
+        doctorMatch &&
+        designationMatch &&
+        modeMatch &&
+        statusMatch &&
+        dateMatch
+      );
+    })
     .sort((a, b) => {
-      if (sortVal === "Ascending") return a.patient.localeCompare(b.patient);
-      if (sortVal === "Descending") return b.patient.localeCompare(a.patient);
+      if (sortVal === "Ascending") {
+        return a.patient.localeCompare(b.patient);
+      }
+
+      if (sortVal === "Descending") {
+        return b.patient.localeCompare(a.patient);
+      }
+
       return 0;
     });
+
+  const downloadExcel = () => {
+    const excelData = filtered.map((appointment) => ({
+      "Date & Time": appointment.date,
+      Patient: appointment.patient,
+      Phone: appointment.pPhone || "-",
+      Doctor: appointment.doctor,
+      Designation: appointment.dRole || "-",
+      Mode: appointment.mode,
+      Status: appointment.status,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Appointments");
+
+    XLSX.writeFile(workbook, "appointments.xlsx");
+
+    setExportOpen(false);
+  };
+
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Appointment List", 14, 15);
+
+    autoTable(doc, {
+      startY: 25,
+      head: [
+        [
+          "Date & Time",
+          "Patient",
+          "Phone",
+          "Doctor",
+          "Designation",
+          "Mode",
+          "Status",
+        ],
+      ],
+      body: filtered.map((appointment) => [
+        appointment.date,
+        appointment.patient,
+        appointment.pPhone || "-",
+        appointment.doctor,
+        appointment.dRole || "-",
+        appointment.mode,
+        appointment.status,
+      ]),
+    });
+
+    doc.save("appointments.pdf");
+
+    setExportOpen(false);
+  };
 
   const totalPages = Math.ceil(filtered.length / rowsPerPage);
   const pageData = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
@@ -693,11 +991,11 @@ export default function Appointments() {
             </button>
             {exportOpen && (
               <div className="dropdown-menu">
-                <div className="dd-item">
+                <div className="dd-item" onClick={downloadPDF}>
                   <PictureAsPdfIcon style={{ color: "#ef4444" }} /> Download as
                   PDF
                 </div>
-                <div className="dd-item">
+                <div className="dd-item" onClick={downloadExcel}>
                   <TableChartIcon style={{ color: "#10b981" }} /> Download as
                   Excel
                 </div>
@@ -885,27 +1183,6 @@ export default function Appointments() {
                           <div
                             className="ctx-item danger"
                             onClick={() => {
-                              const deletedAppointments = JSON.parse(
-                                localStorage.getItem("deletedAppointments") ||
-                                  "[]",
-                              );
-
-                              const updatedDeletedAppointments = [
-                                ...deletedAppointments,
-                                String(appt.id),
-                              ];
-
-                              localStorage.setItem(
-                                "deletedAppointments",
-                                JSON.stringify(updatedDeletedAppointments),
-                              );
-
-                              setAppointments((prev) =>
-                                prev.filter(
-                                  (item) => String(item.id) !== String(appt.id),
-                                ),
-                              );
-
                               setOpenMenu(null);
                             }}
                           >
@@ -970,7 +1247,14 @@ export default function Appointments() {
       {view === "calendar" && <CalendarView />}
 
       {/* Filter Panel */}
-      {showFilter && <FilterPanel onClose={() => setShowFilter(false)} />}
+      {showFilter && (
+        <FilterPanel
+          appliedFilters={activeFilters}
+          appointments={appointments}
+          onApply={setActiveFilters}
+          onClose={() => setShowFilter(false)}
+        />
+      )}
     </div>
   );
 }

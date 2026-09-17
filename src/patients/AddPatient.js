@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import PersonIcon from "@mui/icons-material/Person";
@@ -6,13 +6,9 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { createPatient } from "../api/patients";
+import { getDoctors } from "../api/doctors";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
-const DOCTORS = [
-  "Dr. Mick Thompson", "Dr. Sarah Johnson", "Dr. Emily Carter",
-  "Dr. David Lee", "Dr. Anna Kim", "Dr. John Smith",
-  "Dr. Lisa White", "Dr. Patricia Brown", "Dr. Rachel Green",
-];
 const GENDERS = ["Male", "Female", "Other"];
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 const STATUSES = ["Available", "Unavailable"];
@@ -87,6 +83,37 @@ export default function CreatePatient() {
   const [errors, setErrors] = useState({});
   const [statusOpen, setStatusOpen] = useState(false);
   const [ccOpen, setCcOpen] = useState(false);
+  const [doctors, setDoctors] = useState([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(true);
+
+  // Fetch doctors on mount
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        setDoctorsLoading(true);
+
+        const response = await getDoctors();
+
+        console.log("Doctors API response:", response);
+
+        if (response?.status === "success") {
+          const doctorList = response.data || [];
+
+          console.log("Doctors list for dropdown:", doctorList);
+          setDoctors(doctorList);
+        } else {
+          setDoctors([]);
+        }
+      } catch (error) {
+        console.error("Doctors fetch error:", error);
+        setDoctors([]);
+      } finally {
+        setDoctorsLoading(false);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
 
   // ── field updater ──
   const set = (field, val) => {
@@ -268,8 +295,16 @@ export default function CreatePatient() {
                 value={form.primaryDoctor}
                 onChange={e => set("primaryDoctor", e.target.value)}
               >
-                <option value="">Select</option>
-                {DOCTORS.map(d => <option key={d}>{d}</option>)}
+                <option value="">
+                  {doctorsLoading ? "Loading doctors..." : "Select"}
+                </option>
+
+                {!doctorsLoading &&
+                  doctors.map((doctor) => (
+                    <option key={doctor._id} value={doctor._id}>
+                      {doctor.name}
+                    </option>
+                  ))}
               </select>
             </FormGroup>
 

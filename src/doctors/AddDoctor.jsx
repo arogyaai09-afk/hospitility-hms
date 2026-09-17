@@ -338,6 +338,7 @@ export default function AddDoctor() {
         specialization: contact.designation || contact.department,
         phone: contact.phone.trim(),
         email: contact.email.trim(),
+        fees: Number(appointment.consultationCharge),
       };
 
       await createDoctor(doctorData);

@@ -16,20 +16,25 @@ const Admissions = () => {
     fetchAdmissions();
   }, []);
 
-  const fetchAdmissions = async () => {
-    try {
-      setLoading(true);
-      const response = await getAdmissions();
-      if (response.status === "success") {
-        setAdmissions(response.data);
-      }
-    } catch (err) {
-      setError(err.message || "Failed to fetch admissions");
-      console.error("Admissions fetch error:", err);
-    } finally {
-      setLoading(false);
+const fetchAdmissions = async () => {
+  try {
+    setLoading(true);
+
+    const response = await getAdmissions();
+
+    if (response.status === "success") {
+      setAdmissions(response.data?.data || []);
+    } else {
+      setAdmissions([]);
     }
-  };
+  } catch (err) {
+    setError(err.message || "Failed to fetch admissions");
+    console.error("Admissions fetch error:", err);
+    setAdmissions([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const filteredAdmissions = admissions.filter((admission) => {
     const matchesSearch =
