@@ -3,6 +3,7 @@ export {};
 const User = require('./auth.model');
 const { registerUser, loginUser, refreshTokens } = require('./auth.service');
 const { success } = require('../../utils/response');
+const { getSideMenu } = require('../../constants/menu');
 
 async function register(ctx) {
   const payload = ctx.request.body;
@@ -14,7 +15,17 @@ async function register(ctx) {
 async function login(ctx) {
   const { email, password } = ctx.request.body;
   const { user, accessToken, refreshToken } = await loginUser({ email, password });
-  ctx.body = success({ user: { id: user._id, email: user.email, role: user.role, tenantId: user.tenantId }, accessToken, refreshToken }, 'Login successful');
+  ctx.body = success({
+    user: {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+      tenantId: user.tenantId
+    },
+    sideMenu: getSideMenu(user.role),
+    accessToken,
+    refreshToken
+  }, 'Login successful');
 }
 
 async function refresh(ctx) {

@@ -55,17 +55,18 @@ async function createUsers(tenants) {
   return { credentials, usersByTenant };
 }
 
-async function createProfiles(tenants, usersByTenant) {
+async function createProfiles(tenants, usersByTenant, departmentsByTenant) {
   const doctorsByTenant = new Map();
   const staffByTenant = new Map();
   const patientsByTenant = new Map();
 
   for (const [tenantIndex, tenant] of tenants.entries()) {
     const users = usersByTenant.get(String(tenant._id));
+    const departments = departmentsByTenant.get(String(tenant._id));
     const slug = tenant.metadata.seedKey.replace('hms-demo-', '');
     const doctors = await Doctor.create([
-      { name: `Dr. Asha ${tenantIndex + 1}`, specialization: 'Cardiology', phone: `+91980010${tenantIndex}01`, email: emailFor(slug, 'doctor', 1), userId: users.doctor1._id, tenantId: tenant._id },
-      { name: `Dr. Vikram ${tenantIndex + 1}`, specialization: 'Pediatrics', phone: `+91980010${tenantIndex}02`, email: emailFor(slug, 'doctor', 2), userId: users.doctor2._id, tenantId: tenant._id }
+      { name: `Dr. Asha ${tenantIndex + 1}`, specialization: 'Cardiology', departmentId: departments[0]._id, fees: 1500, status: 'active', availabilityDate: new Date(), phone: `+91980010${tenantIndex}01`, email: emailFor(slug, 'doctor', 1), userId: users.doctor1._id, tenantId: tenant._id },
+      { name: `Dr. Vikram ${tenantIndex + 1}`, specialization: 'Pediatrics', departmentId: departments[1]._id, fees: 1200, status: 'active', availabilityDate: new Date(), phone: `+91980010${tenantIndex}02`, email: emailFor(slug, 'doctor', 2), userId: users.doctor2._id, tenantId: tenant._id }
     ]);
     const staff = await Staff.create([
       { name: `Riya Reception ${tenantIndex + 1}`, role: 'receptionist', phone: `+91980020${tenantIndex}01`, email: emailFor(slug, 'staff', 1), tenantId: tenant._id },

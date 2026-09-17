@@ -2,6 +2,7 @@ export {};
 
 const Doctor = require('./doctor.model');
 const User = require('../auth/auth.model');
+const { getDepartmentForTenant } = require('../department/department.service');
 const { calculateSkip } = require('../../utils/pagination');
 
 async function validateDoctorUser(userId, tenantId) {
@@ -31,6 +32,9 @@ async function validateDoctorUser(userId, tenantId) {
 
 async function createDoctor(data) {
   await validateDoctorUser(data.userId, data.tenantId);
+  if (data.departmentId) {
+    await getDepartmentForTenant(data.departmentId, data.tenantId);
+  }
   return Doctor.create(data);
 }
 
@@ -38,7 +42,8 @@ async function listDoctors(tenantId, page = 1, limit = 20) {
   const skip = calculateSkip(page, limit);
   const [doctors, total] = await Promise.all([
     Doctor.find({ tenantId })
-      .select('name specialization phone email userId createdAt')
+      .select('name specialization phone email departmentId fees status availabilityDate userId createdAt')
+      .populate('departmentId', 'name code')
       .populate('userId', 'email')
       .lean()
       .sort({ createdAt: -1 })
@@ -60,6 +65,7 @@ async function listDoctors(tenantId, page = 1, limit = 20) {
 
 async function getDoctorById(id, tenantId) {
   const doctor = await Doctor.findOne({ _id: id, tenantId })
+    .populate('departmentId', 'name code')
     .populate('userId', 'email')
     .lean();
 
@@ -80,7 +86,7 @@ async function updateDoctor(id, tenantId, data) {
     throw err;
   }
 
-  const allowedFields = ['name', 'specialization', 'phone', 'email', 'userId'];
+  const allowedFields = ['name', 'specialization', 'phone', 'email', 'departmentId', 'fees', 'status', 'availabilityDate', 'userId'];
   const update: any = {};
 
   for (const field of allowedFields) {
@@ -96,12 +102,15 @@ async function updateDoctor(id, tenantId, data) {
   if (update.userId !== undefined) {
     await validateDoctorUser(update.userId, tenantId);
   }
+  if (update.departmentId !== undefined && update.departmentId !== null) {
+    await getDepartmentForTenant(update.departmentId, tenantId);
+  }
 
   const updated = await Doctor.findOneAndUpdate(
     { _id: id, tenantId },
     { $set: update },
     { new: true, runValidators: true }
-  ).populate('userId', 'email');
+  ).populate('departmentId', 'name code').populate('userId', 'email');
 
   if (!updated) {
     const err = new Error('Doctor not found');

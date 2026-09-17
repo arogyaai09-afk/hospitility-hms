@@ -59,6 +59,7 @@ var bedRoutes = require("./src/modules/bed/bed.routes");
 var emergencyRoutes = require("./src/modules/emergency/emergency.routes");
 var invoiceRoutes = require("./src/modules/invoice/invoice.routes");
 var taxRoutes = require("./src/modules/tax/tax.routes");
+var analyticsRoutes = require("./src/modules/analytics/analytics.routes");
 var app = new Koa();
 var router = new Router({ prefix: '/api/v1' });
 app.use(logger());
@@ -83,6 +84,7 @@ router.use(appointmentRoutes.routes());
 router.use(admissionRoutes.routes());
 router.use(dischargeRoutes.routes());
 router.use(invoiceRoutes.routes());
+router.use(analyticsRoutes.routes());
 app.use(router.routes()).use(router.allowedMethods());
 ;
 connectDB()

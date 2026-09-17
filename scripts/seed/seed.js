@@ -21,9 +21,11 @@ const Discharge = require('../../src/modules/discharge/discharge.model');
 const Invoice = require('../../src/modules/invoice/invoice.model');
 const Payment = require('../../src/modules/invoice/payment.model');
 const Tax = require('../../src/modules/tax/tax.model');
+const Department = require('../../src/modules/department/department.model');
 const { TENANT_FIXTURES, upsertTenants } = require('./tenants');
 const { DEFAULT_PASSWORD, createUsers, createProfiles } = require('./users');
 const { createBusinessData } = require('./business');
+const { createDepartments } = require('./departments');
 
 const SEED_EMAILS = [
   'admin@hms-demo.example.test',
@@ -50,6 +52,7 @@ async function clearSeedData(tenants) {
     Appointment.deleteMany(tenantFilter),
     Bed.deleteMany(tenantFilter),
     Tax.deleteMany(tenantFilter),
+    Department.deleteMany(tenantFilter),
     Doctor.deleteMany(tenantFilter),
     Staff.deleteMany(tenantFilter),
     Patient.deleteMany(tenantFilter),
@@ -79,7 +82,8 @@ async function seed() {
   const tenants = await upsertTenants();
   await clearSeedData(tenants);
   const { credentials, usersByTenant } = await createUsers(tenants);
-  const profiles = await createProfiles(tenants, usersByTenant);
+  const departmentsByTenant = await createDepartments(tenants);
+  const profiles = await createProfiles(tenants, usersByTenant, departmentsByTenant);
   const summary = await createBusinessData(tenants, profiles, usersByTenant);
 
   console.log(`Tenants: ${tenants.length}`);

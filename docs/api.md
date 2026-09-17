@@ -348,6 +348,144 @@ Delete a doctor profile from the current tenant.
 }
 ```
 
+## Departments
+
+### GET /departments
+List departments for the current tenant.
+
+**Authorization:**
+- `admin`, `tenant`, `doctor`, or `staff` via `ACCESS_GROUPS.CLINICAL_OPERATIONS`
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Departments retrieved",
+  "data": [
+    {
+      "_id": "60d5ecb74b24c72b8c8b4575",
+      "name": "Cardiology",
+      "description": "Heart and vascular care",
+      "tenantId": "60d5ecb74b24c72b8c8b4568",
+      "createdAt": "2023-05-11T10:00:00.000Z"
+    },
+    {
+      "_id": "60d5ecb74b24c72b8c8b4576",
+      "name": "Neurology",
+      "description": "Neurological and brain care",
+      "tenantId": "60d5ecb74b24c72b8c8b4568",
+      "createdAt": "2023-05-11T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+## Analytics / BI
+
+### GET /analytics
+Get the primary BI dashboard overview for the current tenant and user role.
+
+**Authorization:**
+- Any authenticated user with dashboard access via `authorize()`.
+
+**Query Parameters:**
+- `period` (optional): `today`, `weekly`, `monthly`, `quarterly`, `yearly`, `custom`
+- `department` (optional): department filter
+- `doctor` (optional): doctor filter
+- `status` (optional): appointment status filter
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "title": "Business Intelligence Overview",
+    "period": "weekly",
+    "filters": [
+      {
+        "key": "period",
+        "label": "Period",
+        "value": "weekly",
+        "options": ["Weekly", "Monthly", "Quarterly", "Yearly", "Custom"]
+      },
+      {
+        "key": "department",
+        "label": "Department",
+        "value": "All",
+        "options": ["All", "Cardiology", "Radiology", "Dental Surgery", "Orthopaedics", "General Medicine"]
+      }
+    ],
+    "kpis": [
+      {
+        "label": "Total Patients",
+        "value": "638",
+        "delta": "+12.4%",
+        "type": "primary"
+      },
+      {
+        "label": "Appointments",
+        "value": "2,184",
+        "delta": "+8.7%",
+        "type": "info"
+      }
+    ],
+    "popularDoctors": [
+      {
+        "initials": "AM",
+        "name": "Dr. Alex Morgan",
+        "specialty": "Cardiologist",
+        "bookings": 258
+      }
+    ],
+    "topDepartments": [
+      { "name": "Cardiology", "count": 214, "color": "#1f7ae0" },
+      { "name": "Neurology", "count": 150, "color": "#24c789" }
+    ],
+    "doctorsSchedule": [
+      {
+        "initials": "SJ",
+        "name": "Dr. Sarah Johnson",
+        "specialty": "Orthopedic Surgeon",
+        "available": 48,
+        "unavailable": 28,
+        "leave": 12
+      }
+    ],
+    "incomeByTreatment": [
+      {
+        "treatment": "Cardiology",
+        "appointments": 4,
+        "value": 5985
+      }
+    ],
+    "appointmentsTable": [
+      {
+        "doctor": "Dr. Sarah Johnson",
+        "patient": "Alice Turner",
+        "date": "2026-09-17",
+        "time": "09:00 AM",
+        "mode": "In Person",
+        "status": "Confirmed"
+      }
+    ],
+    "reports": [
+      { "key": "dashboard-overview", "label": "Dashboard Overview", "type": "summary" },
+      { "key": "doctor-performance", "label": "Doctor Performance", "type": "trend" }
+    ],
+    "tabs": ["Overview", "Doctors", "Departments", "Revenue", "Appointments"]
+  }
+}
+```
+
+### GET /analytics/overview
+Alias endpoint for the BI overview data.
+
+**Authorization:**
+- Any authenticated user with dashboard access via `authorize()`.
+
+**Response:**
+Same structure as `GET /analytics`.
+
 ## Patients
 
 ### GET /patients
