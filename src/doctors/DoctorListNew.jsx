@@ -54,6 +54,7 @@ const DoctorList = () => {
 
   return (
     <div className="doctors-page">
+      
       <div className="page-header">
         <div>
           <h1>Doctors</h1>

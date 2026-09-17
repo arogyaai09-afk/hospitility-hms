@@ -1,8 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { createStaff } from './api/staff';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test('staff API exposes createStaff helper for the staff add flow', async () => {
+  expect(typeof createStaff).toBe('function');
 });

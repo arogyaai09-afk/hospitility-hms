@@ -1,53 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import PersonIcon from "@mui/icons-material/Person";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { createPatient } from "../api/patients";
+import { getDoctors } from "../api/doctors";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
-const DOCTORS = [
-  "Dr. Mick Thompson",  "Dr. Sarah Johnson", "Dr. Emily Carter",
-  "Dr. David Lee",      "Dr. Anna Kim",      "Dr. John Smith",
-  "Dr. Lisa White",     "Dr. Patricia Brown","Dr. Rachel Green",
-];
-const GENDERS      = ["Male", "Female", "Other"];
+const GENDERS = ["Male", "Female", "Other"];
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
-const STATUSES     = ["Available", "Unavailable"];
-const COUNTRIES    = ["United States", "United Kingdom", "India", "Canada", "Australia"];
-const STATES       = ["California", "New York", "Texas", "Florida", "Illinois", "Washington", "Arizona"];
-const CITIES       = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Seattle", "Miami"];
+const STATUSES = ["Available", "Unavailable"];
+const COUNTRIES = ["United States", "United Kingdom", "India", "Canada", "Australia"];
+const STATES = ["California", "New York", "Texas", "Florida", "Illinois", "Washington", "Arizona"];
+const CITIES = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Seattle", "Miami"];
 const COUNTRY_CODES = [
-  { code: "+1",  flag: "🇺🇸", label: "US" },
+  { code: "+1", flag: "🇺🇸", label: "US" },
   { code: "+44", flag: "🇬🇧", label: "GB" },
   { code: "+91", flag: "🇮🇳", label: "IN" },
   { code: "+61", flag: "🇦🇺", label: "AU" },
-  { code: "+1",  flag: "🇨🇦", label: "CA" },
+  { code: "+1", flag: "🇨🇦", label: "CA" },
 ];
 
 // ─── VALIDATION ───────────────────────────────────────────────────────────────
 function validate(form) {
   const e = {};
-  if (!form.firstName.trim())   e.firstName   = "First name is required";
-  if (!form.lastName.trim())    e.lastName    = "Last name is required";
-  if (!form.phone.trim())       e.phone       = "Phone number is required";
+  if (!form.firstName.trim()) e.firstName = "First name is required";
+  if (!form.lastName.trim()) e.lastName = "Last name is required";
+  if (!form.phone.trim()) e.phone = "Phone number is required";
   else if (!/^\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{4}$/.test(form.phone.trim()))
     e.phone = "Enter a valid phone number";
-  if (!form.email.trim())       e.email       = "Email address is required";
+  if (!form.email.trim()) e.email = "Email address is required";
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
     e.email = "Enter a valid email address";
-  if (!form.primaryDoctor)      e.primaryDoctor = "Primary doctor is required";
-  if (!form.dob)                e.dob           = "Date of birth is required";
-  if (!form.gender)             e.gender        = "Gender is required";
-  if (!form.bloodGroup)         e.bloodGroup    = "Blood group is required";
-  if (!form.status)             e.status        = "Status is required";
-  if (!form.address1.trim())    e.address1      = "Address 1 is required";
-  if (!form.address2.trim())    e.address2      = "Address 2 is required";
-  if (!form.country)            e.country       = "Country is required";
-  if (!form.state)              e.state         = "State is required";
-  if (!form.city)               e.city          = "City is required";
-  if (!form.pincode.trim())     e.pincode       = "Pincode is required";
+  if (!form.primaryDoctor) e.primaryDoctor = "Primary doctor is required";
+  if (!form.dob) e.dob = "Date of birth is required";
+  if (!form.gender) e.gender = "Gender is required";
+  if (!form.bloodGroup) e.bloodGroup = "Blood group is required";
+  if (!form.status) e.status = "Status is required";
+  if (!form.address1.trim()) e.address1 = "Address 1 is required";
+  if (!form.address2.trim()) e.address2 = "Address 2 is required";
+  if (!form.country) e.country = "Country is required";
+  if (!form.state) e.state = "State is required";
+  if (!form.city) e.city = "City is required";
+  if (!form.pincode.trim()) e.pincode = "Pincode is required";
   else if (!/^\d{4,10}$/.test(form.pincode.trim()))
     e.pincode = "Enter a valid pincode";
   return e;
@@ -83,9 +80,40 @@ export default function CreatePatient() {
     country: "", state: "", city: "", pincode: "",
   });
 
-  const [errors,      setErrors]      = useState({});
-  const [statusOpen,  setStatusOpen]  = useState(false);
-  const [ccOpen,      setCcOpen]      = useState(false);
+  const [errors, setErrors] = useState({});
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [ccOpen, setCcOpen] = useState(false);
+  const [doctors, setDoctors] = useState([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(true);
+
+  // Fetch doctors on mount
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        setDoctorsLoading(true);
+
+        const response = await getDoctors();
+
+        console.log("Doctors API response:", response);
+
+        if (response?.status === "success") {
+          const doctorList = response.data || [];
+
+          console.log("Doctors list for dropdown:", doctorList);
+          setDoctors(doctorList);
+        } else {
+          setDoctors([]);
+        }
+      } catch (error) {
+        console.error("Doctors fetch error:", error);
+        setDoctors([]);
+      } finally {
+        setDoctorsLoading(false);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
 
   // ── field updater ──
   const set = (field, val) => {
@@ -103,15 +131,38 @@ export default function CreatePatient() {
   };
 
   // ── submit ──
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const errs = validate(form);
     setErrors(errs);
-    if (Object.keys(errs).length === 0) {
-      alert("Patient added successfully!");
-      navigate("/patients");
-    } else {
+
+    if (Object.keys(errs).length !== 0) {
       const first = document.querySelector(".error");
-      if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (first) {
+        first.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+
+    try {
+      const response = await createPatient({
+        patientCode: `PT-${Date.now()}`,
+        name: `${form.firstName.trim()} ${form.lastName.trim()}`,
+        email: form.email.trim(),
+        phone: `${form.countryCode}${form.phone.trim()}`,
+        gender: form.gender.toLowerCase(),
+        dateOfBirth: form.dob,
+        address: `${form.address1.trim()}, ${form.address2.trim()}`,
+      });
+
+      console.log("Create patient response:", response);
+
+      if (response.status === "success") {
+        alert("Patient added successfully!");
+        navigate("/patients");
+      }
+    } catch (error) {
+      console.error("Create patient error:", error);
+      alert(error.message || "Failed to create patient");
     }
   };
 
@@ -244,8 +295,16 @@ export default function CreatePatient() {
                 value={form.primaryDoctor}
                 onChange={e => set("primaryDoctor", e.target.value)}
               >
-                <option value="">Select</option>
-                {DOCTORS.map(d => <option key={d}>{d}</option>)}
+                <option value="">
+                  {doctorsLoading ? "Loading doctors..." : "Select"}
+                </option>
+
+                {!doctorsLoading &&
+                  doctors.map((doctor) => (
+                    <option key={doctor._id} value={doctor._id}>
+                      {doctor.name}
+                    </option>
+                  ))}
               </select>
             </FormGroup>
 

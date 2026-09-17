@@ -170,6 +170,7 @@ export default function DoctorDetails() {
 
   return (
     <div className="doctor-details-page">
+      
 
       {/* Breadcrumb */}
       <div className="breadcrumb" onClick={() => navigate("/doctors")}>

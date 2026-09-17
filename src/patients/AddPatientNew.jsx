@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createPatient } from "../api/patients";
 import { ArrowBack } from "@mui/icons-material";
 import { createPatient } from "../api/patients";
 import "../assets/styles/patient.scss";
@@ -19,6 +20,8 @@ const AddPatient = () => {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -97,6 +100,7 @@ const AddPatient = () => {
 
   return (
     <div className="add-patient-page">
+      <div style={{ fontSize: "32px" }}>this is the connected one also</div>
       <div className="page-header">
         <button className="back-btn" onClick={() => navigate("/patients")}>
           <ArrowBack /> Back
@@ -121,7 +125,9 @@ const AddPatient = () => {
                   placeholder="Enter patient full name"
                   className={errors.name ? "input-error" : ""}
                 />
-                {errors.name && <span className="error-text">{errors.name}</span>}
+                {errors.name && (
+                  <span className="error-text">{errors.name}</span>
+                )}
               </div>
 
               <div className="form-group">
@@ -151,7 +157,9 @@ const AddPatient = () => {
                   placeholder="example@email.com"
                   className={errors.email ? "input-error" : ""}
                 />
-                {errors.email && <span className="error-text">{errors.email}</span>}
+                {errors.email && (
+                  <span className="error-text">{errors.email}</span>
+                )}
               </div>
 
               <div className="form-group">
@@ -165,7 +173,9 @@ const AddPatient = () => {
                   placeholder="+1 (555) 000-0000"
                   className={errors.phone ? "input-error" : ""}
                 />
-                {errors.phone && <span className="error-text">{errors.phone}</span>}
+                {errors.phone && (
+                  <span className="error-text">{errors.phone}</span>
+                )}
               </div>
             </div>
 
@@ -232,24 +242,22 @@ const AddPatient = () => {
           </div>
 
           {message && (
-            <div className={`message ${message.includes("success") ? "success" : "error"}`}>
+            <div
+              className={`message ${message.includes("success") ? "success" : "error"}`}
+            >
               {message}
             </div>
           )}
 
           <div className="form-actions">
-            <button 
-              type="button" 
-              className="btn-cancel" 
+            <button
+              type="button"
+              className="btn-cancel"
               onClick={() => navigate("/patients")}
             >
               Cancel
             </button>
-            <button 
-              type="submit" 
-              className="btn-submit" 
-              disabled={loading}
-            >
+            <button type="submit" className="btn-submit" disabled={loading}>
               {loading ? "Creating Patient..." : "Create Patient"}
             </button>
           </div>

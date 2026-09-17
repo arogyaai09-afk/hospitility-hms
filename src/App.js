@@ -1,19 +1,28 @@
+//app.js
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import Departments from "./pages/Departments";
+import Staff from "./pages/Staff";
+import AddStaff from "./pages/AddStaff";
 import "./assets/styles/main.scss";
 import Doctors from "./doctors/DoctorList";
 import AddDoctor from "./doctors/AddDoctor";
 import DoctorDetails from "./doctors/DoctorDetail";
+import EditDoctor from "./doctors/EditDoctor";
 import Patients from "./patients/PatientList";
 import CreatePatient from "./patients/AddPatient";
 import PatientDetail from "./patients/PatientDetail";
+import EditPatient from "./patients/EditPatient";
 import Appointments from "./appointments/AppointmentList";
 import NewAppointment from "./appointments/AddAppointment";
 import Admissions from "./admissions/AdmissionList";
+import AddAdmission from "./admissions/AddAdmission";
 import Emergencies from "./emergencies/EmergencyList";
+import AddEmergency from "./emergencies/AddEmergency";
 import Beds from "./beds/BedList";
+import AddBed from "./beds/AddBed";
 import Invoices from "./invoices/InvoiceList";
 import Services from "./sevices/serviceList";
 import Rooms from "./rooms/RoomList";
@@ -38,16 +47,21 @@ function App() {
 
             {/* Profile */}
             <Route path="profile" element={<Profile />} />
+            <Route path="departments" element={<Departments />} />
+            <Route path="staff" element={<Staff />} />
+            <Route path="staff/new" element={<AddStaff />} />
 
             {/* Doctor section */}
             <Route path="doctors" element={<Doctors />} />
             <Route path="doctors/add" element={<AddDoctor />} />
             <Route path="doctors/:id" element={<DoctorDetails />} />
+            <Route path="doctors/:id/edit" element={<EditDoctor />} />
 
             {/* Patient section */}
             <Route path="patients" element={<Patients />} />
             <Route path="patients/create" element={<CreatePatient />} />
             <Route path="patients/:id" element={<PatientDetail />} />
+            <Route path="patients/:id/edit" element={<EditPatient />} />
 
             {/* Appointment section */}
             <Route path="appointments" element={<Appointments />} />
@@ -55,12 +69,15 @@ function App() {
 
             {/* Admissions section */}
             <Route path="admissions" element={<Admissions />} />
+            <Route path="admissions/new" element={<AddAdmission />} />
 
             {/* Emergencies section */}
             <Route path="emergencies" element={<Emergencies />} />
+            <Route path="emergencies/new" element={<AddEmergency />} />
 
             {/* Beds section */}
             <Route path="beds" element={<Beds />} />
+            <Route path="beds/new" element={<AddBed />} />
 
             {/* Invoices section */}
             <Route path="invoices" element={<Invoices />} />

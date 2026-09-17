@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createDoctor } from "../api/doctors";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import PersonIcon from "@mui/icons-material/Person";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
@@ -10,69 +11,140 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CheckIcon from "@mui/icons-material/Check";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const DEPARTMENTS = ["Cardiology", "Orthopedics", "Pediatrics", "Gynecology", "Neurology", "Oncology", "Psychiatry", "Radiology", "Urology", "Pulmonology"];
-const DESIGNATIONS = ["Cardiologist", "Orthopedic Surgeon", "Pediatrician", "Gynecologist", "Neurosurgeon", "Oncologist", "Psychiatrist", "Radiologist", "Urologist", "Pulmonologist"];
+const DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+const DEPARTMENTS = [
+  "Cardiology",
+  "Orthopedics",
+  "Pediatrics",
+  "Gynecology",
+  "Neurology",
+  "Oncology",
+  "Psychiatry",
+  "Radiology",
+  "Urology",
+  "Pulmonology",
+];
+const DESIGNATIONS = [
+  "Cardiologist",
+  "Orthopedic Surgeon",
+  "Pediatrician",
+  "Gynecologist",
+  "Neurosurgeon",
+  "Oncologist",
+  "Psychiatrist",
+  "Radiologist",
+  "Urologist",
+  "Pulmonologist",
+];
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 const GENDERS = ["Male", "Female", "Other"];
-const COUNTRIES = ["United States", "United Kingdom", "India", "Canada", "Australia"];
+const COUNTRIES = [
+  "United States",
+  "United Kingdom",
+  "India",
+  "Canada",
+  "Australia",
+];
 const APPT_TYPES = ["Online", "In-Person", "Both"];
 const SESSIONS = ["Morning", "Afternoon", "Evening", "Night"];
 
 // ─── INITIAL STATES ───────────────────────────────────────────────────────────
 const initContact = {
-  profileImage: null, profilePreview: "",
-  name: "", username: "", phone: "", email: "",
-  dob: "", experience: "", department: "", designation: "",
-  licenseNumber: "", languageSpoken: "", bloodGroup: "", gender: "",
-  bio: "", featureOnWebsite: false,
+  profileImage: null,
+  profilePreview: "",
+  name: "",
+  username: "",
+  phone: "",
+  email: "",
+  dob: "",
+  experience: "",
+  department: "",
+  designation: "",
+  licenseNumber: "",
+  languageSpoken: "",
+  bloodGroup: "",
+  gender: "",
+  bio: "",
+  featureOnWebsite: false,
 };
 
 const initAddress = {
-  address1: "", address2: "",
-  country: "", city: "", state: "", pincode: "",
+  address1: "",
+  address2: "",
+  country: "",
+  city: "",
+  state: "",
+  pincode: "",
 };
 
-const initAvailability = DAYS.reduce((acc, day) => ({
-  ...acc,
-  [day]: [{ session: "", from: "03:05", to: "03:05" }],
-}), {});
+const initAvailability = DAYS.reduce(
+  (acc, day) => ({
+    ...acc,
+    [day]: [{ session: "", from: "03:05", to: "03:05" }],
+  }),
+  {},
+);
 
 const initAppointment = {
-  type: "", advanceBookingDays: "", durationDays: "", durationMins: "",
-  consultationCharge: "", maxBookingsPerSlot: "", displayOnBooking: false,
+  type: "",
+  advanceBookingDays: "",
+  durationDays: "",
+  durationMins: "",
+  consultationCharge: "",
+  maxBookingsPerSlot: "",
+  displayOnBooking: false,
 };
 
 const initEducation = [{ degree: "", university: "", from: "", to: "" }];
-const initAwards    = [{ name: "", from: "" }];
-const initCerts     = [{ name: "", from: "" }];
+const initAwards = [{ name: "", from: "" }];
+const initCerts = [{ name: "", from: "" }];
 
 // ─── VALIDATION ───────────────────────────────────────────────────────────────
 function validateContact(data) {
   const errs = {};
-  if (!data.name.trim())         errs.name         = "Name is required";
-  if (!data.username.trim())     errs.username     = "Username is required";
-  if (!data.phone.trim())        errs.phone        = "Phone number is required";
-  else if (!/^\+?[\d\s\-]{7,15}$/.test(data.phone)) errs.phone = "Invalid phone number";
-  if (!data.email.trim())        errs.email        = "Email is required";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) errs.email = "Invalid email address";
-  if (!data.dob)                 errs.dob          = "Date of birth is required";
-  if (!data.experience.trim())   errs.experience   = "Year of experience is required";
-  if (!data.department)          errs.department   = "Department is required";
-  if (!data.designation)         errs.designation  = "Designation is required";
-  if (!data.licenseNumber.trim()) errs.licenseNumber = "License number is required";
-  if (!data.bloodGroup)          errs.bloodGroup   = "Blood group is required";
-  if (!data.gender)              errs.gender       = "Gender is required";
+
+  if (!data.name.trim()) {
+    errs.name = "Name is required";
+  }
+
+  if (!data.phone.trim()) {
+    errs.phone = "Phone number is required";
+  } else if (!/^\+?[\d\s\-]{7,15}$/.test(data.phone)) {
+    errs.phone = "Invalid phone number";
+  }
+
+  if (!data.email.trim()) {
+    errs.email = "Email is required";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    errs.email = "Invalid email address";
+  }
+
+  if (!data.department) {
+    errs.department = "Department is required";
+  }
+
+  if (!data.designation) {
+    errs.designation = "Designation is required";
+  }
+
   return errs;
 }
 
 function validateAddress(data) {
   const errs = {};
   if (!data.address1.trim()) errs.address1 = "Address is required";
-  if (!data.country)         errs.country  = "Country is required";
-  if (!data.city)            errs.city     = "City is required";
-  if (!data.state)           errs.state    = "State is required";
-  if (!data.pincode.trim())  errs.pincode  = "Pincode is required";
+  if (!data.country) errs.country = "Country is required";
+  if (!data.city) errs.city = "City is required";
+  if (!data.state) errs.state = "State is required";
+  if (!data.pincode.trim()) errs.pincode = "Pincode is required";
   else if (!/^\d{4,10}$/.test(data.pincode)) errs.pincode = "Invalid pincode";
   return errs;
 }
@@ -80,8 +152,10 @@ function validateAddress(data) {
 function validateAppointment(data) {
   const errs = {};
   if (!data.type) errs.type = "Appointment type is required";
-  if (!data.consultationCharge.trim()) errs.consultationCharge = "Consultation charge is required";
-  else if (isNaN(data.consultationCharge)) errs.consultationCharge = "Must be a number";
+  if (!data.consultationCharge.trim())
+    errs.consultationCharge = "Consultation charge is required";
+  else if (isNaN(data.consultationCharge))
+    errs.consultationCharge = "Must be a number";
   return errs;
 }
 
@@ -91,7 +165,8 @@ function FormGroup({ label, required, error, children }) {
     <div className="form-group">
       {label && (
         <label>
-          {label}{required && <span className="req">*</span>}
+          {label}
+          {required && <span className="req">*</span>}
         </label>
       )}
       {children}
@@ -108,13 +183,22 @@ function InputField({ label, required, error, type = "text", ...props }) {
   );
 }
 
-function SelectField({ label, required, error, options, placeholder = "Select", ...props }) {
+function SelectField({
+  label,
+  required,
+  error,
+  options,
+  placeholder = "Select",
+  ...props
+}) {
   return (
     <FormGroup label={label} required={required} error={error}>
       <select className={error ? "error" : ""} {...props}>
         <option value="">{placeholder}</option>
-        {options.map(opt => (
-          <option key={opt} value={opt}>{opt}</option>
+        {options.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
         ))}
       </select>
     </FormGroup>
@@ -126,35 +210,37 @@ export default function AddDoctor() {
   const navigate = useNavigate();
 
   // Form state
-  const [contact,      setContact]      = useState(initContact);
-  const [address,      setAddress]      = useState(initAddress);
+  const [contact, setContact] = useState(initContact);
+  const [address, setAddress] = useState(initAddress);
   const [availability, setAvailability] = useState(initAvailability);
-  const [activeDay,    setActiveDay]    = useState("Thursday");
-  const [appointment,  setAppointment]  = useState(initAppointment);
-  const [education,    setEducation]    = useState(initEducation);
-  const [awards,       setAwards]       = useState(initAwards);
-  const [certs,        setCerts]        = useState(initCerts);
+  const [activeDay, setActiveDay] = useState("Thursday");
+  const [appointment, setAppointment] = useState(initAppointment);
+  const [education, setEducation] = useState(initEducation);
+  const [awards, setAwards] = useState(initAwards);
+  const [certs, setCerts] = useState(initCerts);
 
   // Error state
-  const [contactErrors,    setContactErrors]    = useState({});
-  const [addressErrors,    setAddressErrors]    = useState({});
-  const [appointmentErrors,setAppointmentErrors]= useState({});
-  const [submitted,        setSubmitted]        = useState(false);
+  const [contactErrors, setContactErrors] = useState({});
+  const [addressErrors, setAddressErrors] = useState({});
+  const [appointmentErrors, setAppointmentErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   // ── Handlers ──
   const handleContact = (field, val) => {
-    setContact(p => ({ ...p, [field]: val }));
-    if (contactErrors[field]) setContactErrors(p => ({ ...p, [field]: "" }));
+    setContact((p) => ({ ...p, [field]: val }));
+    if (contactErrors[field]) setContactErrors((p) => ({ ...p, [field]: "" }));
   };
 
   const handleAddress = (field, val) => {
-    setAddress(p => ({ ...p, [field]: val }));
-    if (addressErrors[field]) setAddressErrors(p => ({ ...p, [field]: "" }));
+    setAddress((p) => ({ ...p, [field]: val }));
+    if (addressErrors[field]) setAddressErrors((p) => ({ ...p, [field]: "" }));
   };
 
   const handleAppointment = (field, val) => {
-    setAppointment(p => ({ ...p, [field]: val }));
-    if (appointmentErrors[field]) setAppointmentErrors(p => ({ ...p, [field]: "" }));
+    setAppointment((p) => ({ ...p, [field]: val }));
+    if (appointmentErrors[field])
+      setAppointmentErrors((p) => ({ ...p, [field]: "" }));
   };
 
   // Profile image
@@ -162,65 +248,141 @@ export default function AddDoctor() {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => setContact(p => ({ ...p, profileImage: file, profilePreview: reader.result }));
+    reader.onload = () =>
+      setContact((p) => ({
+        ...p,
+        profileImage: file,
+        profilePreview: reader.result,
+      }));
     reader.readAsDataURL(file);
   };
 
   // ── Availability slots ──
   const addSlot = (day) =>
-    setAvailability(p => ({ ...p, [day]: [...p[day], { session: "", from: "03:05", to: "03:05" }] }));
+    setAvailability((p) => ({
+      ...p,
+      [day]: [...p[day], { session: "", from: "03:05", to: "03:05" }],
+    }));
 
   const removeSlot = (day, idx) =>
-    setAvailability(p => ({ ...p, [day]: p[day].filter((_, i) => i !== idx) }));
+    setAvailability((p) => ({
+      ...p,
+      [day]: p[day].filter((_, i) => i !== idx),
+    }));
 
   const updateSlot = (day, idx, field, val) =>
-    setAvailability(p => ({
+    setAvailability((p) => ({
       ...p,
-      [day]: p[day].map((s, i) => i === idx ? { ...s, [field]: val } : s),
+      [day]: p[day].map((s, i) => (i === idx ? { ...s, [field]: val } : s)),
     }));
 
   const applyAll = () => {
     const template = availability[activeDay];
-    const updated = DAYS.reduce((acc, d) => ({ ...acc, [d]: template.map(s => ({ ...s })) }), {});
+    const updated = DAYS.reduce(
+      (acc, d) => ({ ...acc, [d]: template.map((s) => ({ ...s })) }),
+      {},
+    );
     setAvailability(updated);
   };
 
   // ── Dynamic rows ──
-  const addRow    = (setter, blank) => setter(p => [...p, { ...blank }]);
-  const removeRow = (setter, idx)   => setter(p => p.filter((_, i) => i !== idx));
+  const addRow = (setter, blank) => setter((p) => [...p, { ...blank }]);
+  const removeRow = (setter, idx) =>
+    setter((p) => p.filter((_, i) => i !== idx));
   const updateRow = (setter, idx, field, val) =>
-    setter(p => p.map((r, i) => i === idx ? { ...r, [field]: val } : r));
+    setter((p) => p.map((r, i) => (i === idx ? { ...r, [field]: val } : r)));
 
   // ── Submit ──
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const cErr = validateContact(contact);
-    const aErr = validateAddress(address);
-    const apErr = validateAppointment(appointment);
+
+    // Address and appointment sections will be in UI,
+    // but not required for backend Doctor API.
+    const aErr = {};
+    const apErr = {};
 
     setContactErrors(cErr);
     setAddressErrors(aErr);
     setAppointmentErrors(apErr);
-    setSubmitted(true);
+    setSubmitError("");
 
-    if (Object.keys(cErr).length === 0 && Object.keys(aErr).length === 0 && Object.keys(apErr).length === 0) {
-      alert("Doctor added successfully!");
-      navigate("/doctors");
-    } else {
-      // Scroll to first error
+
+    if (Object.keys(cErr).length > 0) {
       const firstErr = document.querySelector(".error");
-      if (firstErr) firstErr.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      if (firstErr) {
+        firstErr.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      /*
+       * Backend Doctor API only needs:
+       * name
+       * specialization
+       * phone
+       * email
+       *
+       * Department and Designation are the same concept
+       * in our frontend, so Designation is sent as specialization.
+       */
+      const doctorData = {
+        name: contact.name.trim(),
+        specialization: contact.designation || contact.department,
+        phone: contact.phone.trim(),
+        email: contact.email.trim(),
+        fees: Number(appointment.consultationCharge),
+      };
+
+      await createDoctor(doctorData);
+
+      alert("Doctor added successfully!");
+
+      navigate("/doctors");
+    } catch (error) {
+      console.error("Create doctor error:", error);
+
+      setSubmitError(
+        error?.message ||
+          error?.error ||
+          "Failed to add doctor. Please try again.",
+      );
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div className="add-doctor-page">
-
       {/* Breadcrumb */}
       <div className="breadcrumb">
         <span className="bc-back" onClick={() => navigate("/doctors")}>
           <ArrowBackIosNewIcon /> Doctor
         </span>
       </div>
+
+      {submitError && (
+        <div
+          className="alert alert-error"
+          style={{
+            marginBottom: "15px",
+          }}
+        >
+          {submitError}
+        </div>
+      )}
 
       <div className="form-card">
         <div className="form-card-title">New Doctor</div>
@@ -235,45 +397,54 @@ export default function AddDoctor() {
           <div className="profile-upload">
             <span className="upload-label">Profile Image</span>
             <div className="upload-circle">
-              {contact.profilePreview
-                ? <img src={contact.profilePreview} alt="preview" />
-                : <PersonIcon className="upload-icon" />
-              }
-              <div className="upload-cam"><CameraAltIcon /></div>
+              {contact.profilePreview ? (
+                <img src={contact.profilePreview} alt="preview" />
+              ) : (
+                <PersonIcon className="upload-icon" />
+              )}
+              <div className="upload-cam">
+                <CameraAltIcon />
+              </div>
               <input type="file" accept="image/*" onChange={handleImage} />
             </div>
           </div>
 
           <div className="form-row">
             <InputField
-              label="Name" required
+              label="Name"
+              required
               placeholder="Enter full name"
               value={contact.name}
-              onChange={e => handleContact("name", e.target.value)}
+              onChange={(e) => handleContact("name", e.target.value)}
               error={contactErrors.name}
             />
             <InputField
-              label="Username" required
+              label="Username"
+              required
               placeholder="Enter username"
               value={contact.username}
-              onChange={e => handleContact("username", e.target.value)}
+              onChange={(e) => handleContact("username", e.target.value)}
               error={contactErrors.username}
             />
           </div>
 
           <div className="form-row">
             <InputField
-              label="Phone Number" required type="tel"
+              label="Phone Number"
+              required
+              type="tel"
               placeholder="Enter phone number"
               value={contact.phone}
-              onChange={e => handleContact("phone", e.target.value)}
+              onChange={(e) => handleContact("phone", e.target.value)}
               error={contactErrors.phone}
             />
             <InputField
-              label="Email Address" required type="email"
+              label="Email Address"
+              required
+              type="email"
               placeholder="Enter email address"
               value={contact.email}
-              onChange={e => handleContact("email", e.target.value)}
+              onChange={(e) => handleContact("email", e.target.value)}
               error={contactErrors.email}
             />
           </div>
@@ -285,66 +456,75 @@ export default function AddDoctor() {
                   type="date"
                   className={contactErrors.dob ? "error" : ""}
                   value={contact.dob}
-                  onChange={e => handleContact("dob", e.target.value)}
+                  onChange={(e) => handleContact("dob", e.target.value)}
                 />
-                <span className="input-icon"><CalendarTodayIcon /></span>
+                <span className="input-icon">
+                  <CalendarTodayIcon />
+                </span>
               </div>
             </FormGroup>
             <InputField
-              label="Year Of Experience" required type="number"
+              label="Year Of Experience"
+              required
+              type="number"
               placeholder="e.g. 5"
               value={contact.experience}
-              onChange={e => handleContact("experience", e.target.value)}
+              onChange={(e) => handleContact("experience", e.target.value)}
               error={contactErrors.experience}
             />
           </div>
 
           <div className="form-row">
             <SelectField
-              label="Department" required
+              label="Department"
+              required
               options={DEPARTMENTS}
               value={contact.department}
-              onChange={e => handleContact("department", e.target.value)}
+              onChange={(e) => handleContact("department", e.target.value)}
               error={contactErrors.department}
             />
             <SelectField
-              label="Designation" required
+              label="Designation"
+              required
               options={DESIGNATIONS}
               value={contact.designation}
-              onChange={e => handleContact("designation", e.target.value)}
+              onChange={(e) => handleContact("designation", e.target.value)}
               error={contactErrors.designation}
             />
           </div>
 
           <div className="form-row">
             <InputField
-              label="Medical License Number" required
+              label="Medical License Number"
+              required
               placeholder="Enter license number"
               value={contact.licenseNumber}
-              onChange={e => handleContact("licenseNumber", e.target.value)}
+              onChange={(e) => handleContact("licenseNumber", e.target.value)}
               error={contactErrors.licenseNumber}
             />
             <InputField
               label="Language Spoken"
               placeholder="e.g. English, French"
               value={contact.languageSpoken}
-              onChange={e => handleContact("languageSpoken", e.target.value)}
+              onChange={(e) => handleContact("languageSpoken", e.target.value)}
             />
           </div>
 
           <div className="form-row">
             <SelectField
-              label="Blood Group" required
+              label="Blood Group"
+              required
               options={BLOOD_GROUPS}
               value={contact.bloodGroup}
-              onChange={e => handleContact("bloodGroup", e.target.value)}
+              onChange={(e) => handleContact("bloodGroup", e.target.value)}
               error={contactErrors.bloodGroup}
             />
             <SelectField
-              label="Gender" required
+              label="Gender"
+              required
               options={GENDERS}
               value={contact.gender}
-              onChange={e => handleContact("gender", e.target.value)}
+              onChange={(e) => handleContact("gender", e.target.value)}
               error={contactErrors.gender}
             />
           </div>
@@ -354,7 +534,7 @@ export default function AddDoctor() {
               <textarea
                 placeholder="About Doctor"
                 value={contact.bio}
-                onChange={e => handleContact("bio", e.target.value)}
+                onChange={(e) => handleContact("bio", e.target.value)}
               />
             </FormGroup>
           </div>
@@ -362,9 +542,13 @@ export default function AddDoctor() {
           {/* Feature on website toggle */}
           <div
             className="feature-toggle"
-            onClick={() => handleContact("featureOnWebsite", !contact.featureOnWebsite)}
+            onClick={() =>
+              handleContact("featureOnWebsite", !contact.featureOnWebsite)
+            }
           >
-            <div className={`toggle-box ${contact.featureOnWebsite ? "checked" : ""}`}>
+            <div
+              className={`toggle-box ${contact.featureOnWebsite ? "checked" : ""}`}
+            >
               {contact.featureOnWebsite && <CheckIcon />}
             </div>
             <span>Feature On Website</span>
@@ -379,50 +563,68 @@ export default function AddDoctor() {
 
           <div className="form-row">
             <InputField
-              label="Address 1" required
+              label="Address 1"
+              required
               placeholder="Street address, P.O. box"
               value={address.address1}
-              onChange={e => handleAddress("address1", e.target.value)}
+              onChange={(e) => handleAddress("address1", e.target.value)}
               error={addressErrors.address1}
             />
             <InputField
               label="Address 2"
               placeholder="Apartment, suite, unit, building"
               value={address.address2}
-              onChange={e => handleAddress("address2", e.target.value)}
+              onChange={(e) => handleAddress("address2", e.target.value)}
             />
           </div>
 
           <div className="form-row">
             <SelectField
-              label="Country" required
+              label="Country"
+              required
               options={COUNTRIES}
               value={address.country}
-              onChange={e => handleAddress("country", e.target.value)}
+              onChange={(e) => handleAddress("country", e.target.value)}
               error={addressErrors.country}
             />
             <SelectField
-              label="City" required
-              options={["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"]}
+              label="City"
+              required
+              options={[
+                "New York",
+                "Los Angeles",
+                "Chicago",
+                "Houston",
+                "Phoenix",
+              ]}
               value={address.city}
-              onChange={e => handleAddress("city", e.target.value)}
+              onChange={(e) => handleAddress("city", e.target.value)}
               error={addressErrors.city}
             />
           </div>
 
           <div className="form-row">
             <SelectField
-              label="State" required
-              options={["California", "New York", "Texas", "Florida", "Illinois"]}
+              label="State"
+              required
+              options={[
+                "California",
+                "New York",
+                "Texas",
+                "Florida",
+                "Illinois",
+              ]}
               value={address.state}
-              onChange={e => handleAddress("state", e.target.value)}
+              onChange={(e) => handleAddress("state", e.target.value)}
               error={addressErrors.state}
             />
             <InputField
-              label="Pincode" required type="number"
+              label="Pincode"
+              required
+              type="number"
               placeholder="Enter pincode"
               value={address.pincode}
-              onChange={e => handleAddress("pincode", e.target.value)}
+              onChange={(e) => handleAddress("pincode", e.target.value)}
               error={addressErrors.pincode}
             />
           </div>
@@ -436,7 +638,7 @@ export default function AddDoctor() {
 
           {/* Day tabs */}
           <div className="avail-tabs">
-            {DAYS.map(day => (
+            {DAYS.map((day) => (
               <button
                 key={day}
                 className={`avail-tab ${activeDay === day ? "active" : ""}`}
@@ -461,10 +663,14 @@ export default function AddDoctor() {
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <select
                     value={slot.session}
-                    onChange={e => updateSlot(activeDay, idx, "session", e.target.value)}
+                    onChange={(e) =>
+                      updateSlot(activeDay, idx, "session", e.target.value)
+                    }
                   >
                     <option value="">Select</option>
-                    {SESSIONS.map(s => <option key={s}>{s}</option>)}
+                    {SESSIONS.map((s) => (
+                      <option key={s}>{s}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -473,9 +679,13 @@ export default function AddDoctor() {
                     <input
                       type="time"
                       value={slot.from}
-                      onChange={e => updateSlot(activeDay, idx, "from", e.target.value)}
+                      onChange={(e) =>
+                        updateSlot(activeDay, idx, "from", e.target.value)
+                      }
                     />
-                    <span className="input-icon"><AccessTimeIcon /></span>
+                    <span className="input-icon">
+                      <AccessTimeIcon />
+                    </span>
                   </div>
                 </div>
 
@@ -484,20 +694,30 @@ export default function AddDoctor() {
                     <input
                       type="time"
                       value={slot.to}
-                      onChange={e => updateSlot(activeDay, idx, "to", e.target.value)}
+                      onChange={(e) =>
+                        updateSlot(activeDay, idx, "to", e.target.value)
+                      }
                     />
-                    <span className="input-icon"><AccessTimeIcon /></span>
+                    <span className="input-icon">
+                      <AccessTimeIcon />
+                    </span>
                   </div>
                 </div>
 
                 <div className="slot-actions">
                   {idx === availability[activeDay].length - 1 && (
-                    <button className="slot-btn add" onClick={() => addSlot(activeDay)}>
+                    <button
+                      className="slot-btn add"
+                      onClick={() => addSlot(activeDay)}
+                    >
                       <AddIcon />
                     </button>
                   )}
                   {availability[activeDay].length > 1 && (
-                    <button className="slot-btn remove" onClick={() => removeSlot(activeDay, idx)}>
+                    <button
+                      className="slot-btn remove"
+                      onClick={() => removeSlot(activeDay, idx)}
+                    >
                       <DeleteIcon />
                     </button>
                   )}
@@ -506,7 +726,9 @@ export default function AddDoctor() {
             ))}
           </div>
 
-          <button className="btn-apply-all" onClick={applyAll}>Apply All</button>
+          <button className="btn-apply-all" onClick={applyAll}>
+            Apply All
+          </button>
         </div>
 
         {/* ══════════════════════════════════════════════════════
@@ -517,10 +739,11 @@ export default function AddDoctor() {
 
           <div className="form-row">
             <SelectField
-              label="Appointment Type" required
+              label="Appointment Type"
+              required
               options={APPT_TYPES}
               value={appointment.type}
-              onChange={e => handleAppointment("type", e.target.value)}
+              onChange={(e) => handleAppointment("type", e.target.value)}
               error={appointmentErrors.type}
             />
           </div>
@@ -531,7 +754,9 @@ export default function AddDoctor() {
               type="number"
               placeholder="Days"
               value={appointment.advanceBookingDays}
-              onChange={e => handleAppointment("advanceBookingDays", e.target.value)}
+              onChange={(e) =>
+                handleAppointment("advanceBookingDays", e.target.value)
+              }
             />
             <FormGroup label="Appointment Duration">
               <div className="duration-wrap">
@@ -539,14 +764,18 @@ export default function AddDoctor() {
                   type="number"
                   placeholder="Days"
                   value={appointment.durationDays}
-                  onChange={e => handleAppointment("durationDays", e.target.value)}
+                  onChange={(e) =>
+                    handleAppointment("durationDays", e.target.value)
+                  }
                 />
                 <span className="dur-label">Days</span>
                 <input
                   type="number"
                   placeholder="Mins"
                   value={appointment.durationMins}
-                  onChange={e => handleAppointment("durationMins", e.target.value)}
+                  onChange={(e) =>
+                    handleAppointment("durationMins", e.target.value)
+                  }
                 />
                 <span className="dur-label">Mins</span>
               </div>
@@ -554,17 +783,30 @@ export default function AddDoctor() {
           </div>
 
           <div className="form-row">
-            <FormGroup label="Consultation Charge" required error={appointmentErrors.consultationCharge}>
+            <FormGroup
+              label="Consultation Charge"
+              required
+              error={appointmentErrors.consultationCharge}
+            >
               <div className="input-icon-wrap">
                 <input
                   type="number"
                   placeholder="0"
-                  className={appointmentErrors.consultationCharge ? "error" : ""}
+                  className={
+                    appointmentErrors.consultationCharge ? "error" : ""
+                  }
                   style={{ paddingLeft: 28 }}
                   value={appointment.consultationCharge}
-                  onChange={e => handleAppointment("consultationCharge", e.target.value)}
+                  onChange={(e) =>
+                    handleAppointment("consultationCharge", e.target.value)
+                  }
                 />
-                <span className="input-icon" style={{ left: 10, right: "auto" }}>$</span>
+                <span
+                  className="input-icon"
+                  style={{ left: 10, right: "auto" }}
+                >
+                  $
+                </span>
               </div>
             </FormGroup>
             <InputField
@@ -572,15 +814,24 @@ export default function AddDoctor() {
               type="number"
               placeholder="e.g. 10"
               value={appointment.maxBookingsPerSlot}
-              onChange={e => handleAppointment("maxBookingsPerSlot", e.target.value)}
+              onChange={(e) =>
+                handleAppointment("maxBookingsPerSlot", e.target.value)
+              }
             />
           </div>
 
           <div
             className="feature-toggle"
-            onClick={() => handleAppointment("displayOnBooking", !appointment.displayOnBooking)}
+            onClick={() =>
+              handleAppointment(
+                "displayOnBooking",
+                !appointment.displayOnBooking,
+              )
+            }
           >
-            <div className={`toggle-box ${appointment.displayOnBooking ? "checked" : ""}`}>
+            <div
+              className={`toggle-box ${appointment.displayOnBooking ? "checked" : ""}`}
+            >
               {appointment.displayOnBooking && <CheckIcon />}
             </div>
             <span>Display on Booking Page</span>
@@ -599,34 +850,67 @@ export default function AddDoctor() {
                   label={idx === 0 ? "Educational Degree" : ""}
                   placeholder="Degree"
                   value={row.degree}
-                  onChange={e => updateRow(setEducation, idx, "degree", e.target.value)}
+                  onChange={(e) =>
+                    updateRow(setEducation, idx, "degree", e.target.value)
+                  }
                 />
                 <InputField
                   label={idx === 0 ? "University" : ""}
                   placeholder="University"
                   value={row.university}
-                  onChange={e => updateRow(setEducation, idx, "university", e.target.value)}
+                  onChange={(e) =>
+                    updateRow(setEducation, idx, "university", e.target.value)
+                  }
                 />
                 <FormGroup label={idx === 0 ? "From" : ""}>
                   <div className="input-icon-wrap">
-                    <input type="date" value={row.from} onChange={e => updateRow(setEducation, idx, "from", e.target.value)} />
-                    <span className="input-icon"><CalendarTodayIcon /></span>
+                    <input
+                      type="date"
+                      value={row.from}
+                      onChange={(e) =>
+                        updateRow(setEducation, idx, "from", e.target.value)
+                      }
+                    />
+                    <span className="input-icon">
+                      <CalendarTodayIcon />
+                    </span>
                   </div>
                 </FormGroup>
                 <FormGroup label={idx === 0 ? "To" : ""}>
                   <div className="input-icon-wrap">
-                    <input type="date" value={row.to} onChange={e => updateRow(setEducation, idx, "to", e.target.value)} />
-                    <span className="input-icon"><CalendarTodayIcon /></span>
+                    <input
+                      type="date"
+                      value={row.to}
+                      onChange={(e) =>
+                        updateRow(setEducation, idx, "to", e.target.value)
+                      }
+                    />
+                    <span className="input-icon">
+                      <CalendarTodayIcon />
+                    </span>
                   </div>
                 </FormGroup>
                 <div className="dr-actions">
                   {idx === education.length - 1 && (
-                    <button className="add-btn" onClick={() => addRow(setEducation, { degree: "", university: "", from: "", to: "" })}>
+                    <button
+                      className="add-btn"
+                      onClick={() =>
+                        addRow(setEducation, {
+                          degree: "",
+                          university: "",
+                          from: "",
+                          to: "",
+                        })
+                      }
+                    >
                       <AddIcon />
                     </button>
                   )}
                   {education.length > 1 && (
-                    <button className="remove-btn" onClick={() => removeRow(setEducation, idx)}>
+                    <button
+                      className="remove-btn"
+                      onClick={() => removeRow(setEducation, idx)}
+                    >
                       <DeleteIcon />
                     </button>
                   )}
@@ -648,22 +932,38 @@ export default function AddDoctor() {
                   label={idx === 0 ? "Name" : ""}
                   placeholder="Award name"
                   value={row.name}
-                  onChange={e => updateRow(setAwards, idx, "name", e.target.value)}
+                  onChange={(e) =>
+                    updateRow(setAwards, idx, "name", e.target.value)
+                  }
                 />
                 <FormGroup label={idx === 0 ? "From" : ""}>
                   <div className="input-icon-wrap">
-                    <input type="date" value={row.from} onChange={e => updateRow(setAwards, idx, "from", e.target.value)} />
-                    <span className="input-icon"><CalendarTodayIcon /></span>
+                    <input
+                      type="date"
+                      value={row.from}
+                      onChange={(e) =>
+                        updateRow(setAwards, idx, "from", e.target.value)
+                      }
+                    />
+                    <span className="input-icon">
+                      <CalendarTodayIcon />
+                    </span>
                   </div>
                 </FormGroup>
                 <div className="dr-actions">
                   {idx === awards.length - 1 && (
-                    <button className="add-btn" onClick={() => addRow(setAwards, { name: "", from: "" })}>
+                    <button
+                      className="add-btn"
+                      onClick={() => addRow(setAwards, { name: "", from: "" })}
+                    >
                       <AddIcon />
                     </button>
                   )}
                   {awards.length > 1 && (
-                    <button className="remove-btn" onClick={() => removeRow(setAwards, idx)}>
+                    <button
+                      className="remove-btn"
+                      onClick={() => removeRow(setAwards, idx)}
+                    >
                       <DeleteIcon />
                     </button>
                   )}
@@ -685,22 +985,38 @@ export default function AddDoctor() {
                   label={idx === 0 ? "Name" : ""}
                   placeholder="Certification name"
                   value={row.name}
-                  onChange={e => updateRow(setCerts, idx, "name", e.target.value)}
+                  onChange={(e) =>
+                    updateRow(setCerts, idx, "name", e.target.value)
+                  }
                 />
                 <FormGroup label={idx === 0 ? "From" : ""}>
                   <div className="input-icon-wrap">
-                    <input type="date" value={row.from} onChange={e => updateRow(setCerts, idx, "from", e.target.value)} />
-                    <span className="input-icon"><CalendarTodayIcon /></span>
+                    <input
+                      type="date"
+                      value={row.from}
+                      onChange={(e) =>
+                        updateRow(setCerts, idx, "from", e.target.value)
+                      }
+                    />
+                    <span className="input-icon">
+                      <CalendarTodayIcon />
+                    </span>
                   </div>
                 </FormGroup>
                 <div className="dr-actions">
                   {idx === certs.length - 1 && (
-                    <button className="add-btn" onClick={() => addRow(setCerts, { name: "", from: "" })}>
+                    <button
+                      className="add-btn"
+                      onClick={() => addRow(setCerts, { name: "", from: "" })}
+                    >
                       <AddIcon />
                     </button>
                   )}
                   {certs.length > 1 && (
-                    <button className="remove-btn" onClick={() => removeRow(setCerts, idx)}>
+                    <button
+                      className="remove-btn"
+                      onClick={() => removeRow(setCerts, idx)}
+                    >
                       <DeleteIcon />
                     </button>
                   )}
@@ -713,7 +1029,10 @@ export default function AddDoctor() {
 
       {/* ── FORM FOOTER ── */}
       <div className="form-footer">
-        <button className="btn-cancel-form" onClick={() => navigate("/doctors")}>
+        <button
+          className="btn-cancel-form"
+          onClick={() => navigate("/doctors")}
+        >
           Cancel
         </button>
         <button className="btn-submit" onClick={handleSubmit}>

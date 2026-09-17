@@ -1,20 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import ArrowBackIosNewIcon   from "@mui/icons-material/ArrowBackIosNew";
-import AddCircleOutlineIcon  from "@mui/icons-material/AddCircleOutline";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import CalendarTodayIcon     from "@mui/icons-material/CalendarToday";
-import AccessTimeIcon        from "@mui/icons-material/AccessTime";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import { getPatients } from "../api/patients";
+import { getDoctors } from "../api/doctors";
+import { createAppointment } from "../api/appointments";
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
-const PATIENTS    = ["Alberto Ripley","Susan Babin","Martin Lisa","Stella Mary","Carol Lam","Marsha Noland","Irma Armstrong","Ezra Belcher","Glen Lentz"];
-const DOCTORS     = ["Dr. Mick Thompson","Dr. Sarah Johnson","Dr. Emily Carter","Dr. David Lee","Dr. Anna Kim","Dr. John Smith","Dr. Lisa White","Dr. Patricia Brown"];
-const DEPARTMENTS = ["General Medicine","Pediatrics","Gynecology","Cardiology","Orthopedics","Neurology","Oncology","Psychiatry","Urology"];
-const APPT_TYPES  = ["In Person","Online"];
-const STATUSES    = ["Checked Out","Checked In","Cancelled","Schedule","Confirmed"];
+const PATIENTS = ["Alberto Ripley", "Susan Babin", "Martin Lisa", "Stella Mary", "Carol Lam", "Marsha Noland", "Irma Armstrong", "Ezra Belcher", "Glen Lentz"];
+const DOCTORS = ["Dr. Mick Thompson", "Dr. Sarah Johnson", "Dr. Emily Carter", "Dr. David Lee", "Dr. Anna Kim", "Dr. John Smith", "Dr. Lisa White", "Dr. Patricia Brown"];
+const DEPARTMENTS = ["General Medicine", "Pediatrics", "Gynecology", "Cardiology", "Orthopedics", "Neurology", "Oncology", "Psychiatry", "Urology"];
+const APPT_TYPES = ["OPD", "IPD", "Emergency"];
+const STATUSES = ["Checked Out", "Checked In", "Cancelled", "Schedule", "Confirmed"];
 
 // ─── CUSTOM SELECT ────────────────────────────────────────────────────────────
-function CustomSelect({ label, required, options, value, onChange, error, placeholder = "Select" }) {
+function CustomSelect({
+  label,
+  required,
+  options,
+  value,
+  onChange,
+  error,
+  placeholder = "Select",
+  dropUp = false,
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -41,10 +53,14 @@ function CustomSelect({ label, required, options, value, onChange, error, placeh
 
       {open && (
         <div style={{
-          position: "absolute", top: "calc(100% + 2px)", left: 0, right: 0,
+          position: "absolute",
+          top: dropUp ? "auto" : "calc(100% + 2px)",
+          bottom: dropUp ? "calc(100% + 2px)" : "auto",
+          left: 0,
+          right: 0,
           background: "white", border: "1px solid #e2e8f0",
           borderRadius: 8, boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
-          zIndex: 100, maxHeight: 200, overflowY: "auto",
+          zIndex: 9999, maxHeight: 200, overflowY: "auto",
         }}>
           <div
             style={{ padding: "9px 14px", fontSize: 13, color: "#94a3b8", cursor: "pointer" }}
@@ -80,14 +96,14 @@ function CustomSelect({ label, required, options, value, onChange, error, placeh
 // ─── VALIDATION ───────────────────────────────────────────────────────────────
 function validate(form) {
   const e = {};
-  if (!form.patient)           e.patient     = "Patient is required";
-  if (!form.department)        e.department  = "Department is required";
-  if (!form.doctor)            e.doctor      = "Doctor is required";
-  if (!form.appointmentType)   e.appointmentType = "Appointment type is required";
-  if (!form.date)              e.date        = "Date is required";
-  if (!form.time)              e.time        = "Time is required";
-  if (!form.reason.trim())     e.reason      = "Appointment reason is required";
-  if (!form.status)            e.status      = "Status is required";
+  if (!form.patient) e.patient = "Patient is required";
+  if (!form.department) e.department = "Department is required";
+  if (!form.doctor) e.doctor = "Doctor is required";
+  if (!form.appointmentType) e.appointmentType = "Appointment type is required";
+  if (!form.date) e.date = "Date is required";
+  if (!form.time) e.time = "Time is required";
+  if (!form.reason.trim()) e.reason = "Appointment reason is required";
+  if (!form.status) e.status = "Status is required";
   return e;
 }
 
@@ -96,28 +112,131 @@ export default function NewAppointment() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    appointmentId: "AP234354",
-    patient: "", department: "",
-    doctor: "", appointmentType: "",
-    date: "", time: "",
-    reason: "", status: "",
+  appointmentId: `AP${Date.now()}`,
+  patient: "",
+    patientId: "",
+    patientType: "",
+    department: "",
+    doctor: "",
+    doctorId: "",
+    appointmentType: "",
+    date: "",
+    time: "",
+    reason: "",
+    status: "",
   });
   const [errors, setErrors] = useState({});
+  const [patients, setPatients] = useState([]);
+  const [patientsLoading, setPatientsLoading] = useState(true);
+  const [doctors, setDoctors] = useState([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        setPatientsLoading(true);
+
+        const response = await getPatients();
+
+        const backendPatients = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response?.data?.data)
+            ? response.data.data
+            : [];
+
+        setPatients(backendPatients);
+      } catch (error) {
+        console.error("Patients API Error:", error);
+        setPatients([]);
+      } finally {
+        setPatientsLoading(false);
+      }
+    };
+
+    fetchPatients();
+  }, []);
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        setDoctorsLoading(true);
+
+        const response = await getDoctors();
+
+        const backendDoctors = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response?.data?.data)
+            ? response.data.data
+            : [];
+
+        setDoctors(backendDoctors);
+      } catch (error) {
+        console.error("Doctors API Error:", error);
+        setDoctors([]);
+      } finally {
+        setDoctorsLoading(false);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
 
   const set = (field, val) => {
     setForm(p => ({ ...p, [field]: val }));
     if (errors[field]) setErrors(p => ({ ...p, [field]: "" }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const errs = validate(form);
     setErrors(errs);
-    if (Object.keys(errs).length === 0) {
-      alert("Appointment created successfully!");
-      navigate("/appointments");
-    } else {
+
+    if (Object.keys(errs).length !== 0) {
       const first = document.querySelector(".error-msg");
-      if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      if (first) {
+        first.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+
+      return;
+    }
+
+    try {
+      const statusMap = {
+        "Checked Out": "completed",
+        "Checked In": "completed",
+        Cancelled: "cancelled",
+        Schedule: "scheduled",
+        Confirmed: "scheduled",
+      };
+
+      const payload = {
+        patientId: form.patientId,
+        patientName: form.patient,
+        patientType: form.patientType || "local",
+        appointmentType: form.appointmentType,
+        visitReason: form.reason,
+        doctorId: form.doctorId,
+        status: statusMap[form.status] || "scheduled",
+      };
+
+      console.log("Creating appointment:", payload);
+
+      await createAppointment(payload);
+
+      alert("Appointment created successfully!");
+
+      navigate("/appointments");
+    } catch (error) {
+      console.error("Create Appointment Error:", error);
+
+      alert(
+        error?.message ||
+        error?.error ||
+        "Failed to create appointment"
+      );
     }
   };
 
@@ -160,10 +279,29 @@ export default function NewAppointment() {
                 </span>
               </label>
               <CustomSelect
-                options={PATIENTS}
+                options={patients.map((patient) => patient.name)}
                 value={form.patient}
-                onChange={v => set("patient", v)}
+                onChange={(value) => {
+                  const selectedPatient = patients.find(
+                    (patient) => patient.name === value
+                  );
+
+                  setForm((current) => ({
+                    ...current,
+                    patient: value,
+                    patientId: selectedPatient?._id || "",
+                    patientType: selectedPatient?.patientType || "local",
+                  }));
+
+                  if (errors.patient) {
+                    setErrors((current) => ({
+                      ...current,
+                      patient: "",
+                    }));
+                  }
+                }}
                 error={errors.patient}
+                placeholder={patientsLoading ? "Loading patients..." : "Select"}
               />
             </div>
 
@@ -182,10 +320,29 @@ export default function NewAppointment() {
             <CustomSelect
               label="Doctor"
               required
-              options={DOCTORS}
+              options={doctors.map((doctor) => doctor.name)}
               value={form.doctor}
-              onChange={v => set("doctor", v)}
+              onChange={(value) => {
+                const selectedDoctor = doctors.find(
+                  (doctor) => doctor.name === value
+                );
+
+                setForm((current) => ({
+                  ...current,
+                  doctor: value,
+                  doctorId: selectedDoctor?._id || "",
+                  department: selectedDoctor?.specialization || current.department,
+                }));
+
+                if (errors.doctor) {
+                  setErrors((current) => ({
+                    ...current,
+                    doctor: "",
+                  }));
+                }
+              }}
               error={errors.doctor}
+              placeholder={doctorsLoading ? "Loading doctors..." : "Select"}
             />
             <CustomSelect
               label="Appointment Type"
@@ -243,14 +400,17 @@ export default function NewAppointment() {
           </div>
 
           {/* Status */}
-          <CustomSelect
-            label="Status"
-            required
-            options={STATUSES}
-            value={form.status}
-            onChange={v => set("status", v)}
-            error={errors.status}
-          />
+          <div style={{ position: "relative", zIndex: 20 }}>
+            <CustomSelect
+              label="Status"
+              required
+              options={STATUSES}
+              value={form.status}
+              onChange={v => set("status", v)}
+              error={errors.status}
+              dropUp 
+            />
+          </div>
 
         </div>
       </div>

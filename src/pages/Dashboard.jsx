@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
@@ -15,10 +17,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import CheckIcon from "@mui/icons-material/Check";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
+import { getDashboardSummary } from "../api/dashboard";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
-const statsCards = [
+const mockStatsCards = [
   {
     label: "Doctors",
     value: "247",
@@ -188,8 +191,101 @@ function Sparkline({ data, color }) {
   );
 }
 
+// ─── MOCK DATA BADGE ──────────────────────────────────────────────────────────
+function MockDataBadge() {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        padding: "3px 7px",
+        marginLeft: 8,
+        borderRadius: 5,
+        background: "#fff7ed",
+        color: "#c2410c",
+        border: "1px solid #fed7aa",
+        fontSize: 9,
+        fontWeight: 700,
+        letterSpacing: 0.3,
+      }}
+    >
+      MOCK DATA
+    </span>
+  );
+}
+
+function formatCurrency(value) {
+  const amount = Number(value || 0);
+  return `$${amount.toLocaleString("en-US")}`;
+}
+
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const [dashboardData, setDashboardData] = useState(null);
+  const [dashboardError, setDashboardError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadDashboard = async () => {
+      try {
+        setLoading(true);
+        setDashboardError("");
+        const response = await getDashboardSummary();
+        if (mounted) {
+          const payload = response?.data ?? response ?? {};
+          setDashboardData(payload);
+        }
+      } catch (error) {
+        if (mounted) {
+          setDashboardData(null);
+          setDashboardError(error?.message || "Dashboard data is unavailable right now.");
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadDashboard();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const hasActual = (value) => typeof value === "number" && Number.isFinite(value);
+
+  const statsCards = mockStatsCards.map((card) => {
+    if (!dashboardData) return { ...card, isMock: true };
+
+    if (card.label === "Patients" && hasActual(dashboardData.totalPatients)) {
+      return { ...card, value: dashboardData.totalPatients.toLocaleString("en-US"), isMock: false };
+    }
+
+    if (card.label === "Appointment" && hasActual(dashboardData.todayAppointments)) {
+      return { ...card, value: dashboardData.todayAppointments.toLocaleString("en-US"), isMock: false };
+    }
+
+    if (card.label === "Revenue" && hasActual(dashboardData.monthlyRevenue)) {
+      return { ...card, value: formatCurrency(dashboardData.monthlyRevenue), isMock: false };
+    }
+
+    // Dashboard summary currently does not provide a doctor count.
+    if (card.label === "Doctors" && hasActual(dashboardData.totalDoctors)) {
+      return { ...card, value: dashboardData.totalDoctors.toLocaleString("en-US"), isMock: false };
+    }
+
+    if (card.label === "Revenue" && hasActual(dashboardData.monthlyRevenue)) {
+      return { ...card, value: formatCurrency(dashboardData.monthlyRevenue), isMock: false };
+    }
+
+    return { ...card, isMock: true };
+  });
+
+  const hasDashboardData = !!dashboardData && Object.keys(dashboardData).length > 0;
+
   return (
     <div className="dashboard">
 
@@ -197,7 +293,7 @@ export default function Dashboard() {
       <div className="page-header">
         <h1>Admin Dashboard</h1>
         <div className="header-actions">
-          <button className="btn-primary">
+          <button className="btn-primary" onClick={() => navigate("/appointments/new")}>
             <AddIcon style={{ fontSize: 16 }} /> New Appointment
           </button>
           <button className="btn-outline">
@@ -212,7 +308,7 @@ export default function Dashboard() {
           <div className="stat-card" key={card.label}>
             <div className="stat-left">
               <div className={`stat-icon-wrap ${card.colorClass}`}>{card.icon}</div>
-              <div className="stat-label">{card.label}</div>
+              <div className="stat-label">{card.label}{card.isMock && <MockDataBadge />}</div>
               <div className="stat-value">{card.value}</div>
             </div>
             <div className="stat-right">
@@ -229,12 +325,24 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {dashboardError && !loading && (
+        <div style={{ margin: "8px 0 20px", padding: 12, background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, color: "#9a4d00" }}>
+          {dashboardError}
+        </div>
+      )}
+
+      {!hasDashboardData && !loading && (
+        <div style={{ padding: 20, textAlign: "center", background: "#f8fafc", borderRadius: 12, color: "#475569" }}>
+          No data found.
+        </div>
+      )}
+
       {/* Main Grid: Chart + Calendar */}
       <div className="main-grid">
         {/* Appointment Statistics */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">Appointment Statistics</span>
+            <span className="card-title">Appointment Statistics<MockDataBadge /></span>
             <div className="card-actions">
               <select className="filter-select"><option>Monthly</option></select>
             </div>
@@ -283,7 +391,7 @@ export default function Dashboard() {
         {/* Calendar + Appointments */}
         <div className="card calendar-card">
           <div className="card-header">
-            <span className="card-title">Appointments</span>
+            <span className="card-title">Appointments<MockDataBadge /></span>
             <div className="card-actions">
               <select className="filter-select"><option>All Type</option></select>
               <div style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
@@ -342,7 +450,7 @@ export default function Dashboard() {
       {/* Popular Doctors */}
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="card-header">
-          <span className="card-title">Popular Doctors</span>
+          <span className="card-title">Popular Doctors<MockDataBadge /></span>
           <div className="card-actions">
             <select className="filter-select"><option>Weekly</option></select>
           </div>
@@ -370,7 +478,7 @@ export default function Dashboard() {
         {/* Top 3 Departments */}
         <div className="card departments-card">
           <div className="card-header">
-            <span className="card-title">Top 3 Departments</span>
+            <span className="card-title">Top 3 Departments<MockDataBadge /></span>
             <div className="card-actions">
               <select className="filter-select"><option>Weekly</option></select>
             </div>
@@ -403,7 +511,7 @@ export default function Dashboard() {
         {/* Doctors Schedule */}
         <div className="card schedule-card">
           <div className="card-header">
-            <span className="card-title">Doctors Schedule</span>
+            <span className="card-title">Doctors Schedule<MockDataBadge /></span>
             <span className="view-all" style={{ fontSize: 13, color: "#3b82f6", fontWeight: 500, cursor: "pointer" }}>View All</span>
           </div>
           <div className="card-body">
@@ -437,7 +545,7 @@ export default function Dashboard() {
         {/* Income By Treatment */}
         <div className="card income-card">
           <div className="card-header">
-            <span className="card-title">Income By Treatment</span>
+            <span className="card-title">Income By Treatment<MockDataBadge /></span>
             <div className="card-actions">
               <select className="filter-select"><option>Weekly</option></select>
             </div>
@@ -461,7 +569,7 @@ export default function Dashboard() {
       {/* All Appointments Table */}
       <div className="card appointments-table" style={{ marginBottom: 16 }}>
         <div className="card-header">
-          <span className="card-title">All Appointments</span>
+          <span className="card-title">All Appointments<MockDataBadge /></span>
           <span className="view-all" style={{ fontSize: 13, color: "#3b82f6", fontWeight: 500, cursor: "pointer" }}>View All</span>
         </div>
         <div className="table-wrap">
@@ -513,7 +621,7 @@ export default function Dashboard() {
         {/* Top 5 Patients */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">Top 5 Patients</span>
+            <span className="card-title">Top 5 Patients<MockDataBadge /></span>
             <span className="view-all" style={{ fontSize: 13, color: "#3b82f6", fontWeight: 500, cursor: "pointer" }}>View All</span>
           </div>
           <div className="card-body">
@@ -535,7 +643,7 @@ export default function Dashboard() {
         {/* Recent Transactions */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">Recent Transactions</span>
+            <span className="card-title">Recent Transactions<MockDataBadge /></span>
             <div className="card-actions">
               <select className="filter-select"><option>Weekly</option></select>
             </div>
@@ -561,7 +669,7 @@ export default function Dashboard() {
         {/* Leave Requests */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">Leave Requests</span>
+            <span className="card-title">Leave Requests<MockDataBadge /></span>
             <div className="card-actions">
               <select className="filter-select"><option>Today</option></select>
             </div>

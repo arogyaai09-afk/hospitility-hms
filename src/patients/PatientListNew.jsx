@@ -1,8 +1,10 @@
+//patientlistnew.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Add, Edit, Delete, Eye } from "@mui/icons-material";
-import { getPatients } from "../api/patients";
+import { Add, Edit, Delete, Visibility } from "@mui/icons-material";
+import { getPatients, deletePatient } from "../api/patients";
 import "../assets/styles/patient.scss";
+
 
 const PatientList = () => {
   const navigate = useNavigate();
@@ -14,6 +16,27 @@ const PatientList = () => {
   useEffect(() => {
     fetchPatients();
   }, []);
+
+  const handleDeletePatient = async (id) => {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this patient?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await deletePatient(id);
+
+    setPatients((currentPatients) =>
+      currentPatients.filter((patient) => patient.id !== id)
+    );
+
+    setOpenMenu(null);
+  } catch (error) {
+    console.error("Delete patient error:", error);
+    alert(error.message || "Failed to delete patient");
+  }
+};
 
   const fetchPatients = async () => {
     try {
@@ -53,6 +76,7 @@ const PatientList = () => {
 
   return (
     <div className="patients-page">
+      
       <div className="page-header">
         <div>
           <h1>Patients</h1>
@@ -132,7 +156,7 @@ const PatientList = () => {
                       onClick={() => handleViewDetails(patient._id)}
                       title="View Details"
                     >
-                      <Eye />
+                      <Visibility />
                     </button>
                     <button
                       className="btn-icon btn-edit"

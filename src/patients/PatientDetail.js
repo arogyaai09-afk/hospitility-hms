@@ -1,3 +1,4 @@
+//patientdetails.js
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIosNewIcon  from "@mui/icons-material/ArrowBackIosNew";
@@ -158,6 +159,7 @@ export default function PatientDetail() {
 
   return (
     <div className="patient-details-page">
+      
 
       {/* Breadcrumb */}
       <div className="breadcrumb" onClick={() => navigate("/patients")}>

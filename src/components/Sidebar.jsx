@@ -78,6 +78,8 @@ const menuData = [
           { label: "Add Doctor", path: "/doctors/add" },
         ],
       },
+      { label: "Departments", icon: <ApartmentIcon style={{ fontSize: 18 }} />, key: "departments", path: "/departments" },
+      { label: "Staff", icon: <GroupIcon style={{ fontSize: 18 }} />, key: "staff", path: "/staff" },
       { 
         label: "Patients", 
         icon: <PeopleIcon style={{ fontSize: 18 }} />, 
