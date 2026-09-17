@@ -1,6 +1,8 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      target: development
     ports:
       - '4000:4000'
     env_file:
@@ -12,7 +14,6 @@ services:
       - mongo
     volumes:
       - .:/usr/src/app
-    command: npm run dev
   mongo:
     image: mongo:6.0
     volumes:

@@ -1,6 +1,6 @@
 {
-  "watch": ["app.js", "config", "src"],
-  "ext": "js,json",
+  "watch": ["app.ts", "config", "src"],
+  "ext": "ts,js,json",
   "ignore": ["node_modules", ".git", "docs"],
   "legacyWatch": true
 }
