@@ -1,8 +1,8 @@
-// EditDoctor.jsx
-
+//doctors/EditDoctor.jsx
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import { updateDoctor } from "../api/doctors";
 
 const EditDoctor = () => {
   const navigate = useNavigate();
@@ -33,30 +33,34 @@ const EditDoctor = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const editedDoctors = JSON.parse(
-      localStorage.getItem("editedDoctors") || "{}"
-    );
-
-    editedDoctors[id] = {
-      ...formData,
-      id,
+  try {
+    const payload = {
+      name: formData.name.trim(),
+      specialization: formData.role || formData.dept,
+      phone: formData.phone.trim(),
+      email: formData.email.trim(),
     };
 
-    localStorage.setItem(
-      "editedDoctors",
-      JSON.stringify(editedDoctors)
-    );
+    await updateDoctor(id, payload);
 
     setSaved(true);
 
     setTimeout(() => {
       navigate("/doctors");
     }, 500);
-  };
+  } catch (error) {
+    console.error("Update doctor error:", error);
 
+    alert(
+      error?.message ||
+        error?.error ||
+        "Failed to update doctor. Please try again."
+    );
+  }
+};
   return (
     <div className="add-doctor-page">
 

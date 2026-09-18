@@ -21,14 +21,12 @@ export const getAvailableBeds = async () => {
 };
 
 // Create a new bed
-export const createBed = async (bedNumber) => {
+export const createBed = async (bedData) => {
   try {
-    const response = await axiosInstance.post('/beds', {
-      bedNumber,
-    });
+    const response = await axiosInstance.post('/beds', bedData);
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to create bed" };
+    throw error || { message: "Failed to create bed" };
   }
 };
 

@@ -1,30 +1,32 @@
 //patientdetails.js
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ArrowBackIosNewIcon  from "@mui/icons-material/ArrowBackIosNew";
-import LocationOnIcon       from "@mui/icons-material/LocationOn";
-import PhoneIcon            from "@mui/icons-material/Phone";
-import CalendarTodayIcon    from "@mui/icons-material/CalendarToday";
-import PersonIcon           from "@mui/icons-material/Person";
-import CakeIcon             from "@mui/icons-material/Cake";
-import BloodtypeIcon        from "@mui/icons-material/Bloodtype";
-import WcIcon               from "@mui/icons-material/Wc";
-import EmailIcon            from "@mui/icons-material/Email";
-import FavoriteIcon         from "@mui/icons-material/Favorite";
-import MonitorHeartIcon     from "@mui/icons-material/MonitorHeart";
-import AirIcon              from "@mui/icons-material/Air";
-import ThermostatIcon       from "@mui/icons-material/Thermostat";
-import SpeedIcon            from "@mui/icons-material/Speed";
-import FitnessCenterIcon    from "@mui/icons-material/FitnessCenter";
-import SearchIcon           from "@mui/icons-material/Search";
-import FilterListIcon       from "@mui/icons-material/FilterList";
-import CallIcon             from "@mui/icons-material/Call";
-import ChatIcon             from "@mui/icons-material/Chat";
-import VideoCallIcon        from "@mui/icons-material/VideoCall";
-import CalendarMonthIcon    from "@mui/icons-material/CalendarMonth";
-import MoreVertIcon         from "@mui/icons-material/MoreVert";
-import ChevronLeftIcon      from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon     from "@mui/icons-material/ChevronRight";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import PhoneIcon from "@mui/icons-material/Phone";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import PersonIcon from "@mui/icons-material/Person";
+import CakeIcon from "@mui/icons-material/Cake";
+import BloodtypeIcon from "@mui/icons-material/Bloodtype";
+import WcIcon from "@mui/icons-material/Wc";
+import EmailIcon from "@mui/icons-material/Email";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
+import AirIcon from "@mui/icons-material/Air";
+import ThermostatIcon from "@mui/icons-material/Thermostat";
+import SpeedIcon from "@mui/icons-material/Speed";
+import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
+import SearchIcon from "@mui/icons-material/Search";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import CallIcon from "@mui/icons-material/Call";
+import ChatIcon from "@mui/icons-material/Chat";
+import VideoCallIcon from "@mui/icons-material/VideoCall";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import { getPatientById } from "../api/patients";
+import { getAppointments } from "../api/appointments";
 
 // ─── MOCK DATA ─────────────────────────────────────────────────────────────────
 const patientsMap = {
@@ -68,43 +70,43 @@ const defaultPatient = {
 };
 
 const appointmentsData = [
-  { id:1,  date:"30 Apr 2025 - 09:30 AM", doctor:"Dr. Mick Thompson",  role:"Cardiologist",       color:"#3b82f6", initials:"MT", mode:"In-person", status:"Checked Out"  },
-  { id:2,  date:"15 Apr 2025 - 11:20 AM", doctor:"Dr. Sarah Johnson",  role:"Orthopedic Surgeon", color:"#10b981", initials:"SJ", mode:"Online",    status:"Checked In"   },
-  { id:3,  date:"02 Apr 2025 - 08:15 AM", doctor:"Dr. Emily Carter",   role:"Pediatrician",       color:"#8b5cf6", initials:"EC", mode:"In-Person", status:"Cancelled"    },
-  { id:4,  date:"27 Mar 2025 - 02:00 PM", doctor:"Dr. David Lee",      role:"Gynecologist",       color:"#f59e0b", initials:"DL", mode:"In-person", status:"Schedule"     },
-  { id:5,  date:"12 Mar 2025 - 05:40 PM", doctor:"Dr. Anna Kim",       role:"Psychiatrist",       color:"#0d9488", initials:"AK", mode:"Online",    status:"Confirmed"    },
-  { id:6,  date:"24 Feb 2025 - 09:20 AM", doctor:"Dr. John Smith",     role:"Neurosurgeon",       color:"#ef4444", initials:"JS", mode:"In-Person", status:"Cancelled"    },
-  { id:7,  date:"16 Feb 2025 - 11:40 AM", doctor:"Dr. Lisa White",     role:"Oncologist",         color:"#ec4899", initials:"LW", mode:"Online",    status:"Confirmed"    },
-  { id:8,  date:"01 Feb 2025 - 04:00 PM", doctor:"Dr. Patricia Brown", role:"Pulmonologist",      color:"#6366f1", initials:"PB", mode:"Online",    status:"Checked Out"  },
-  { id:9,  date:"25 Jan 2025 - 03:10 PM", doctor:"Dr. Rachel Green",   role:"Urologist",          color:"#14b8a6", initials:"RG", mode:"Online",    status:"Schedule"     },
-  { id:10, date:"12 Jan 2025 - 03:10 PM", doctor:"Dr. Michael Smith",  role:"Cardiologist",       color:"#f59e0b", initials:"MS", mode:"In-Person", status:"Cancelled"    },
+  { id: 1, date: "30 Apr 2025 - 09:30 AM", doctor: "Dr. Mick Thompson", role: "Cardiologist", color: "#3b82f6", initials: "MT", mode: "In-person", status: "Checked Out" },
+  { id: 2, date: "15 Apr 2025 - 11:20 AM", doctor: "Dr. Sarah Johnson", role: "Orthopedic Surgeon", color: "#10b981", initials: "SJ", mode: "Online", status: "Checked In" },
+  { id: 3, date: "02 Apr 2025 - 08:15 AM", doctor: "Dr. Emily Carter", role: "Pediatrician", color: "#8b5cf6", initials: "EC", mode: "In-Person", status: "Cancelled" },
+  { id: 4, date: "27 Mar 2025 - 02:00 PM", doctor: "Dr. David Lee", role: "Gynecologist", color: "#f59e0b", initials: "DL", mode: "In-person", status: "Schedule" },
+  { id: 5, date: "12 Mar 2025 - 05:40 PM", doctor: "Dr. Anna Kim", role: "Psychiatrist", color: "#0d9488", initials: "AK", mode: "Online", status: "Confirmed" },
+  { id: 6, date: "24 Feb 2025 - 09:20 AM", doctor: "Dr. John Smith", role: "Neurosurgeon", color: "#ef4444", initials: "JS", mode: "In-Person", status: "Cancelled" },
+  { id: 7, date: "16 Feb 2025 - 11:40 AM", doctor: "Dr. Lisa White", role: "Oncologist", color: "#ec4899", initials: "LW", mode: "Online", status: "Confirmed" },
+  { id: 8, date: "01 Feb 2025 - 04:00 PM", doctor: "Dr. Patricia Brown", role: "Pulmonologist", color: "#6366f1", initials: "PB", mode: "Online", status: "Checked Out" },
+  { id: 9, date: "25 Jan 2025 - 03:10 PM", doctor: "Dr. Rachel Green", role: "Urologist", color: "#14b8a6", initials: "RG", mode: "Online", status: "Schedule" },
+  { id: 10, date: "12 Jan 2025 - 03:10 PM", doctor: "Dr. Michael Smith", role: "Cardiologist", color: "#f59e0b", initials: "MS", mode: "In-Person", status: "Cancelled" },
 ];
 
 const transactionsData = [
-  { id:"#TNX0025", desc:"General Consultation",   date:"30 Apr 2025", method:"PayPal",      amount:"$800",  status:"Completed" },
-  { id:"#TNX0024", desc:"Dental Cleaning",        date:"15 Apr 2025", method:"Debit Card",  amount:"$930",  status:"Pending"   },
-  { id:"#TNX0023", desc:"Eye Checkup",            date:"02 Apr 2025", method:"Cheque",      amount:"$850",  status:"Completed" },
-  { id:"#TNX0022", desc:"X-Ray",                  date:"27 Mar 2025", method:"Debit Card",  amount:"$80",   status:"Completed" },
-  { id:"#TNX0021", desc:"Physiotherapy Session",  date:"12 Mar 2025", method:"PayPal",      amount:"$650",  status:"Completed" },
-  { id:"#TNX0020", desc:"Cardiac Screening",      date:"05 Mar 2025", method:"Cheque",      amount:"$430",  status:"Completed" },
-  { id:"#TNX0019", desc:"Skin Allergy Test",      date:"24 Feb 2025", method:"Debit Card",  amount:"$300",  status:"Pending"   },
-  { id:"#TNX0018", desc:"Blood Test",             date:"16 Feb 2025", method:"Cheque",      amount:"$450",  status:"Completed" },
-  { id:"#TNX0017", desc:"ENT Consultation",       date:"01 Feb 2025", method:"Debit Card",  amount:"$570",  status:"Completed" },
-  { id:"#TNX0016", desc:"Nutrition Counseling",   date:"25 Jan 2025", method:"PayPal",      amount:"$800",  status:"Completed" },
+  { id: "#TNX0025", desc: "General Consultation", date: "30 Apr 2025", method: "PayPal", amount: "$800", status: "Completed" },
+  { id: "#TNX0024", desc: "Dental Cleaning", date: "15 Apr 2025", method: "Debit Card", amount: "$930", status: "Pending" },
+  { id: "#TNX0023", desc: "Eye Checkup", date: "02 Apr 2025", method: "Cheque", amount: "$850", status: "Completed" },
+  { id: "#TNX0022", desc: "X-Ray", date: "27 Mar 2025", method: "Debit Card", amount: "$80", status: "Completed" },
+  { id: "#TNX0021", desc: "Physiotherapy Session", date: "12 Mar 2025", method: "PayPal", amount: "$650", status: "Completed" },
+  { id: "#TNX0020", desc: "Cardiac Screening", date: "05 Mar 2025", method: "Cheque", amount: "$430", status: "Completed" },
+  { id: "#TNX0019", desc: "Skin Allergy Test", date: "24 Feb 2025", method: "Debit Card", amount: "$300", status: "Pending" },
+  { id: "#TNX0018", desc: "Blood Test", date: "16 Feb 2025", method: "Cheque", amount: "$450", status: "Completed" },
+  { id: "#TNX0017", desc: "ENT Consultation", date: "01 Feb 2025", method: "Debit Card", amount: "$570", status: "Completed" },
+  { id: "#TNX0016", desc: "Nutrition Counseling", date: "25 Jan 2025", method: "PayPal", amount: "$800", status: "Completed" },
 ];
 
-const DATE_OPTIONS = ["Today","Yesterday","Last 7 Days","Last 30 Days","This Month","Last Month","Custom Range"];
+const DATE_OPTIONS = ["Today", "Yesterday", "Last 7 Days", "Last 30 Days", "This Month", "Last Month", "Custom Range"];
 const ROWS_OPTIONS = [5, 10, 15, 20];
 
 const statusClass = (s) => {
   const map = {
-    "checked out":  "checked-out",
-    "checked in":   "checked-in",
-    "cancelled":    "cancelled",
-    "schedule":     "schedule",
-    "confirmed":    "confirmed",
-    "completed":    "completed",
-    "pending":      "pending",
+    "checked out": "checked-out",
+    "checked in": "checked-in",
+    "cancelled": "cancelled",
+    "schedule": "schedule",
+    "confirmed": "confirmed",
+    "completed": "completed",
+    "pending": "pending",
   };
   return map[s.toLowerCase()] || "confirmed";
 };
@@ -120,18 +122,107 @@ function useOutsideClick(ref, cb) {
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function PatientDetail() {
-  const navigate   = useNavigate();
-  const { id }     = useParams();
+  const navigate = useNavigate();
+  const { id } = useParams();
 
-  const patient     = patientsMap[id] || defaultPatient;
-
-  const [activeTab,   setActiveTab]   = useState("appointments");
-  const [search,      setSearch]      = useState("");
-  const [dateLabel,   setDateLabel]   = useState("Last 30 Days");
-  const [dateOpen,    setDateOpen]    = useState(false);
+  const [activeTab, setActiveTab] = useState("appointments");
+  const [search, setSearch] = useState("");
+  const [dateLabel, setDateLabel] = useState("Last 30 Days");
+  const [dateOpen, setDateOpen] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [page,        setPage]        = useState(1);
-  const [openMenu,    setOpenMenu]    = useState(null);
+  const [page, setPage] = useState(1);
+  const [openMenu, setOpenMenu] = useState(null);
+
+  const [patient, setPatient] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [appointments, setAppointments] = useState([]);
+
+  useEffect(() => {
+    const fetchPatient = async () => {
+      try {
+        setLoading(true);
+
+        const response = await getPatientById(id);
+
+        console.log("Patient Detail API Response:", response);
+
+        if (response?.status === "success" && response?.data) {
+          const data = response.data;
+
+          setPatient({
+            id: data.patientCode,
+            name: data.name || "",
+            age: data.dateOfBirth
+              ? new Date().getFullYear() -
+              new Date(data.dateOfBirth).getFullYear()
+              : "",
+            gender: data.gender
+              ? data.gender.charAt(0).toUpperCase() + data.gender.slice(1)
+              : "",
+            address: data.address || "",
+            phone: data.phone || "",
+            email: data.email || "",
+            dob: data.dateOfBirth
+              ? new Date(data.dateOfBirth).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+              : "",
+            bloodGroup: "N/A",
+            lastVisited: "N/A",
+            color: "#3b82f6",
+            vitals: {
+              bloodPressure: "N/A",
+              heartRate: "N/A",
+              spo2: "N/A",
+              temperature: "N/A",
+              respiratoryRate: "N/A",
+              weight: "N/A",
+            },
+          });
+        } else {
+          setPatient(null);
+        }
+      } catch (error) {
+        console.error("Patient detail API error:", error);
+        setPatient(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPatient();
+  }, [id]);
+
+  useEffect(() => {
+  const fetchAppointments = async () => {
+    try {
+      const response = await getAppointments();
+
+      console.log("Appointments API Response:", response);
+
+      if (response?.status === "success" && Array.isArray(response?.data)) {
+        const patientAppointments = response.data.filter(
+          (appointment) =>
+            appointment.patientId === id ||
+            appointment.patientName === patient?.name
+        );
+
+        setAppointments(patientAppointments);
+      } else {
+        setAppointments([]);
+      }
+    } catch (error) {
+      console.error("Appointments API Error:", error);
+      setAppointments([]);
+    }
+  };
+
+  if (id) {
+    fetchAppointments();
+  }
+}, [id, patient?.name]);
 
   const dateRef = useRef();
   useOutsideClick(dateRef, () => setDateOpen(false));
@@ -139,11 +230,17 @@ export default function PatientDetail() {
   useEffect(() => { setPage(1); }, [activeTab, search]);
 
   // ── Filter data ──
-  const apptFiltered = appointmentsData.filter(a =>
-    a.doctor.toLowerCase().includes(search.toLowerCase()) ||
-    a.mode.toLowerCase().includes(search.toLowerCase()) ||
-    a.status.toLowerCase().includes(search.toLowerCase())
-  );
+const apptFiltered = appointments.filter((a) =>
+  (a.doctorName || a.doctorId?.name || "")
+    .toLowerCase()
+    .includes(search.toLowerCase()) ||
+  (a.appointmentType || "")
+    .toLowerCase()
+    .includes(search.toLowerCase()) ||
+  (a.status || "")
+    .toLowerCase()
+    .includes(search.toLowerCase())
+);
 
   const txnFiltered = transactionsData.filter(t =>
     t.desc.toLowerCase().includes(search.toLowerCase()) ||
@@ -152,14 +249,22 @@ export default function PatientDetail() {
   );
 
   const currentData = activeTab === "appointments" ? apptFiltered : txnFiltered;
-  const totalPages  = Math.ceil(currentData.length / rowsPerPage);
-  const pageData    = currentData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+  const totalPages = Math.ceil(currentData.length / rowsPerPage);
+  const pageData = currentData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+
+  if (loading) {
+    return <div style={{ padding: "40px" }}>Loading patient...</div>;
+  }
+
+  if (!patient) {
+    return <div style={{ padding: "40px" }}>Patient not found.</div>;
+  }
 
   const initials = patient.name.split(" ").slice(0, 2).map(w => w[0]).join("");
 
   return (
     <div className="patient-details-page">
-      
+
 
       {/* Breadcrumb */}
       <div className="breadcrumb" onClick={() => navigate("/patients")}>
@@ -225,10 +330,10 @@ export default function PatientDetail() {
           </div>
           <div className="about-grid">
             {[
-              { icon: <CakeIcon />,      label: "DOB",         value: patient.dob        },
-              { icon: <BloodtypeIcon />, label: "Blood Group", value: patient.bloodGroup  },
-              { icon: <WcIcon />,        label: "Gender",      value: patient.gender      },
-              { icon: <EmailIcon />,     label: "Email",       value: patient.email       },
+              { icon: <CakeIcon />, label: "DOB", value: patient.dob },
+              { icon: <BloodtypeIcon />, label: "Blood Group", value: patient.bloodGroup },
+              { icon: <WcIcon />, label: "Gender", value: patient.gender },
+              { icon: <EmailIcon />, label: "Email", value: patient.email },
             ].map((item, i) => (
               <div className="ag-item" key={i}>
                 <div className="ag-icon">{item.icon}</div>
@@ -248,12 +353,12 @@ export default function PatientDetail() {
           </div>
           <div className="vitals-grid">
             {[
-              { icon: <FavoriteIcon />,     label: "Blood Pressure",   value: patient.vitals.bloodPressure,   dot: "green"  },
-              { icon: <MonitorHeartIcon />, label: "Heart Rate",       value: patient.vitals.heartRate,       dot: "red"    },
-              { icon: <AirIcon />,          label: "SPO2",             value: patient.vitals.spo2,            dot: "green"  },
-              { icon: <ThermostatIcon />,   label: "Temperature",      value: patient.vitals.temperature,     dot: "red"    },
-              { icon: <SpeedIcon />,        label: "Respiratory Rate", value: patient.vitals.respiratoryRate, dot: "red"    },
-              { icon: <FitnessCenterIcon />,label: "Weight",           value: patient.vitals.weight,          dot: "green"  },
+              { icon: <FavoriteIcon />, label: "Blood Pressure", value: patient.vitals.bloodPressure, dot: "green" },
+              { icon: <MonitorHeartIcon />, label: "Heart Rate", value: patient.vitals.heartRate, dot: "red" },
+              { icon: <AirIcon />, label: "SPO2", value: patient.vitals.spo2, dot: "green" },
+              { icon: <ThermostatIcon />, label: "Temperature", value: patient.vitals.temperature, dot: "red" },
+              { icon: <SpeedIcon />, label: "Respiratory Rate", value: patient.vitals.respiratoryRate, dot: "red" },
+              { icon: <FitnessCenterIcon />, label: "Weight", value: patient.vitals.weight, dot: "green" },
             ].map((v, i) => (
               <div className="vital-item" key={i}>
                 <div className="vital-icon">{v.icon}</div>
@@ -342,69 +447,152 @@ export default function PatientDetail() {
                 </tr>
               </thead>
               <tbody>
-                {pageData.map(appt => (
-                  <tr key={appt.id}>
-                    <td>{appt.date}</td>
-                    <td>
-                      <div
-                        className="doc-cell"
-                        onClick={() => navigate(`/doctors/${appt.id}`)}
-                      >
-                        <div
-                          className="cell-avatar"
-                          style={{ background: appt.color + "22", color: appt.color }}
-                        >
-                          {appt.initials}
-                        </div>
-                        <div>
-                          <div className="cell-name">{appt.doctor}</div>
-                          <div className="cell-sub">{appt.role}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>{appt.mode}</td>
-                    <td>
-                      <span className={`appt-status ${statusClass(appt.status)}`}>
-                        {appt.status}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ position: "relative" }}>
-                        <button
-                          className="icon-btn"
-                          onClick={() => setOpenMenu(openMenu === appt.id ? null : appt.id)}
-                        >
-                          <MoreVertIcon />
-                        </button>
-                        {openMenu === appt.id && (
-                          <div style={{
-                            position: "absolute", right: 0, top: "calc(100% + 4px)",
-                            background: "white", border: "1px solid #e2e8f0",
-                            borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                            minWidth: 130, zIndex: 50, overflow: "hidden",
-                          }}>
-                            {["View", "Edit", "Cancel"].map(opt => (
-                              <div
-                                key={opt}
-                                onClick={() => setOpenMenu(null)}
-                                style={{
-                                  padding: "9px 16px", fontSize: 13,
-                                  color: opt === "Cancel" ? "#ef4444" : "#475569",
-                                  cursor: "pointer",
-                                }}
-                                onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
-                                onMouseLeave={e => e.currentTarget.style.background = ""}
-                              >
-                                {opt}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+  {pageData.map((appt) => {
+    const doctorName =
+      appt.doctorName ||
+      appt.doctorId?.name ||
+      "Unknown Doctor";
+
+    const doctorRole =
+      appt.doctorId?.specialization ||
+      appt.designation ||
+      "";
+
+    const doctorInitials = doctorName
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
+    const appointmentDate = appt.createdAt
+      ? new Date(appt.createdAt).toLocaleString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "N/A";
+
+    const appointmentMode =
+      appt.appointmentType || "N/A";
+
+    const appointmentStatus =
+      appt.status || "N/A";
+
+    const appointmentId =
+      appt._id || appt.id;
+
+    return (
+      <tr key={appointmentId}>
+        <td>{appointmentDate}</td>
+
+        <td>
+          <div
+            className="doc-cell"
+            onClick={() =>
+              appt.doctorId?._id &&
+              navigate(`/doctors/${appt.doctorId._id}`)
+            }
+          >
+            <div
+              className="cell-avatar"
+              style={{
+                background: "#3b82f622",
+                color: "#3b82f6",
+              }}
+            >
+              {doctorInitials}
+            </div>
+
+            <div>
+              <div className="cell-name">
+                {doctorName}
+              </div>
+
+              <div className="cell-sub">
+                {doctorRole}
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <td>{appointmentMode}</td>
+
+        <td>
+          <span
+            className={`appt-status ${statusClass(
+              appointmentStatus
+            )}`}
+          >
+            {appointmentStatus}
+          </span>
+        </td>
+
+        <td>
+          <div style={{ position: "relative" }}>
+            <button
+              className="icon-btn"
+              onClick={() =>
+                setOpenMenu(
+                  openMenu === appointmentId
+                    ? null
+                    : appointmentId
+                )
+              }
+            >
+              <MoreVertIcon />
+            </button>
+
+            {openMenu === appointmentId && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "calc(100% + 4px)",
+                  background: "white",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 8,
+                  boxShadow:
+                    "0 4px 12px rgba(0,0,0,0.08)",
+                  minWidth: 130,
+                  zIndex: 50,
+                  overflow: "hidden",
+                }}
+              >
+                {["View", "Edit", "Cancel"].map((opt) => (
+                  <div
+                    key={opt}
+                    onClick={() => setOpenMenu(null)}
+                    style={{
+                      padding: "9px 16px",
+                      fontSize: 13,
+                      color:
+                        opt === "Cancel"
+                          ? "#ef4444"
+                          : "#475569",
+                      cursor: "pointer",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background =
+                        "#f8fafc")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.background = "")
+                    }
+                  >
+                    {opt}
+                  </div>
                 ))}
-              </tbody>
+              </div>
+            )}
+          </div>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
             </table>
           </div>
         )}

@@ -1,9 +1,10 @@
+//appointments/AppointmentList.jsx
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getAppointments,
-  updateAppointment,
-  deleteAppointment,
+  // updateAppointment,
+  // deleteAppointment,
 } from "../api/appointments";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
@@ -755,14 +756,21 @@ export default function Appointments() {
 
       const response = await getAppointments();
 
-      const backendData =
-  response?.data?.data ||
-  response?.data ||
-  [];
+      const backendData = response?.data?.data || response?.data || [];
 
       if (backendData.length > 0) {
         const formattedAppointments = backendData.map((item, index) => ({
           id: item._id || item.id || index + 1,
+
+          patientId:
+            typeof item.patientId === "object"
+              ? item.patientId?._id
+              : item.patientId,
+
+          doctorId:
+            typeof item.doctorId === "object"
+              ? item.doctorId?._id
+              : item.doctorId,
 
           date: item.date
             ? item.date
@@ -809,14 +817,14 @@ export default function Appointments() {
         setAppointments(formattedAppointments);
         setUsingMockData(false);
       } else {
-        setAppointments(appointmentsData);
-        setUsingMockData(true);
+        setAppointments([]);
+        setUsingMockData(false);
       }
     } catch (error) {
       console.error("Fetch appointments error:", error);
 
-      setAppointments(appointmentsData);
-      setUsingMockData(true);
+      setAppointments([]);
+      setUsingMockData(false);
     } finally {
       setLoading(false);
     }
@@ -1096,7 +1104,7 @@ export default function Appointments() {
                   </td>
 
                   {/* Patient → patient details */}
-                  <td onClick={() => navigate(`/patients/${appt.id}`)}>
+                  <td onClick={() => navigate(`/patients/${appt.patientId}`)}>
                     <div className="person-cell">
                       <div
                         className="p-avatar"
@@ -1119,7 +1127,7 @@ export default function Appointments() {
                   </td>
 
                   {/* Doctor → doctor details */}
-                  <td onClick={() => navigate(`/doctors/${appt.id}`)}>
+                  <td onClick={() => navigate(`/doctors/${appt.doctorId}`)}>
                     <div className="person-cell">
                       <div
                         className="p-avatar"

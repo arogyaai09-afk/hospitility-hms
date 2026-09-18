@@ -1,3 +1,4 @@
+// BedList.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Add, Edit, Delete } from "@mui/icons-material";
@@ -20,8 +21,11 @@ const Beds = () => {
     try {
       setLoading(true);
       const response = await getBeds();
-      if (response.status === "success") {
-        setBeds(response.data);
+      if (response?.status === "success") {
+        setBeds(Array.isArray(response.data) ? response.data : []);
+      } else {
+        setBeds([]);
+        setError(response?.message || "Failed to fetch beds");
       }
     } catch (err) {
       setError(err.message || "Failed to fetch beds");
@@ -32,7 +36,9 @@ const Beds = () => {
   };
 
   const filteredBeds = beds.filter((bed) => {
-    const matchesSearch = bed.bedNumber?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = bed.bedNumber
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "all" || bed.status === filterStatus;
     return matchesSearch && matchesStatus;
   });

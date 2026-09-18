@@ -8,8 +8,8 @@ export const getDoctors = async (tenantId = "") => {
     });
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to fetch doctors" };
-  }
+  throw error || { message: "Failed to fetch doctors" };
+}
 };
 
 // Get doctor by ID
@@ -18,8 +18,8 @@ export const getDoctorById = async (id) => {
     const response = await axiosInstance.get(`/doctors/${id}`);
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to fetch doctor" };
-  }
+  throw error || { message: "Failed to fetch doctors" };
+}
 };
 
 // Create a new doctor
@@ -28,8 +28,8 @@ export const createDoctor = async (doctorData) => {
     const response = await axiosInstance.post('/doctors', doctorData);
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to create doctor" };
-  }
+  throw error || { message: "Failed to fetch doctors" };
+}
 };
 
 // Update doctor
@@ -38,8 +38,8 @@ export const updateDoctor = async (id, doctorData) => {
     const response = await axiosInstance.patch(`/doctors/${id}`, doctorData);
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to update doctor" };
-  }
+  throw error || { message: "Failed to fetch doctors" };
+}
 };
 
 // Delete doctor
@@ -48,6 +48,6 @@ export const deleteDoctor = async (id) => {
     const response = await axiosInstance.delete(`/doctors/${id}`);
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to delete doctor" };
-  }
+  throw error || { message: "Failed to fetch doctors" };
+}
 };

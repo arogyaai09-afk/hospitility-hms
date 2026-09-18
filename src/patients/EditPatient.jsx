@@ -1,6 +1,7 @@
 // EditPatient.jsx
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { updatePatient } from "../api/patients";
 
 const EditPatient = () => {
   const navigate = useNavigate();
@@ -31,30 +32,31 @@ const EditPatient = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    // Frontend-only persistence
-    const existingEdits = JSON.parse(
-      localStorage.getItem("editedPatients") || "{}"
-    );
+  try {
+    const response = await updatePatient(id, {
+      name: formData.name.trim(),
+      phone: formData.phone.trim(),
+      gender: formData.gender.toLowerCase(),
+      address: formData.address.trim(),
+    });
 
-    existingEdits[id] = {
-      ...formData,
-      id,
-    };
+    console.log("Update patient response:", response);
 
-    localStorage.setItem(
-      "editedPatients",
-      JSON.stringify(existingEdits)
-    );
+    if (response.status === "success") {
+      setSaved(true);
 
-    setSaved(true);
-
-    setTimeout(() => {
-      navigate("/patients");
-    }, 500);
-  };
+      setTimeout(() => {
+        navigate("/patients");
+      }, 500);
+    }
+  } catch (error) {
+    console.error("Update patient error:", error);
+    alert(error?.message || "Failed to update patient");
+  }
+};
 
   return (
     <div

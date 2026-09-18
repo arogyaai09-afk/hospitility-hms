@@ -1,3 +1,4 @@
+// AddPatient.js
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";

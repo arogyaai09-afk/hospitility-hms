@@ -10,16 +10,6 @@ export const getAppointments = async () => {
   }
 };
 
-// Get appointment by ID
-export const getAppointmentById = async (id) => {
-  try {
-    const response = await axiosInstance.get(`/appointments/${id}`);
-    return response;
-  } catch (error) {
-    throw error.response?.data || { message: "Failed to fetch appointment" };
-  }
-};
-
 // Create a new appointment
 export const createAppointment = async (appointmentData) => {
   try {
@@ -30,22 +20,32 @@ export const createAppointment = async (appointmentData) => {
   }
 };
 
-// Update appointment
-export const updateAppointment = async (id, appointmentData) => {
-  try {
-    const response = await axiosInstance.patch(`/appointments/${id}`, appointmentData);
-    return response;
-  } catch (error) {
-    throw error.response?.data || { message: "Failed to update appointment" };
-  }
-};
+// // Get appointment by ID
+// export const getAppointmentById = async (id) => {
+//   try {
+//     const response = await axiosInstance.get(`/appointments/${id}`);
+//     return response;
+//   } catch (error) {
+//     throw error.response?.data || { message: "Failed to fetch appointment" };
+//   }
+// };
 
-// Delete appointment
-export const deleteAppointment = async (id) => {
-  try {
-    const response = await axiosInstance.delete(`/appointments/${id}`);
-    return response;
-  } catch (error) {
-    throw error.response?.data || { message: "Failed to delete appointment" };
-  }
-};
+// // Update appointment
+// export const updateAppointment = async (id, appointmentData) => {
+//   try {
+//     const response = await axiosInstance.patch(`/appointments/${id}`, appointmentData);
+//     return response;
+//   } catch (error) {
+//     throw error.response?.data || { message: "Failed to update appointment" };
+//   }
+// };
+
+// // Delete appointment
+// export const deleteAppointment = async (id) => {
+//   try {
+//     const response = await axiosInstance.delete(`/appointments/${id}`);
+//     return response;
+//   } catch (error) {
+//     throw error.response?.data || { message: "Failed to delete appointment" };
+//   }
+// };

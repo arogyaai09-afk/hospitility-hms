@@ -1,3 +1,4 @@
+// AddAdmission.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
@@ -58,15 +59,23 @@ export default function AddAdmission() {
     setLoading(true);
 
     try {
+      const selectedPatient = patients.find(
+        (p) => (p._id || p.id) === form.patientId,
+      );
+
+      const selectedBed = beds.find((b) => (b._id || b.id) === form.bedId);
+
+      if (!selectedPatient || !selectedBed || !form.doctorId) {
+        alert("Please select patient, doctor and bed");
+        setLoading(false);
+        return;
+      }
+
       const payload = {
-        patientId: form.patientId,
+        patientName: selectedPatient?.name,
+        admissionType: "IPD",
+        bedNumber: selectedBed?.bedNumber,
         doctorId: form.doctorId,
-        bedId: form.bedId,
-        admissionType: form.admissionType,
-        reason: form.reason,
-        ward: form.ward,
-        department: form.department,
-        status: form.status,
       };
 
       await createIPDAdmission(payload);
@@ -93,21 +102,37 @@ export default function AddAdmission() {
 
           <div className="form-row">
             <div className="form-group">
-              <label>Patient <span className="req">*</span></label>
-              <select value={form.patientId} onChange={(e) => setField("patientId", e.target.value)} required>
+              <label>
+                Patient <span className="req">*</span>
+              </label>
+              <select
+                value={form.patientId}
+                onChange={(e) => setField("patientId", e.target.value)}
+                required
+              >
                 <option value="">Select patient</option>
                 {patients.map((p) => (
-                  <option key={p._id || p.id} value={p._id || p.id}>{p.name}</option>
+                  <option key={p._id || p.id} value={p._id || p.id}>
+                    {p.name}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="form-group">
-              <label>Doctor <span className="req">*</span></label>
-              <select value={form.doctorId} onChange={(e) => setField("doctorId", e.target.value)} required>
+              <label>
+                Doctor <span className="req">*</span>
+              </label>
+              <select
+                value={form.doctorId}
+                onChange={(e) => setField("doctorId", e.target.value)}
+                required
+              >
                 <option value="">Select doctor</option>
                 {doctors.map((d) => (
-                  <option key={d._id || d.id} value={d._id || d.id}>{d.name}</option>
+                  <option key={d._id || d.id} value={d._id || d.id}>
+                    {d.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -116,19 +141,25 @@ export default function AddAdmission() {
           <div className="form-row">
             <div className="form-group">
               <label>Admission Type</label>
-              <select value={form.admissionType} onChange={(e) => setField("admissionType", e.target.value)}>
+              <select
+                value={form.admissionType}
+                onChange={(e) => setField("admissionType", e.target.value)}
+              >
                 <option value="IPD">IPD</option>
-                <option value="OPD">OPD</option>
-                <option value="Emergency">Emergency</option>
               </select>
             </div>
 
             <div className="form-group">
               <label>Available Bed</label>
-              <select value={form.bedId} onChange={(e) => setField("bedId", e.target.value)}>
+              <select
+                value={form.bedId}
+                onChange={(e) => setField("bedId", e.target.value)}
+              >
                 <option value="">Select bed</option>
                 {beds.map((bed) => (
-                  <option key={bed._id || bed.id} value={bed._id || bed.id}>{bed.bedNumber || bed.name}</option>
+                  <option key={bed._id || bed.id} value={bed._id || bed.id}>
+                    {bed.bedNumber}
+                  </option>
                 ))}
               </select>
             </div>
@@ -137,12 +168,18 @@ export default function AddAdmission() {
           <div className="form-row">
             <div className="form-group">
               <label>Department</label>
-              <input value={form.department} onChange={(e) => setField("department", e.target.value)} />
+              <input
+                value={form.department}
+                onChange={(e) => setField("department", e.target.value)}
+              />
             </div>
 
             <div className="form-group">
               <label>Ward</label>
-              <input value={form.ward} onChange={(e) => setField("ward", e.target.value)} />
+              <input
+                value={form.ward}
+                onChange={(e) => setField("ward", e.target.value)}
+              />
             </div>
           </div>
 
@@ -156,11 +193,16 @@ export default function AddAdmission() {
             />
           </div>
 
-          <div className="form-row" style={{ justifyContent: "flex-end", marginTop: 24 }}>
-            <button type="button" className="btn-secondary" onClick={() => navigate("/admissions")}>
+          <div className="form-footer">
+            <button
+              className="btn-cancel-form"
+              type="button"
+              onClick={() => navigate("/admissions")}
+            >
               Cancel
             </button>
-            <button type="submit" className="btn-primary" disabled={loading}>
+
+            <button className="btn-submit" type="submit" disabled={loading}>
               {loading ? "Creating..." : "Create Admission"}
             </button>
           </div>

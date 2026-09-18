@@ -41,13 +41,23 @@ export const updateInvoice = async (id, invoiceData) => {
 };
 
 // Mark invoice as paid
-export const markInvoicePaid = async (id, paidAmount) => {
+export const payInvoice = async (
+  id,
+  amount,
+  paymentMode,
+  paymentReference,
+  paymentTerminalId
+) => {
   try {
-    const response = await axiosInstance.patch(`/invoices/${id}/paid`, {
-      paidAmount,
+    const response = await axiosInstance.patch(`/invoices/${id}/pay`, {
+      amount,
+      paymentMode,
+      paymentReference,
+      paymentTerminalId,
     });
+
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to update invoice payment" };
+    throw error || { message: "Failed to update invoice payment" };
   }
 };

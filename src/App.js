@@ -19,16 +19,20 @@ import Appointments from "./appointments/AppointmentList";
 import NewAppointment from "./appointments/AddAppointment";
 import Admissions from "./admissions/AdmissionList";
 import AddAdmission from "./admissions/AddAdmission";
+import AdmissionDetail from "./admissions/AdmissionDetail";
 import Emergencies from "./emergencies/EmergencyList";
 import AddEmergency from "./emergencies/AddEmergency";
 import Beds from "./beds/BedList";
 import AddBed from "./beds/AddBed";
 import Invoices from "./invoices/InvoiceList";
-import Services from "./sevices/serviceList";
-import Rooms from "./rooms/RoomList";
+import AddInvoice from "./invoices/AddInvoice";
+// import Services from "./sevices/serviceList";
+// import Rooms from "./rooms/RoomList";
 import Login from "./auth/Login";
-import Register from "./auth/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Tenants from "./Tenants/TenantList";
+import AddTenant from "./Tenants/AddTenant";
+import AdminRoute from "./components/AdminRoute";
 
 function App() {
   return (
@@ -37,7 +41,6 @@ function App() {
 
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
@@ -70,6 +73,7 @@ function App() {
             {/* Admissions section */}
             <Route path="admissions" element={<Admissions />} />
             <Route path="admissions/new" element={<AddAdmission />} />
+            <Route path="admissions/:id" element={<AdmissionDetail />} />
 
             {/* Emergencies section */}
             <Route path="emergencies" element={<Emergencies />} />
@@ -81,10 +85,17 @@ function App() {
 
             {/* Invoices section */}
             <Route path="invoices" element={<Invoices />} />
+            <Route path="invoices/new" element={<AddInvoice />} />
 
             {/* Other sections */}
-            <Route path="services" element={<Services />} />
-            <Route path="rooms" element={<Rooms />} />
+            {/* <Route path="services" element={<Services />} />
+            <Route path="rooms" element={<Rooms />} /> */}
+
+            {/* Tenant sections */}
+            <Route element={<AdminRoute />}>
+              <Route path="tenants" element={<Tenants />} />
+              <Route path="tenants/new" element={<AddTenant />} />
+            </Route>
 
           </Route>
         </Route>

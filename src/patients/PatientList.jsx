@@ -671,99 +671,63 @@ export default function Patients() {
     };
   }, []);
 
-  const applyStoredEdits = (patientList) => {
-  const editedPatients = JSON.parse(
-    localStorage.getItem("editedPatients") || "{}"
-  );
+useEffect(() => {
+  const fetchPatients = async () => {
+    try {
+      setLoading(true);
 
-  return patientList.map((patient) => {
-    const edited = editedPatients[patient.id];
+      const response = await getPatients();
 
-    if (!edited) {
-      return patient;
+      const backendPatients = Array.isArray(response?.data)
+        ? response.data
+        : [];
+
+      const normalizedPatients = backendPatients.map((patient) => {
+        const age = patient.dateOfBirth
+          ? new Date().getFullYear() -
+            new Date(patient.dateOfBirth).getFullYear()
+          : "";
+
+        const gender = patient.gender
+          ? patient.gender.charAt(0).toUpperCase() +
+            patient.gender.slice(1)
+          : "";
+
+        return {
+          id: patient._id,
+          name: patient.name || "",
+          age,
+          gender,
+          phone: patient.phone || "",
+          address: patient.address || "",
+          patientCode: patient.patientCode || "",
+          email: patient.email || "",
+          doctor: "",
+          docRole: "",
+          docColor: "#3b82f6",
+          docInitials: "",
+          lastVisit: "",
+          status: "",
+          location: patient.address || "",
+          color: "#3b82f6",
+          dateOfBirth: patient.dateOfBirth,
+          createdAt: patient.createdAt,
+        };
+      });
+
+      setPatients(normalizedPatients);
+      setUsingMockData(false);
+    } catch (error) {
+      console.error("Patients API Error:", error);
+      setPatients([]);
+      setUsingMockData(false);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return {
-      ...patient,
-      ...edited,
-    };
-  });
-};
-
-  useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        setLoading(true);
-
-        const response = await getPatients();
-
-        const backendPatients = Array.isArray(response?.data)
-          ? response.data
-          : [];
-
-        if (backendPatients.length > 0) {
-          const normalizedPatients = backendPatients.map((patient, index) => {
-            const mock = patientsData[index % patientsData.length];
-
-            return {
-              id: patient._id || mock.id,
-
-              name: patient.name || mock.name,
-
-              age: patient.dateOfBirth
-                ? new Date().getFullYear() -
-                  new Date(patient.dateOfBirth).getFullYear()
-                : mock.age,
-
-              gender: patient.gender
-                ? patient.gender.charAt(0).toUpperCase() +
-                  patient.gender.slice(1)
-                : mock.gender,
-
-              phone: patient.phone || mock.phone,
-
-              address: patient.address || mock.address,
-
-              patientCode: patient.patientCode || `PT${patient._id || mock.id}`,
-
-              email: patient.email || "",
-
-              doctor: mock.doctor,
-              docRole: mock.docRole,
-              docColor: mock.docColor,
-              docInitials: mock.docInitials,
-
-              lastVisit: mock.lastVisit,
-
-              status: mock.status,
-
-              location: mock.location,
-
-              color: mock.color,
-
-              dateOfBirth: patient.dateOfBirth,
-              createdAt: patient.createdAt,
-            };
-          });
-
-          setPatients(applyStoredEdits(normalizedPatients));
-          setUsingMockData(false);
-        } else {
-          setPatients(applyStoredEdits(patientsData));
-          setUsingMockData(true);
-        }
-      } catch (error) {
-        console.error("Patients API Error:", error);
-
-        setPatients(applyStoredEdits(patientsData));
-        setUsingMockData(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPatients();
-  }, []);
+  fetchPatients();
+}, []);
 
   const filtered = patients
     .filter((p) => {

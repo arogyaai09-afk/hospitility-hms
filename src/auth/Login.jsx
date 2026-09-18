@@ -66,7 +66,6 @@ const Login = () => {
         // Small delay to ensure state updates
         setTimeout(() => {
           console.log("Navigating to dashboard...");
-          // navigate("/dashboard", { replace: true });
           navigate("/", { replace: true });
         }, 300);
       } else {
@@ -234,14 +233,6 @@ const Login = () => {
               {isLoading ? "Signing in..." : "Sign in"}
             </button>
           </form>
-
-          {/* Link to Register */}
-          <p className="login-link">
-            Don't have an account?{" "}
-            <Link to="/register" className="link">
-              Sign up here
-            </Link>
-          </p>
 
           <div className="login-footer">
             <span>© 2026 Hospital Management System</span>

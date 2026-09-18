@@ -3,10 +3,9 @@ import axiosInstance from './axiosInstance';
 // Get all patients
 export const getPatients = async () => {
   try {
-    const response = await axiosInstance.get('/patients');
-    return response;
+    return await axiosInstance.get("/patients");
   } catch (error) {
-    throw error.response?.data || { message: "Failed to fetch patients" };
+    throw error || { message: "Failed to fetch patient" };
   }
 };
 
@@ -16,17 +15,16 @@ export const getPatientById = async (id) => {
     const response = await axiosInstance.get(`/patients/${id}`);
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to fetch patient" };
+    throw error || { message: "Failed to fetch patient" };
   }
 };
 
 // Create a new patient
 export const createPatient = async (patientData) => {
   try {
-    const response = await axiosInstance.post('/patients', patientData);
-    return response;
+    return await axiosInstance.post("/patients", patientData);
   } catch (error) {
-    throw error.response?.data || { message: "Failed to create patient" };
+    throw error || { message: "Failed to fetch patient" };
   }
 };
 
@@ -36,7 +34,7 @@ export const updatePatient = async (id, patientData) => {
     const response = await axiosInstance.patch(`/patients/${id}`, patientData);
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to update patient" };
+    throw error || { message: "Failed to fetch patient" };
   }
 };
 
@@ -46,6 +44,6 @@ export const deletePatient = async (id) => {
     const response = await axiosInstance.delete(`/patients/${id}`);
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to delete patient" };
+    throw error || { message: "Failed to fetch patient" };
   }
 };

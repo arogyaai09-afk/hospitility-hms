@@ -1,0 +1,315 @@
+.admission-detail-page {
+  padding: 32px 40px 48px;
+  min-height: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admission-detail-breadcrumb {
+  margin-bottom: 20px;
+
+  button {
+    border: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #64748b;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+
+    &:hover {
+      color: #2563eb;
+    }
+  }
+}
+
+.admission-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #172033;
+  }
+
+  p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+  }
+}
+
+.admission-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+
+  &.admitted {
+    background: #eff6ff;
+    color: #2563eb;
+
+    .status-dot {
+      background: #2563eb;
+    }
+  }
+
+  &.discharged {
+    background: #ecfdf5;
+    color: #059669;
+
+    .status-dot {
+      background: #059669;
+    }
+  }
+}
+
+.admission-detail-card {
+  background: #fff;
+  border: 1px solid #e5eaf1;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.card-title {
+  padding: 22px 24px;
+  border-bottom: 1px solid #edf0f4;
+
+  h2 {
+    margin: 0 0 5px;
+    font-size: 17px;
+    font-weight: 650;
+    color: #172033;
+  }
+
+  p {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+  }
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  padding: 8px 24px 20px;
+}
+
+.detail-item {
+  padding: 18px 20px 18px 0;
+  border-bottom: 1px solid #f0f2f5;
+
+  &:nth-child(odd) {
+    border-right: 1px solid #f0f2f5;
+    padding-right: 30px;
+  }
+
+  &:nth-child(even) {
+    padding-left: 30px;
+  }
+
+  &:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+}
+
+.detail-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.detail-value {
+  display: block;
+  color: #172033;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.bed-value {
+  color: #2563eb;
+}
+
+.inline-status {
+  display: inline-flex;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+
+  &.admitted {
+    background: #eff6ff;
+    color: #2563eb;
+  }
+
+  &.discharged {
+    background: #ecfdf5;
+    color: #059669;
+  }
+}
+
+.timeline-section {
+  margin: 8px 24px 0;
+  padding: 22px 0;
+  border-top: 1px solid #edf0f4;
+
+  h3 {
+    margin: 0 0 18px;
+    font-size: 15px;
+    font-weight: 650;
+    color: #172033;
+  }
+}
+
+.timeline {
+  display: flex;
+  gap: 50px;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 240px;
+
+  strong {
+    display: block;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  p {
+    margin: 0;
+    color: #64748b;
+    font-size: 12px;
+  }
+}
+
+.timeline-icon {
+  width: 10px;
+  height: 10px;
+  margin-top: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.admitted-icon {
+    background: #2563eb;
+    box-shadow: 0 0 0 5px #dbeafe;
+  }
+
+  &.discharge-icon {
+    background: #94a3b8;
+    box-shadow: 0 0 0 5px #f1f5f9;
+  }
+}
+
+.admission-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 18px 24px;
+  border-top: 1px solid #edf0f4;
+  background: #fafbfc;
+}
+
+.back-button,
+.discharge-button {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.back-button {
+  background: #fff;
+  border: 1px solid #dbe1e8;
+  color: #475569;
+
+  &:hover {
+    background: #f8fafc;
+  }
+}
+
+.discharge-button {
+  border: 0;
+  background: #2563eb;
+  color: #fff;
+
+  &:hover {
+    background: #1d4ed8;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 768px) {
+  .admission-detail-page {
+    padding: 20px 16px;
+  }
+
+  .admission-detail-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-item,
+  .detail-item:nth-child(odd),
+  .detail-item:nth-child(even) {
+    border-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .detail-item:nth-last-child(-n + 2) {
+    border-bottom: 1px solid #f0f2f5;
+  }
+
+  .detail-item:last-child {
+    border-bottom: 0;
+  }
+
+  .timeline {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .admission-actions {
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+    }
+  }
+}

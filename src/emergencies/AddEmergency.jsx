@@ -29,8 +29,16 @@ export default function AddEmergency() {
           getDoctors(),
         ]);
 
-        setPatients(Array.isArray(patientRes?.data || patientRes) ? patientRes?.data || patientRes : []);
-        setDoctors(Array.isArray(doctorRes?.data || doctorRes) ? doctorRes?.data || doctorRes : []);
+        setPatients(
+          Array.isArray(patientRes?.data || patientRes)
+            ? patientRes?.data || patientRes
+            : [],
+        );
+        setDoctors(
+          Array.isArray(doctorRes?.data || doctorRes)
+            ? doctorRes?.data || doctorRes
+            : [],
+        );
       } catch (error) {
         console.error("Emergency form load error:", error);
       }
@@ -39,7 +47,8 @@ export default function AddEmergency() {
     fetchData();
   }, []);
 
-  const setField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+  const setField = (field, value) =>
+    setForm((prev) => ({ ...prev, [field]: value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,21 +86,34 @@ export default function AddEmergency() {
 
           <div className="form-row">
             <div className="form-group">
-              <label>Patient <span className="req">*</span></label>
-              <select value={form.patientId} onChange={(e) => setField("patientId", e.target.value)} required>
+              <label>
+                Patient <span className="req">*</span>
+              </label>
+              <select
+                value={form.patientId}
+                onChange={(e) => setField("patientId", e.target.value)}
+                required
+              >
                 <option value="">Select patient</option>
                 {patients.map((p) => (
-                  <option key={p._id || p.id} value={p._id || p.id}>{p.name}</option>
+                  <option key={p._id || p.id} value={p._id || p.id}>
+                    {p.name}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="form-group">
               <label>Doctor</label>
-              <select value={form.doctorId} onChange={(e) => setField("doctorId", e.target.value)}>
+              <select
+                value={form.doctorId}
+                onChange={(e) => setField("doctorId", e.target.value)}
+              >
                 <option value="">Select doctor</option>
                 {doctors.map((d) => (
-                  <option key={d._id || d.id} value={d._id || d.id}>{d.name}</option>
+                  <option key={d._id || d.id} value={d._id || d.id}>
+                    {d.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -100,7 +122,10 @@ export default function AddEmergency() {
           <div className="form-row">
             <div className="form-group">
               <label>Emergency Type</label>
-              <select value={form.emergencyType} onChange={(e) => setField("emergencyType", e.target.value)}>
+              <select
+                value={form.emergencyType}
+                onChange={(e) => setField("emergencyType", e.target.value)}
+              >
                 <option value="Trauma">Trauma</option>
                 <option value="Cardiac">Cardiac</option>
                 <option value="Respiratory">Respiratory</option>
@@ -111,7 +136,10 @@ export default function AddEmergency() {
 
             <div className="form-group">
               <label>Severity</label>
-              <select value={form.severity} onChange={(e) => setField("severity", e.target.value)}>
+              <select
+                value={form.severity}
+                onChange={(e) => setField("severity", e.target.value)}
+              >
                 <option value="high">High</option>
                 <option value="medium">Medium</option>
                 <option value="low">Low</option>
@@ -129,12 +157,17 @@ export default function AddEmergency() {
             />
           </div>
 
-          <div className="form-row" style={{ justifyContent: "flex-end", marginTop: 24 }}>
-            <button type="button" className="btn-secondary" onClick={() => navigate("/emergencies")}>
+          <div className="form-footer">
+            <button
+              className="btn-cancel-form"
+              type="button"
+              onClick={() => navigate("/admissions")}
+            >
               Cancel
             </button>
-            <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? "Saving..." : "Save Emergency"}
+
+            <button className="btn-submit" type="submit" disabled={loading}>
+              {loading ? "Creating..." : "Create Admission"}
             </button>
           </div>
         </div>

@@ -1,3 +1,4 @@
+//appointments/AddAppointmentList.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
@@ -219,7 +220,6 @@ export default function NewAppointment() {
         appointmentType: form.appointmentType,
         visitReason: form.reason,
         doctorId: form.doctorId,
-        status: statusMap[form.status] || "scheduled",
       };
 
       console.log("Creating appointment:", payload);

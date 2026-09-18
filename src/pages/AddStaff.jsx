@@ -16,7 +16,14 @@ const initialForm = {
   status: "active",
 };
 
-const roles = ["staff", "nurse", "supervisor", "admin", "receptionist", "lab technician"];
+const roles = [
+  "staff",
+  "nurse",
+  "supervisor",
+  "admin",
+  "receptionist",
+  "lab technician",
+];
 const departments = [
   "Cardiology",
   "Orthopedics",
@@ -63,7 +70,11 @@ export default function AddStaff() {
 
     const reader = new FileReader();
     reader.onload = () => {
-      setForm((prev) => ({ ...prev, profileImage: file, profilePreview: reader.result }));
+      setForm((prev) => ({
+        ...prev,
+        profileImage: file,
+        profilePreview: reader.result,
+      }));
     };
     reader.readAsDataURL(file);
   };
@@ -95,7 +106,8 @@ export default function AddStaff() {
 
     if (Object.keys(validationErrors).length > 0) {
       const firstError = document.querySelector(".error");
-      if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (firstError)
+        firstError.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
@@ -106,8 +118,6 @@ export default function AddStaff() {
         email: form.email.trim(),
         phone: form.phone.trim(),
         role: form.role,
-        department: form.department,
-        status: form.status,
       };
 
       const response = await createStaff(payload);
@@ -133,7 +143,9 @@ export default function AddStaff() {
 
       <form className="form-card" onSubmit={handleSubmit}>
         <div className="form-section">
-          <div className="section-title" style={{ paddingTop: 8 }}>Staff Information</div>
+          <div className="section-title" style={{ paddingTop: 8 }}>
+            Staff Information
+          </div>
 
           <div className="profile-upload">
             <span className="upload-label">Profile Image</span>
@@ -169,7 +181,9 @@ export default function AddStaff() {
               >
                 <option value="">Select role</option>
                 {roles.map((role) => (
-                  <option key={role} value={role}>{role}</option>
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
                 ))}
               </select>
             </FormGroup>
@@ -206,13 +220,18 @@ export default function AddStaff() {
               >
                 <option value="">Select department</option>
                 {departments.map((department) => (
-                  <option key={department} value={department}>{department}</option>
+                  <option key={department} value={department}>
+                    {department}
+                  </option>
                 ))}
               </select>
             </FormGroup>
 
             <FormGroup label="Status">
-              <select value={form.status} onChange={(event) => setField("status", event.target.value)}>
+              <select
+                value={form.status}
+                onChange={(event) => setField("status", event.target.value)}
+              >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
                 <option value="on_leave">On Leave</option>
@@ -220,11 +239,16 @@ export default function AddStaff() {
             </FormGroup>
           </div>
 
-          <div className="form-row" style={{ justifyContent: "flex-end", marginTop: 24 }}>
-            <button type="button" className="btn-secondary" onClick={() => navigate("/staff")}>
+          <div className="form-footer">
+            <button
+              type="button"
+              className="btn-cancel-form"
+              onClick={() => navigate("/staff")}
+            >
               Cancel
             </button>
-            <button type="submit" className="btn-primary" disabled={loading}>
+
+            <button type="submit" className="btn-submit" disabled={loading}>
               {loading ? "Saving..." : "Create Staff"}
             </button>
           </div>

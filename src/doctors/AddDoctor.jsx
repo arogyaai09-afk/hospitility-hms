@@ -1,3 +1,4 @@
+//doctors/AddDoctor.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createDoctor } from "../api/doctors";
@@ -340,6 +341,7 @@ export default function AddDoctor() {
         email: contact.email.trim(),
         fees: Number(appointment.consultationCharge),
       };
+
 
       await createDoctor(doctorData);
 

@@ -1,6 +1,6 @@
+//doctors/DoctorList.jsx
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -16,122 +16,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
-import { getDoctors } from "../api/doctors";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MOCK DATA
-// ─────────────────────────────────────────────────────────────────────────────
-
-const doctorsData = [
-  {
-    id: 1,
-    name: "Dr. Mick Thompson",
-    role: "Cardiologist",
-    dept: "Cardiology",
-    phone: "+1 54554 54584",
-    email: "mick@example.com",
-    fee: 458,
-    status: "Available",
-    avail: "Mon, 20 Jan 2025",
-    color: "#3b82f6",
-  },
-  {
-    id: 2,
-    name: "Dr. Sarah Johnson",
-    role: "Orthopedic Surgeon",
-    dept: "Orthopedics",
-    phone: "+1 43554 54584",
-    email: "sarah@example.com",
-    fee: 512,
-    status: "Available",
-    avail: "Wed, 22 Jan 2025",
-    color: "#10b981",
-  },
-  {
-    id: 3,
-    name: "Dr. Emily Carter",
-    role: "Pediatrician",
-    dept: "Pediatrics",
-    phone: "+1 47554 54585",
-    email: "emily@example.com",
-    fee: 635,
-    status: "Available",
-    avail: "Fri, 24 Jan 2025",
-    color: "#8b5cf6",
-  },
-  {
-    id: 4,
-    name: "Dr. David Lee",
-    role: "Gynecologist",
-    dept: "Gynecology",
-    phone: "+1 54114 54586",
-    email: "david@example.com",
-    fee: 478,
-    status: "Available",
-    avail: "Tue, 21 Jan 2025",
-    color: "#f59e0b",
-  },
-  {
-    id: 5,
-    name: "Dr. Anna Kim",
-    role: "Psychiatrist",
-    dept: "Psychiatry",
-    phone: "+1 51247 54587",
-    email: "anna@example.com",
-    fee: 550,
-    status: "Available",
-    avail: "Mon, 27 Jan 2025",
-    color: "#0d9488",
-  },
-  {
-    id: 6,
-    name: "Dr. John Smith",
-    role: "Neurosurgeon",
-    dept: "Neurology",
-    phone: "+1 41452 54588",
-    email: "john@example.com",
-    fee: 703,
-    status: "Unavailable",
-    avail: "Thu, 30 Jan 2025",
-    color: "#ef4444",
-  },
-  {
-    id: 7,
-    name: "Dr. Lisa White",
-    role: "Oncologist",
-    dept: "Oncology",
-    phone: "+1 51425 54589",
-    email: "lisa@example.com",
-    fee: 420,
-    status: "Available",
-    avail: "Sat, 25 Jan 2025",
-    color: "#ec4899",
-  },
-  {
-    id: 8,
-    name: "Dr. Patricia Brown",
-    role: "Pulmonologist",
-    dept: "Pulmonology",
-    phone: "+1 62458 45845",
-    email: "patricia@example.com",
-    fee: 390,
-    status: "Available",
-    avail: "Sun, 01 Feb 2025",
-    color: "#6366f1",
-  },
-  {
-    id: 9,
-    name: "Dr. Rachel Green",
-    role: "Urologist",
-    dept: "Urology",
-    phone: "+1 61422 45214",
-    email: "rachel@example.com",
-    fee: 470,
-    status: "Available",
-    avail: "Tue, 28 Jan 2025",
-    color: "#14b8a6",
-  },
-];
+import { getDoctors, deleteDoctor } from "../api/doctors";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // OPTIONS
@@ -534,30 +419,30 @@ export default function Doctors() {
   // 3 DOT DELETE HANDLER
   // ───────────────────────────────────────────────────────────────────────────
 
-  const handleDeleteDoctor = (id) => {
+  const handleDeleteDoctor = async (id) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this doctor?",
     );
 
     if (!confirmed) return;
 
-    // Save deleted doctor IDs in browser
-    const deletedDoctors = JSON.parse(
-      localStorage.getItem("deletedDoctors") || "[]",
-    );
+    try {
+      await deleteDoctor(id);
 
-    if (!deletedDoctors.includes(String(id))) {
-      deletedDoctors.push(String(id));
+      setDoctors((currentDoctors) =>
+        currentDoctors.filter((doctor) => String(doctor.id) !== String(id)),
+      );
+
+      setOpenMenu(null);
+    } catch (error) {
+      console.error("Delete doctor error:", error);
+
+      alert(
+        error?.message ||
+          error?.error ||
+          "Failed to delete doctor. Please try again.",
+      );
     }
-
-    localStorage.setItem("deletedDoctors", JSON.stringify(deletedDoctors));
-
-    // Remove immediately from current screen
-    setDoctors((currentDoctors) =>
-      currentDoctors.filter((doctor) => String(doctor.id) !== String(id)),
-    );
-
-    setOpenMenu(null);
   };
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -566,7 +451,6 @@ export default function Doctors() {
 
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [usingMockData, setUsingMockData] = useState(false);
 
   const sortRef = useRef();
   const exportRef = useRef();
@@ -578,38 +462,38 @@ export default function Doctors() {
   // APPLY STORED EDITS
   // ───────────────────────────────────────────────────────────────────────────
 
-  const applyStoredEdits = (doctorList) => {
-    const editedDoctors = JSON.parse(
-      localStorage.getItem("editedDoctors") || "{}",
-    );
+  // const applyStoredEdits = (doctorList) => {
+  //   const editedDoctors = JSON.parse(
+  //     localStorage.getItem("editedDoctors") || "{}",
+  //   );
 
-    return doctorList.map((doctor) => {
-      const edited = editedDoctors[doctor.id];
+  //   return doctorList.map((doctor) => {
+  //     const edited = editedDoctors[doctor.id];
 
-      if (!edited) {
-        return doctor;
-      }
+  //     if (!edited) {
+  //       return doctor;
+  //     }
 
-      return {
-        ...doctor,
-        ...edited,
-      };
-    });
-  };
+  //     return {
+  //       ...doctor,
+  //       ...edited,
+  //     };
+  //   });
+  // };
 
   // ───────────────────────────────────────────────────────────────────────────
   // APPLY DELETED DOCTORS
   // ───────────────────────────────────────────────────────────────────────────
 
-  const applyDeletedDoctors = (doctorList) => {
-    const deletedDoctors = JSON.parse(
-      localStorage.getItem("deletedDoctors") || "[]",
-    );
+  // const applyDeletedDoctors = (doctorList) => {
+  //   const deletedDoctors = JSON.parse(
+  //     localStorage.getItem("deletedDoctors") || "[]",
+  //   );
 
-    return doctorList.filter(
-      (doctor) => !deletedDoctors.includes(String(doctor.id)),
-    );
-  };
+  //   return doctorList.filter(
+  //     (doctor) => !deletedDoctors.includes(String(doctor.id)),
+  //   );
+  // };
 
   // ───────────────────────────────────────────────────────────────────────────
   // FETCH DOCTORS FROM BACKEND
@@ -645,48 +529,26 @@ export default function Doctors() {
 
         // Backend data available
         if (backendDoctors.length > 0) {
-          const normalizedDoctors = backendDoctors.map((doctor, index) => {
-            const mock = doctorsData[index % doctorsData.length];
+          const normalizedDoctors = backendDoctors.map((doctor) => ({
+            id: doctor._id,
+            name: doctor.name || "",
+            role: doctor.specialization || "",
+            dept: doctor.specialization || "",
+            phone: doctor.phone || "",
+            email: doctor.email || "",
+            fee: doctor.fees ?? "",
+            status: "",
+            avail: "",
+            color: "#3b82f6",
+          }));
 
-            return {
-              // Backend ID is important for Doctor Detail route
-              id: doctor._id || doctor.id || mock.id,
-
-              // Backend fields
-              name: doctor.name || mock.name,
-
-              // Backend specialization is used for both
-              // Designation and Department
-              role: doctor.specialization || mock.role,
-
-              dept: doctor.specialization || mock.dept,
-
-              phone: doctor.phone || mock.phone,
-
-              email: doctor.email || doctor.userId?.email || mock.email,
-
-              fee: doctor.fees ?? mock.fee,
-              // These remain MOCK for now
-              status: mock.status,
-              avail: mock.avail,
-
-              color: mock.color,
-            };
-          });
-
-          setDoctors(applyDeletedDoctors(applyStoredEdits(normalizedDoctors)));
-          setUsingMockData(false);
+          setDoctors(normalizedDoctors);
         } else {
-          // Backend empty → MOCK DATA
-          setDoctors(applyDeletedDoctors(applyStoredEdits(doctorsData)));
-          setUsingMockData(true);
+          setDoctors([]);
         }
       } catch (error) {
         console.error("Doctor API Error:", error);
-
-        // API error → MOCK DATA
-        setDoctors(applyDeletedDoctors(applyStoredEdits(doctorsData)));
-        setUsingMockData(true);
+        setDoctors([]);
       } finally {
         setLoading(false);
       }
@@ -880,26 +742,7 @@ export default function Doctors() {
       <div className="page-top">
         <div className="page-title-wrap">
           <h1>{view === "grid" ? "Doctor Grid" : "Doctor List"}</h1>
-
           <span className="total-badge">Total Doctors : {filtered.length}</span>
-
-          {/* MOCK DATA LABEL */}
-          {usingMockData && !loading && (
-            <span
-              style={{
-                marginLeft: "10px",
-                padding: "5px 10px",
-                borderRadius: "6px",
-                background: "#fff7ed",
-                color: "#c2410c",
-                border: "1px solid #fed7aa",
-                fontSize: "12px",
-                fontWeight: 700,
-              }}
-            >
-              MOCK DATA
-            </span>
-          )}
         </div>
 
         <div className="page-actions">

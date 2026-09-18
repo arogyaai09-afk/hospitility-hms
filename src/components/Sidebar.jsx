@@ -47,11 +47,24 @@ import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import EmergencyShareIcon from "@mui/icons-material/EmergencyShare";
 import HotelIcon from "@mui/icons-material/Hotel";
 import DescriptionIcon from "@mui/icons-material/Description";
+import BusinessIcon from "@mui/icons-material/Business";
 
 // Context to share collapsed state globally (used in Layout/Header)
-export const SidebarContext = createContext({ collapsed: false, setCollapsed: () => {} });
+export const SidebarContext = createContext({
+  collapsed: false,
+  setCollapsed: () => {},
+});
 
-const menuData = [
+
+
+export default function Sidebar() {
+  const location = useLocation();
+  const { collapsed, setCollapsed } = useContext(SidebarContext);
+  const [openMenus, setOpenMenus] = useState({ dashboard: true });
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isAdmin = user?.role === "admin";
+
+  const menuData = [
   {
     section: "Main Menu",
     items: [
@@ -59,9 +72,7 @@ const menuData = [
         label: "Dashboard",
         icon: <DashboardIcon style={{ fontSize: 18 }} />,
         key: "dashboard",
-        sub: [
-          { label: "Admin Dashboard", path: "/" },
-        ],
+        sub: [{ label: "Admin Dashboard", path: "/" }],
       },
     ],
   },
@@ -78,30 +89,60 @@ const menuData = [
           { label: "Add Doctor", path: "/doctors/add" },
         ],
       },
-      { label: "Departments", icon: <ApartmentIcon style={{ fontSize: 18 }} />, key: "departments", path: "/departments" },
-      { label: "Staff", icon: <GroupIcon style={{ fontSize: 18 }} />, key: "staff", path: "/staff" },
-      { 
-        label: "Patients", 
-        icon: <PeopleIcon style={{ fontSize: 18 }} />, 
-        key: "patients", 
+      {
+        label: "Departments",
+        icon: <ApartmentIcon style={{ fontSize: 18 }} />,
+        key: "departments",
+        path: "/departments",
+      },
+      {
+        label: "Staff",
+        icon: <GroupIcon style={{ fontSize: 18 }} />,
+        key: "staff",
+        path: "/staff",
+      },
+      {
+        label: "Patients",
+        icon: <PeopleIcon style={{ fontSize: 18 }} />,
+        key: "patients",
         chevron: true,
         sub: [
           { label: "Patients", path: "/patients" },
           { label: "Create Patient", path: "/patients/create" },
         ],
       },
-      { 
-        label: "Appointments", 
-        icon: <CalendarMonthIcon style={{ fontSize: 18 }} />, 
-        key: "appointments", 
+      {
+        label: "Appointments",
+        icon: <CalendarMonthIcon style={{ fontSize: 18 }} />,
+        key: "appointments",
         chevron: true,
         sub: [
           { label: "Appointments", path: "/appointments" },
           { label: "New Appointment", path: "/appointments/new" },
         ],
       },
-      { label: "Services", icon: <MedicalServicesIcon style={{ fontSize: 18 }} />, key: "services", path: "/services" },
-      { label: "Rooms", icon: <MeetingRoomIcon style={{ fontSize: 18 }} />, key: "rooms", path: "/rooms" },
+      {
+        label: "Services",
+        icon: <MedicalServicesIcon style={{ fontSize: 18 }} />,
+        key: "services",
+        path: "/services",
+      },
+      {
+        label: "Rooms",
+        icon: <MeetingRoomIcon style={{ fontSize: 18 }} />,
+        key: "rooms",
+        path: "/rooms",
+      },
+      ...(isAdmin
+        ? [
+            {
+              label: "Tenants",
+              icon: <BusinessIcon style={{ fontSize: 18 }} />,
+              key: "tenants",
+              path: "/tenants",
+            },
+          ]
+        : []),
     ],
   },
   {
@@ -140,11 +181,6 @@ const menuData = [
   },
 ];
 
-export default function Sidebar() {
-  const location = useLocation();
-  const { collapsed, setCollapsed } = useContext(SidebarContext);
-  const [openMenus, setOpenMenus] = useState({ dashboard: true });
-
   const toggleMenu = (key) => {
     if (collapsed) return;
     setOpenMenus((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -158,7 +194,6 @@ export default function Sidebar() {
 
   return (
     <aside className={`sidebar ${collapsed ? "sidebar--collapsed" : ""}`}>
-
       {/* ── Logo ── */}
       <div className="sidebar-logo">
         <div className="logo-wrap">
@@ -172,14 +207,18 @@ export default function Sidebar() {
           onClick={() => setCollapsed(!collapsed)}
           title={collapsed ? "Expand" : "Collapse"}
         >
-          {collapsed
-            ? <MenuIcon style={{ fontSize: 18 }} />
-            : <MenuOpenIcon style={{ fontSize: 18 }} />}
+          {collapsed ? (
+            <MenuIcon style={{ fontSize: 18 }} />
+          ) : (
+            <MenuOpenIcon style={{ fontSize: 18 }} />
+          )}
         </div>
       </div>
 
       {/* ── Clinic Info ── */}
-      <div className={`clinic-info ${collapsed ? "clinic-info--collapsed" : ""}`}>
+      <div
+        className={`clinic-info ${collapsed ? "clinic-info--collapsed" : ""}`}
+      >
         {/* <div className="clinic-avatar" title="Trustcare Clinic">T</div> */}
         {!collapsed && (
           <>
@@ -197,14 +236,14 @@ export default function Sidebar() {
       {/* ── Navigation ── */}
       {menuData.map((section) => (
         <div className="nav-section" key={section.section}>
-          {!collapsed
-            ? <div className="nav-section-title">{section.section}</div>
-            : <div className="nav-section-divider" />
-          }
+          {!collapsed ? (
+            <div className="nav-section-title">{section.section}</div>
+          ) : (
+            <div className="nav-section-divider" />
+          )}
 
           {section.items.map((item) => (
             <div key={item.key} className="nav-item-wrap">
-
               {/* Items that have sub-menus */}
               {item.sub ? (
                 <>
@@ -214,7 +253,9 @@ export default function Sidebar() {
                   >
                     <div className="nav-left">
                       <span className="nav-icon">{item.icon}</span>
-                      {!collapsed && <span className="nav-label">{item.label}</span>}
+                      {!collapsed && (
+                        <span className="nav-label">{item.label}</span>
+                      )}
                     </div>
                     {!collapsed && (
                       <ChevronRightIcon
@@ -222,7 +263,9 @@ export default function Sidebar() {
                         style={{ fontSize: 14 }}
                       />
                     )}
-                    {collapsed && <span className="nav-tooltip">{item.label}</span>}
+                    {collapsed && (
+                      <span className="nav-tooltip">{item.label}</span>
+                    )}
                   </div>
                   {openMenus[item.key] && !collapsed && (
                     <div className="nav-sub">
@@ -246,12 +289,19 @@ export default function Sidebar() {
                 >
                   <div className="nav-left">
                     <span className="nav-icon">{item.icon}</span>
-                    {!collapsed && <span className="nav-label">{item.label}</span>}
+                    {!collapsed && (
+                      <span className="nav-label">{item.label}</span>
+                    )}
                   </div>
                   {!collapsed && item.chevron && (
-                    <ChevronRightIcon className="nav-chevron" style={{ fontSize: 14 }} />
+                    <ChevronRightIcon
+                      className="nav-chevron"
+                      style={{ fontSize: 14 }}
+                    />
                   )}
-                  {collapsed && <span className="nav-tooltip">{item.label}</span>}
+                  {collapsed && (
+                    <span className="nav-tooltip">{item.label}</span>
+                  )}
                 </Link>
               )}
             </div>

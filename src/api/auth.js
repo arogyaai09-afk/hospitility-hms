@@ -3,13 +3,14 @@ import axiosInstance from './axiosInstance';
 // Login user
 export const loginUser = async (email, password) => {
   try {
-    const response = await axiosInstance.post('/auth/login', {
+    return await axiosInstance.post("/auth/login", {
       email,
       password,
     });
-    return response;
   } catch (error) {
-    throw error.response?.data || { message: "Login failed" };
+    throw error?.message
+      ? error
+      : { message: "Login failed" };
   }
 };
 

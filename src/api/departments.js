@@ -5,6 +5,6 @@ export const getDepartments = async () => {
     const response = await axiosInstance.get('/departments');
     return response;
   } catch (error) {
-    throw error?.response?.data || { message: 'Failed to fetch departments' };
-  }
+  throw error || { message: "Failed to fetch departments" };
+}
 };

@@ -1,3 +1,4 @@
+// AddBed.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
@@ -26,11 +27,10 @@ export default function AddBed() {
 
     try {
       await createBed({
-        bedNumber: form.bedNumber,
-        ward: form.ward,
-        roomNumber: form.roomNumber,
-        status: form.status,
+        bedNumber: form.bedNumber.trim(),
+        ward: form.ward.trim(),
         type: form.type,
+        status: form.status,
       });
       alert("Bed added successfully");
       navigate("/beds");
@@ -55,7 +55,9 @@ export default function AddBed() {
 
           <div className="form-row">
             <div className="form-group">
-              <label>Bed Number <span className="req">*</span></label>
+              <label>
+                Bed Number <span className="req">*</span>
+              </label>
               <input
                 value={form.bedNumber}
                 onChange={(e) => setField("bedNumber", e.target.value)}
@@ -77,12 +79,18 @@ export default function AddBed() {
           <div className="form-row">
             <div className="form-group">
               <label>Ward</label>
-              <input value={form.ward} onChange={(e) => setField("ward", e.target.value)} />
+              <input
+                value={form.ward}
+                onChange={(e) => setField("ward", e.target.value)}
+              />
             </div>
 
             <div className="form-group">
               <label>Type</label>
-              <select value={form.type} onChange={(e) => setField("type", e.target.value)}>
+              <select
+                value={form.type}
+                onChange={(e) => setField("type", e.target.value)}
+              >
                 <option value="General">General</option>
                 <option value="ICU">ICU</option>
                 <option value="Private">Private</option>
@@ -93,19 +101,27 @@ export default function AddBed() {
 
           <div className="form-group">
             <label>Status</label>
-            <select value={form.status} onChange={(e) => setField("status", e.target.value)}>
+            <select
+              value={form.status}
+              onChange={(e) => setField("status", e.target.value)}
+            >
               <option value="available">Available</option>
               <option value="occupied">Occupied</option>
               <option value="maintenance">Maintenance</option>
             </select>
           </div>
 
-          <div className="form-row" style={{ justifyContent: "flex-end", marginTop: 24 }}>
-            <button type="button" className="btn-secondary" onClick={() => navigate("/beds")}>
+          <div className="form-footer">
+            <button
+              className="btn-cancel-form"
+              type="button"
+              onClick={() => navigate("/admissions")}
+            >
               Cancel
             </button>
-            <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? "Saving..." : "Save Bed"}
+
+            <button className="btn-submit" type="submit" disabled={loading}>
+              {loading ? "Creating..." : "Create Admission"}
             </button>
           </div>
         </div>
