@@ -12,7 +12,16 @@ function getTenantId(ctx) {
 
 async function create(ctx) {
   const tenantId = getTenantId(ctx);
-  const payload = { ...ctx.request.body, tenantId };
+  if (!tenantId) {
+    ctx.throw(400, 'tenantId is required for bed creation');
+  }
+  const payload = {
+    ...ctx.request.body,
+    type: typeof ctx.request.body.type === 'string'
+      ? ctx.request.body.type.toLowerCase()
+      : ctx.request.body.type,
+    tenantId
+  };
   const bed = await createBed(payload);
   ctx.status = 201;
   ctx.body = success(bed, 'Bed created');

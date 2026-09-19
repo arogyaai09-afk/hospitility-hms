@@ -6,7 +6,7 @@ const paymentSchema = new mongoose.Schema({
   invoiceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Invoice', required: true },
   tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
   amount: { type: Number, required: true, min: 1 },
-  paymentMode: { type: String, enum: ['cash', 'online'], required: true },
+  paymentMode: { type: String, enum: ['cash', 'online', 'upi'], required: true },
   paymentReference: { type: String },
   paymentTerminalId: { type: String },
   status: { type: String, enum: ['success', 'failed'], default: 'success' },

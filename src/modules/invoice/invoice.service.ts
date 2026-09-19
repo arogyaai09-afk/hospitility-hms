@@ -174,7 +174,7 @@ async function collectPayment(id, tenantId, payload) {
     throw err;
   }
 
-  if (invoice.paymentType === 'one_time' && amount !== invoice.balanceAmount) {
+  if (['one_time', 'full'].includes(invoice.paymentType) && amount !== invoice.balanceAmount) {
     const err = new Error('One-time payment must clear the full invoice balance');
     err.status = 400;
     throw err;
