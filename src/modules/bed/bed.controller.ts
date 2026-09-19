@@ -4,8 +4,15 @@ const { createBed, listBeds, getAvailableBeds } = require('./bed.service');
 const { success } = require('../../utils/response');
 const { getPaginationParams } = require('../../utils/pagination');
 
+function getTenantId(ctx) {
+  return ctx.state.user.role === 'admin'
+    ? ctx.request.body?.tenantId || ctx.query.tenantId
+    : ctx.state.user.tenantId;
+}
+
 async function create(ctx) {
-  const payload = { ...ctx.request.body, tenantId: ctx.state.user.tenantId };
+  const tenantId = getTenantId(ctx);
+  const payload = { ...ctx.request.body, tenantId };
   const bed = await createBed(payload);
   ctx.status = 201;
   ctx.body = success(bed, 'Bed created');
@@ -13,12 +20,12 @@ async function create(ctx) {
 
 async function index(ctx) {
   const { page, limit } = getPaginationParams(ctx, 50);
-  const result = await listBeds(ctx.state.user.tenantId, page, limit);
+  const result = await listBeds(getTenantId(ctx), page, limit);
   ctx.body = success(result.data, 'Beds retrieved', result.pagination);
 }
 
 async function available(ctx) {
-  const beds = await getAvailableBeds(ctx.state.user.tenantId);
+  const beds = await getAvailableBeds(getTenantId(ctx));
   ctx.body = success(beds, 'Available beds retrieved');
 }
 

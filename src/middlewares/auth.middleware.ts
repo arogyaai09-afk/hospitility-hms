@@ -13,10 +13,10 @@ function authenticate() {
     try {
       const payload = jwt.verify(token, JWT_SECRET);
       ctx.state.user = payload;
-      await next();
     } catch (err) {
       ctx.throw(401, 'Invalid or expired token');
     }
+    await next();
   };
 }
 
