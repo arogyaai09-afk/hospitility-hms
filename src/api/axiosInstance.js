@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://65.0.199.154:4000/api/v1";
+const API_BASE_URL = "http://16.4.26.131:4000/api/v1";
 
 class ApiClient {
   async request(endpoint, options = {}) {
