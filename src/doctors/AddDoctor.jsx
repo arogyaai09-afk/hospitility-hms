@@ -10,6 +10,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckIcon from "@mui/icons-material/Check";
+import { useToast } from "../context/ToastContext";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const DAYS = [
@@ -209,6 +210,7 @@ function SelectField({
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function AddDoctor() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // Form state
   const [contact, setContact] = useState(initContact);
@@ -307,7 +309,6 @@ export default function AddDoctor() {
     setAppointmentErrors(apErr);
     setSubmitError("");
 
-
     if (Object.keys(cErr).length > 0) {
       const firstErr = document.querySelector(".error");
 
@@ -342,28 +343,23 @@ export default function AddDoctor() {
         fees: Number(appointment.consultationCharge),
       };
 
-
       await createDoctor(doctorData);
 
-      alert("Doctor added successfully!");
+      showToast("Doctor added successfully!", "success");
 
       navigate("/doctors");
-    } catch (error) {
-      console.error("Create doctor error:", error);
+} catch (error) {
+  console.error("Create doctor error:", error);
 
-      setSubmitError(
-        error?.message ||
-          error?.error ||
-          "Failed to add doctor. Please try again.",
-      );
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    } finally {
-      setSubmitting(false);
-    }
+  showToast(
+    error?.message ||
+      error?.error ||
+      "Failed to add doctor. Please try again.",
+    "error"
+  );
+} finally {
+  setSubmitting(false);
+}
   };
 
   return (

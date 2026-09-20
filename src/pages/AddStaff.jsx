@@ -4,6 +4,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import PersonIcon from "@mui/icons-material/Person";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { createStaff } from "../api/staff";
+import { useToast } from "../context/ToastContext";
 
 const initialForm = {
   profileImage: null,
@@ -36,7 +37,9 @@ const departments = [
   "Administration",
 ];
 
+
 function FormGroup({ label, required, error, children }) {
+  
   return (
     <div className="form-group">
       {label && (
@@ -53,6 +56,7 @@ function FormGroup({ label, required, error, children }) {
 
 export default function AddStaff() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -122,12 +126,12 @@ export default function AddStaff() {
 
       const response = await createStaff(payload);
       if (response?.status === "success" || response?.message) {
-        alert("Staff member added successfully");
+        showToast("Staff member added successfully", "success");
         navigate("/staff");
       }
     } catch (error) {
       console.error("Create staff error:", error);
-      alert(error?.message || "Failed to create staff member");
+      showToast(error?.message || "Failed to create staff member", "error");
     } finally {
       setLoading(false);
     }

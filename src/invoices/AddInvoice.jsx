@@ -4,9 +4,11 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { createInvoice } from "../api/invoices";
 import { getPatients } from "../api/patients";
 import { getAppointments } from "../api/appointments";
+import { useToast } from "../context/ToastContext";
 
 export default function AddInvoice() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [patients, setPatients] = useState([]);
   const [appointments, setAppointments] = useState([]);
@@ -72,17 +74,17 @@ export default function AddInvoice() {
     e.preventDefault();
 
     if (!form.patientId) {
-      alert("Please select patient");
+      showToast("Please select patient", "warning");
       return;
     }
 
     if (!form.description.trim()) {
-      alert("Please enter invoice item description");
+      showToast("Please enter invoice item description", "warning");
       return;
     }
 
     if (!form.unitPrice || Number(form.unitPrice) <= 0) {
-      alert("Please enter valid amount");
+      showToast("Please enter valid amount", "warning");
       return;
     }
 
@@ -117,10 +119,10 @@ export default function AddInvoice() {
 
       await createInvoice(payload);
 
-      alert("Invoice created successfully");
+      showToast("Invoice created successfully", "success");
       navigate("/invoices");
     } catch (error) {
-      alert(error?.message || "Failed to create invoice");
+      showToast(error?.message || "Failed to create invoice", "error");
     } finally {
       setLoading(false);
     }

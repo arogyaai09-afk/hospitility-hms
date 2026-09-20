@@ -4,6 +4,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { createEmergency } from "../api/emergencies";
 import { getPatients } from "../api/patients";
 import { getDoctors } from "../api/doctors";
+import { useToast } from "../context/ToastContext";
 
 const initialState = {
   patientId: "",
@@ -16,6 +17,7 @@ const initialState = {
 
 export default function AddEmergency() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [form, setForm] = useState(initialState);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -63,10 +65,10 @@ export default function AddEmergency() {
         description: form.description,
         status: form.status,
       });
-      alert("Emergency case created successfully");
+      showToast("Emergency case created successfully", "success");
       navigate("/emergencies");
     } catch (error) {
-      alert(error?.message || "Failed to create emergency case");
+      showToast(error?.message || "Failed to create emergency case", "error");
     } finally {
       setLoading(false);
     }

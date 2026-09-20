@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { createBed } from "../api/beds";
+import { useToast } from "../context/ToastContext";
 
 const initialForm = {
   bedNumber: "",
@@ -14,6 +15,7 @@ const initialForm = {
 
 export default function AddBed() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
 
@@ -32,10 +34,10 @@ export default function AddBed() {
         type: form.type,
         status: form.status,
       });
-      alert("Bed added successfully");
+      showToast("Bed added successfully", "success");
       navigate("/beds");
     } catch (error) {
-      alert(error?.message || "Failed to add bed");
+      showToast(error?.message || "Failed to add bed", "error");
     } finally {
       setLoading(false);
     }

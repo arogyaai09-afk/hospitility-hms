@@ -8,6 +8,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { createPatient } from "../api/patients";
 import { getDoctors } from "../api/doctors";
+import { useToast } from "../context/ToastContext";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const GENDERS = ["Male", "Female", "Other"];
@@ -70,6 +71,7 @@ function FormGroup({ label, required, error, children }) {
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function CreatePatient() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [form, setForm] = useState({
     profileImage: null, profilePreview: "",
@@ -158,12 +160,12 @@ export default function CreatePatient() {
       console.log("Create patient response:", response);
 
       if (response.status === "success") {
-        alert("Patient added successfully!");
+        showToast("Patient added successfully!", "success");
         navigate("/patients");
       }
     } catch (error) {
       console.error("Create patient error:", error);
-      alert(error.message || "Failed to create patient");
+      showToast(error.message || "Failed to create patient", "error");
     }
   };
 

@@ -9,6 +9,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { getPatients } from "../api/patients";
 import { getDoctors } from "../api/doctors";
 import { createAppointment } from "../api/appointments";
+import { useToast } from "../context/ToastContext";
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const PATIENTS = ["Alberto Ripley", "Susan Babin", "Martin Lisa", "Stella Mary", "Carol Lam", "Marsha Noland", "Irma Armstrong", "Ezra Belcher", "Glen Lentz"];
@@ -111,6 +112,7 @@ function validate(form) {
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function NewAppointment() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [form, setForm] = useState({
   appointmentId: `AP${Date.now()}`,
@@ -226,16 +228,17 @@ export default function NewAppointment() {
 
       await createAppointment(payload);
 
-      alert("Appointment created successfully!");
+      showToast("Appointment created successfully!", "success");
 
       navigate("/appointments");
     } catch (error) {
       console.error("Create Appointment Error:", error);
 
-      alert(
+      showToast(
         error?.message ||
         error?.error ||
-        "Failed to create appointment"
+        "Failed to create appointment",
+        "error"
       );
     }
   };

@@ -3,16 +3,20 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { getAdmissions, dischargeAdmission } from "../api/admissions";
+import { useToast } from "../context/ToastContext";
+import ConfirmModal from "../components/ConfirmModal";
 import "./AdmissionDetail.scss";
 
 export default function AdmissionDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { showToast } = useToast();
 
   const [admission, setAdmission] = useState(null);
   const [loading, setLoading] = useState(true);
   const [discharging, setDischarging] = useState(false);
   const [error, setError] = useState("");
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
     const fetchAdmission = async () => {
@@ -43,9 +47,7 @@ export default function AdmissionDetail() {
   }, [id]);
 
   const handleDischarge = async () => {
-    if (!window.confirm("Are you sure you want to discharge this patient?")) {
-      return;
-    }
+
 
     try {
       setDischarging(true);
@@ -53,13 +55,13 @@ export default function AdmissionDetail() {
       const response = await dischargeAdmission(id);
 
       if (response.status === "success") {
-        alert("Patient discharged successfully");
+        showToast("Patient discharged successfully", "success");
         setAdmission(response.data);
       } else {
-        alert(response.message || "Failed to discharge patient");
+        showToast(response.message || "Failed to discharge patient", "error");
       }
     } catch (error) {
-      alert(error?.message || "Failed to discharge patient");
+      showToast(error?.message || "Failed to discharge patient", "error");
     } finally {
       setDischarging(false);
     }
@@ -192,7 +194,7 @@ export default function AdmissionDetail() {
           {admission.status !== "discharged" && (
             <button
               className="discharge-button"
-              onClick={handleDischarge}
+              onClick={() => setShowConfirmModal(true)}
               disabled={discharging}
             >
               {discharging ? "Discharging..." : "Discharge Patient"}
@@ -200,6 +202,19 @@ export default function AdmissionDetail() {
           )}
         </div>
       </div>
+      <ConfirmModal
+  open={showConfirmModal}
+  title="Confirm Discharge"
+  message="Are you sure you want to discharge this patient?"
+  confirmText="Discharge Patient"
+  cancelText="Cancel"
+  onCancel={() => setShowConfirmModal(false)}
+  onConfirm={async () => {
+  await handleDischarge();
+  setShowConfirmModal(false);
+}}
+  loading={discharging}
+/>
     </div>
   );
 }

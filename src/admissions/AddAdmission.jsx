@@ -6,6 +6,7 @@ import { createIPDAdmission } from "../api/admissions";
 import { getPatients } from "../api/patients";
 import { getDoctors } from "../api/doctors";
 import { getAvailableBeds } from "../api/beds";
+import { useToast } from "../context/ToastContext";
 
 const initialState = {
   patientId: "",
@@ -20,6 +21,7 @@ const initialState = {
 
 export default function AddAdmission() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [form, setForm] = useState(initialState);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -66,7 +68,7 @@ export default function AddAdmission() {
       const selectedBed = beds.find((b) => (b._id || b.id) === form.bedId);
 
       if (!selectedPatient || !selectedBed || !form.doctorId) {
-        alert("Please select patient, doctor and bed");
+        showToast("Please select patient, doctor and bed", "warning");
         setLoading(false);
         return;
       }
@@ -79,10 +81,10 @@ export default function AddAdmission() {
       };
 
       await createIPDAdmission(payload);
-      alert("Admission created successfully");
+      showToast("Admission created successfully", "success");
       navigate("/admissions");
     } catch (error) {
-      alert(error?.message || "Failed to create admission");
+      showToast(error?.message || "Failed to create admission", "error");
     } finally {
       setLoading(false);
     }

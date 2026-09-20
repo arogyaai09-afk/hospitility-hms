@@ -14,6 +14,8 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import { useToast } from "../context/ToastContext";
+import ConfirmModal from "../components/ConfirmModal";
 
 // ─── MOCK DATA ─────────────────────────────────────────────────────────────────
 const patientsData = [
@@ -606,6 +608,8 @@ function FilterPanel({
 export default function Patients() {
   const navigate = useNavigate();
 
+  const { showToast } = useToast();
+
   const [view, setView] = useState("grid");
   const [search, setSearch] = useState("");
   const [showFilter, setShowFilter] = useState(false);
@@ -625,25 +629,29 @@ export default function Patients() {
   const [exportOpen, setExportOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [patientToDelete, setPatientToDelete] = useState(null);
 
-  const handleDeletePatient = async (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this patient?",
-    );
-
-    if (!confirmed) return;
+  const handleDeletePatient = async () => {
+    if (!patientToDelete) return;
 
     try {
-      await deletePatient(id);
+      await deletePatient(patientToDelete);
 
       setPatients((currentPatients) =>
-        currentPatients.filter((patient) => patient.id !== id),
+        currentPatients.filter((patient) => patient.id !== patientToDelete),
       );
 
       setOpenMenu(null);
+
+      showToast("Patient deleted successfully", "success");
     } catch (error) {
       console.error("Delete patient error:", error);
-      alert(error.message || "Failed to delete patient");
+
+      showToast(error?.message || "Failed to delete patient", "error");
+    } finally {
+      setPatientToDelete(null);
+      setShowDeleteModal(false);
     }
   };
 
@@ -671,63 +679,62 @@ export default function Patients() {
     };
   }, []);
 
-useEffect(() => {
-  const fetchPatients = async () => {
-    try {
-      setLoading(true);
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        setLoading(true);
 
-      const response = await getPatients();
+        const response = await getPatients();
 
-      const backendPatients = Array.isArray(response?.data)
-        ? response.data
-        : [];
+        const backendPatients = Array.isArray(response?.data)
+          ? response.data
+          : [];
 
-      const normalizedPatients = backendPatients.map((patient) => {
-        const age = patient.dateOfBirth
-          ? new Date().getFullYear() -
-            new Date(patient.dateOfBirth).getFullYear()
-          : "";
+        const normalizedPatients = backendPatients.map((patient) => {
+          const age = patient.dateOfBirth
+            ? new Date().getFullYear() -
+              new Date(patient.dateOfBirth).getFullYear()
+            : "";
 
-        const gender = patient.gender
-          ? patient.gender.charAt(0).toUpperCase() +
-            patient.gender.slice(1)
-          : "";
+          const gender = patient.gender
+            ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)
+            : "";
 
-        return {
-          id: patient._id,
-          name: patient.name || "",
-          age,
-          gender,
-          phone: patient.phone || "",
-          address: patient.address || "",
-          patientCode: patient.patientCode || "",
-          email: patient.email || "",
-          doctor: "",
-          docRole: "",
-          docColor: "#3b82f6",
-          docInitials: "",
-          lastVisit: "",
-          status: "",
-          location: patient.address || "",
-          color: "#3b82f6",
-          dateOfBirth: patient.dateOfBirth,
-          createdAt: patient.createdAt,
-        };
-      });
+          return {
+            id: patient._id,
+            name: patient.name || "",
+            age,
+            gender,
+            phone: patient.phone || "",
+            address: patient.address || "",
+            patientCode: patient.patientCode || "",
+            email: patient.email || "",
+            doctor: "",
+            docRole: "",
+            docColor: "#3b82f6",
+            docInitials: "",
+            lastVisit: "",
+            status: "",
+            location: patient.address || "",
+            color: "#3b82f6",
+            dateOfBirth: patient.dateOfBirth,
+            createdAt: patient.createdAt,
+          };
+        });
 
-      setPatients(normalizedPatients);
-      setUsingMockData(false);
-    } catch (error) {
-      console.error("Patients API Error:", error);
-      setPatients([]);
-      setUsingMockData(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+        setPatients(normalizedPatients);
+        setUsingMockData(false);
+      } catch (error) {
+        console.error("Patients API Error:", error);
+        setPatients([]);
+        setUsingMockData(false);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchPatients();
-}, []);
+    fetchPatients();
+  }, []);
 
   const filtered = patients
     .filter((p) => {
@@ -1063,7 +1070,9 @@ useEffect(() => {
                               className="cm-item danger"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDeletePatient(pat.id);
+
+                                setPatientToDelete(pat.id);
+                                setShowDeleteModal(true);
                               }}
                             >
                               Delete
@@ -1093,7 +1102,10 @@ useEffect(() => {
                 onCardClick={() => navigate(`/patients/${pat.id}`)}
                 onDoctorClick={() => navigate(`/doctors/${pat.id}`)}
                 onApptClick={() => navigate("/appointments")}
-                onDelete={() => handleDeletePatient(pat.id)}
+                onDelete={() => {
+                  setPatientToDelete(pat.id);
+                  setShowDeleteModal(true);
+                }}
               />
             ))}
           </div>
@@ -1113,17 +1125,18 @@ useEffect(() => {
       )}
 
       {/* Filter Panel */}
-      {showFilter && (
-        <FilterPanel
-          onClose={() => setShowFilter(false)}
-          onApply={setAppliedFilters}
-          currentFilters={appliedFilters}
-          patientOptions={patientOptions}
-          doctorOptions={doctorOptions}
-          statusOptions={statusOptions}
-          addressOptions={addressOptions}
-        />
-      )}
+      <ConfirmModal
+        open={showDeleteModal}
+        title="Delete Patient"
+        message="Are you sure you want to delete this patient?"
+        confirmText="Delete Patient"
+        cancelText="Cancel"
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setPatientToDelete(null);
+        }}
+        onConfirm={handleDeletePatient}
+      />
     </div>
   );
 }

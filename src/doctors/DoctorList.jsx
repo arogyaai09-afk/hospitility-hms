@@ -11,12 +11,13 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
+import { getDoctors, deleteDoctor } from "../api/doctors";
+import { useToast } from "../context/ToastContext";
+import ConfirmModal from "../components/ConfirmModal";
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
-
-import { getDoctors, deleteDoctor } from "../api/doctors";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // OPTIONS
@@ -402,7 +403,13 @@ function FilterPanel({ appliedFilters, onApply, onClose, doctors }) {
 export default function Doctors() {
   const navigate = useNavigate();
 
+  const { showToast } = useToast();
+
   const [view, setView] = useState("list");
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [doctorToDelete, setDoctorToDelete] = useState(null);
+
   const [search, setSearch] = useState("");
 
   const [showFilter, setShowFilter] = useState(false);
@@ -419,29 +426,32 @@ export default function Doctors() {
   // 3 DOT DELETE HANDLER
   // ───────────────────────────────────────────────────────────────────────────
 
-  const handleDeleteDoctor = async (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this doctor?",
-    );
-
-    if (!confirmed) return;
+  const handleDeleteDoctor = async () => {
+    if (!doctorToDelete) return;
 
     try {
-      await deleteDoctor(id);
+      await deleteDoctor(doctorToDelete);
 
       setDoctors((currentDoctors) =>
-        currentDoctors.filter((doctor) => String(doctor.id) !== String(id)),
+        currentDoctors.filter(
+          (doctor) => String(doctor.id) !== String(doctorToDelete),
+        ),
       );
 
       setOpenMenu(null);
+      showToast("Doctor deleted successfully", "success");
     } catch (error) {
       console.error("Delete doctor error:", error);
 
-      alert(
+      showToast(
         error?.message ||
           error?.error ||
           "Failed to delete doctor. Please try again.",
+        "error",
       );
+    } finally {
+      setDoctorToDelete(null);
+      setShowDeleteModal(false);
     }
   };
 
@@ -965,7 +975,10 @@ export default function Doctors() {
 
                               <div
                                 className="cm-item danger"
-                                onClick={() => handleDeleteDoctor(doctor.id)}
+                                onClick={() => {
+                                  setDoctorToDelete(doctor.id);
+                                  setShowDeleteModal(true);
+                                }}
                               >
                                 Delete
                               </div>
@@ -1023,7 +1036,10 @@ export default function Doctors() {
                 onEdit={() =>
                   navigate(`/doctors/${doctor.id}/edit`, { state: { doctor } })
                 }
-                onDelete={() => handleDeleteDoctor(doctor.id)}
+                onDelete={() => {
+  setDoctorToDelete(doctor.id);
+  setShowDeleteModal(true);
+}}
               />
             ))
           )}
@@ -1042,6 +1058,18 @@ export default function Doctors() {
           doctors={doctors}
         />
       )}
+      <ConfirmModal
+  open={showDeleteModal}
+  title="Delete Doctor"
+  message="Are you sure you want to delete this doctor?"
+  confirmText="Delete Doctor"
+  cancelText="Cancel"
+  onCancel={() => {
+    setShowDeleteModal(false);
+    setDoctorToDelete(null);
+  }}
+  onConfirm={handleDeleteDoctor}
+/>
     </div>
   );
 }

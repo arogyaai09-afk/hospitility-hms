@@ -33,75 +33,78 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Tenants from "./Tenants/TenantList";
 import AddTenant from "./Tenants/AddTenant";
 import AdminRoute from "./components/AdminRoute";
+import { ToastProvider } from "./context/ToastContext";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
 
-        {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
 
-        {/* Protected Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Layout />}>
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Layout />}>
 
-            <Route index element={<Dashboard />} />
+              <Route index element={<Dashboard />} />
 
-            {/* Profile */}
-            <Route path="profile" element={<Profile />} />
-            <Route path="departments" element={<Departments />} />
-            <Route path="staff" element={<Staff />} />
-            <Route path="staff/new" element={<AddStaff />} />
+              {/* Profile */}
+              <Route path="profile" element={<Profile />} />
+              <Route path="departments" element={<Departments />} />
+              <Route path="staff" element={<Staff />} />
+              <Route path="staff/new" element={<AddStaff />} />
 
-            {/* Doctor section */}
-            <Route path="doctors" element={<Doctors />} />
-            <Route path="doctors/add" element={<AddDoctor />} />
-            <Route path="doctors/:id" element={<DoctorDetails />} />
-            <Route path="doctors/:id/edit" element={<EditDoctor />} />
+              {/* Doctor section */}
+              <Route path="doctors" element={<Doctors />} />
+              <Route path="doctors/add" element={<AddDoctor />} />
+              <Route path="doctors/:id" element={<DoctorDetails />} />
+              <Route path="doctors/:id/edit" element={<EditDoctor />} />
 
-            {/* Patient section */}
-            <Route path="patients" element={<Patients />} />
-            <Route path="patients/create" element={<CreatePatient />} />
-            <Route path="patients/:id" element={<PatientDetail />} />
-            <Route path="patients/:id/edit" element={<EditPatient />} />
+              {/* Patient section */}
+              <Route path="patients" element={<Patients />} />
+              <Route path="patients/create" element={<CreatePatient />} />
+              <Route path="patients/:id" element={<PatientDetail />} />
+              <Route path="patients/:id/edit" element={<EditPatient />} />
 
-            {/* Appointment section */}
-            <Route path="appointments" element={<Appointments />} />
-            <Route path="appointments/new" element={<NewAppointment />} />
+              {/* Appointment section */}
+              <Route path="appointments" element={<Appointments />} />
+              <Route path="appointments/new" element={<NewAppointment />} />
 
-            {/* Admissions section */}
-            <Route path="admissions" element={<Admissions />} />
-            <Route path="admissions/new" element={<AddAdmission />} />
-            <Route path="admissions/:id" element={<AdmissionDetail />} />
+              {/* Admissions section */}
+              <Route path="admissions" element={<Admissions />} />
+              <Route path="admissions/new" element={<AddAdmission />} />
+              <Route path="admissions/:id" element={<AdmissionDetail />} />
 
-            {/* Emergencies section */}
-            <Route path="emergencies" element={<Emergencies />} />
-            <Route path="emergencies/new" element={<AddEmergency />} />
+              {/* Emergencies section */}
+              <Route path="emergencies" element={<Emergencies />} />
+              <Route path="emergencies/new" element={<AddEmergency />} />
 
-            {/* Beds section */}
-            <Route path="beds" element={<Beds />} />
-            <Route path="beds/new" element={<AddBed />} />
+              {/* Beds section */}
+              <Route path="beds" element={<Beds />} />
+              <Route path="beds/new" element={<AddBed />} />
 
-            {/* Invoices section */}
-            <Route path="invoices" element={<Invoices />} />
-            <Route path="invoices/new" element={<AddInvoice />} />
+              {/* Invoices section */}
+              <Route path="invoices" element={<Invoices />} />
+              <Route path="invoices/new" element={<AddInvoice />} />
 
-            {/* Other sections */}
-            {/* <Route path="services" element={<Services />} />
+              {/* Other sections */}
+              {/* <Route path="services" element={<Services />} />
             <Route path="rooms" element={<Rooms />} /> */}
 
-            {/* Tenant sections */}
-            <Route element={<AdminRoute />}>
-              <Route path="tenants" element={<Tenants />} />
-              <Route path="tenants/new" element={<AddTenant />} />
+              {/* Tenant sections */}
+              <Route element={<AdminRoute />}>
+                <Route path="tenants" element={<Tenants />} />
+                <Route path="tenants/new" element={<AddTenant />} />
+              </Route>
+
             </Route>
-
           </Route>
-        </Route>
 
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
   );
 }
 

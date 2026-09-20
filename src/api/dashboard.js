@@ -8,6 +8,8 @@ export const getDashboardSummary = async (params = {}) => {
       params,
     });
   } catch (error) {
-    throw error?.response?.data || error || { message: "Failed to fetch dashboard summary" };
-  }
+  throw error || {
+    message: "Failed to fetch dashboard summary"
+  };
+}
 };
