@@ -179,7 +179,7 @@ const Profile = () => {
           )}
         </div>
 
-        <div className="profile-sidebar">
+        {/* <div className="profile-sidebar">
           <div className="sidebar-card">
             <h3>Account Status</h3>
             <div className="status-item">
@@ -197,7 +197,7 @@ const Profile = () => {
             <button className="security-btn">Change Password</button>
             <button className="security-btn">Two-Factor Authentication</button>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
