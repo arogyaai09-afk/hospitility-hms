@@ -121,18 +121,18 @@ export default function Sidebar() {
           { label: "New Appointment", path: "/appointments/new" },
         ],
       },
-      {
-        label: "Services",
-        icon: <MedicalServicesIcon style={{ fontSize: 18 }} />,
-        key: "services",
-        path: "/services",
-      },
-      {
-        label: "Rooms",
-        icon: <MeetingRoomIcon style={{ fontSize: 18 }} />,
-        key: "rooms",
-        path: "/rooms",
-      },
+      // {
+      //   label: "Services",
+      //   icon: <MedicalServicesIcon style={{ fontSize: 18 }} />,
+      //   key: "services",
+      //   path: "/services",
+      // },
+      // {
+      //   label: "Rooms",
+      //   icon: <MeetingRoomIcon style={{ fontSize: 18 }} />,
+      //   key: "rooms",
+      //   path: "/rooms",
+      // },
       ...(isAdmin
         ? [
             {
