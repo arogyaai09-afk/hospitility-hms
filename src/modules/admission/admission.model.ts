@@ -3,6 +3,8 @@ export {};
 const mongoose = require('mongoose');
 
 const admissionSchema = new mongoose.Schema({
+  patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient' },
+  visitId: { type: mongoose.Schema.Types.ObjectId, ref: 'Visit' },
   patientName: { type: String, required: true },
   admissionType: { type: String, required: true, enum: ['IPD', 'OPD', 'Emergency'], default: 'IPD' },
   appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' },

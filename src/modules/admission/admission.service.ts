@@ -15,9 +15,11 @@ async function admitFromOPD(appointmentId, tenantId, bedNumber, doctorId) {
   await updateAppointment(appointmentId, tenantId, { status: 'completed' });
 
   const admission = await Admission.create({
+    patientId: appointment.patientId,
     patientName: appointment.patientName,
     admissionType: 'OPD',
     appointmentId,
+    visitId: appointment.visitId,
     bedNumber,
     doctorId,
     tenantId,

@@ -1,6 +1,6 @@
 export {};
 
-const { createPatient, listPatients, getPatientById, updatePatient, deletePatient } = require('./patient.service');
+const { createPatient, listPatients, getPatientById, searchPatients, updatePatient, deletePatient } = require('./patient.service');
 const { success } = require('../../utils/response');
 const { getPaginationParams } = require('../../utils/pagination');
 
@@ -25,6 +25,11 @@ async function show(ctx) {
   ctx.body = success(patient);
 }
 
+async function search(ctx) {
+  const patients = await searchPatients(ctx.state.user.tenantId, ctx.query.q);
+  ctx.body = success(patients, 'Patients searched');
+}
+
 async function update(ctx) {
   const patient = await updatePatient(ctx.params.id, ctx.state.user.tenantId, ctx.request.body);
   ctx.body = success(patient, 'Patient updated');
@@ -35,4 +40,4 @@ async function remove(ctx) {
   ctx.body = success(patient, 'Patient deleted');
 }
 
-module.exports = { create, index, show, update, remove };
+module.exports = { create, index, show, search, update, remove };

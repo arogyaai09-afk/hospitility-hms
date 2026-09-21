@@ -21,6 +21,7 @@ async function admitEmergency(id, tenantId, bedNumber, doctorId) {
   emergency.status = 'admitted';
   await emergency.save();
   return admitIPD({
+    patientId: emergency.patientId,
     patientName: emergency.patientName,
     admissionType: 'Emergency',
     bedNumber,

@@ -4,6 +4,9 @@ const {
   createInvoice,
   createAppointmentInvoice,
   listInvoices,
+  listPatientInvoices,
+  listVisitInvoices,
+  listPatientPayments,
   getInvoicePayments,
   collectPayment
 } = require('./invoice.service');
@@ -53,4 +56,16 @@ async function payments(ctx) {
   ctx.body = success(data);
 }
 
-module.exports = { create, createFromAppointment, index, pay, payments };
+async function patientInvoices(ctx) {
+  ctx.body = success(await listPatientInvoices(ctx.params.patientId, getTenantId(ctx)));
+}
+
+async function visitInvoices(ctx) {
+  ctx.body = success(await listVisitInvoices(ctx.params.visitId, getTenantId(ctx)));
+}
+
+async function patientPayments(ctx) {
+  ctx.body = success(await listPatientPayments(ctx.params.patientId, getTenantId(ctx)));
+}
+
+module.exports = { create, createFromAppointment, index, pay, payments, patientInvoices, visitInvoices, patientPayments };

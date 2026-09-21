@@ -9,7 +9,8 @@ const appointmentSchema = new mongoose.Schema({
   appointmentType: { type: String, required: true, enum: ['OPD', 'IPD', 'Emergency'], default: 'OPD' },
   visitReason: { type: String },
   doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor' },
-  status: { type: String, default: 'scheduled', enum: ['scheduled', 'completed', 'cancelled'] },
+  status: { type: String, default: 'scheduled', enum: ['scheduled', 'checked_in', 'completed', 'cancelled'] },
+  visitId: { type: mongoose.Schema.Types.ObjectId, ref: 'Visit' },
   tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   createdAt: { type: Date, default: Date.now }

@@ -30,7 +30,23 @@ async function validatePatientUser(userId, tenantId) {
 }
 
 async function createPatient(data) {
+  data.patientCode = data.patientCode || `PAT-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
   await validatePatientUser(data.userId, data.tenantId);
+
+  const duplicate = await Patient.findOne({
+    tenantId: data.tenantId,
+    $or: [
+      ...(data.phone ? [{ phone: data.phone }] : []),
+      ...(data.email ? [{ email: data.email.toLowerCase() }] : []),
+      ...(data.idProofType && data.idProofNumber ? [{ idProofType: data.idProofType, idProofNumber: data.idProofNumber }] : [])
+    ]
+  }).select('_id').lean();
+  if (duplicate) {
+    const err = new Error('A patient with the same phone, email, or identity document already exists');
+    err.status = 409;
+    throw err;
+  }
+
   const patient = await Patient.create(data);
   return patient.toObject();
 }
@@ -64,6 +80,36 @@ async function getPatientById(id, tenantId) {
     .lean();
 }
 
+async function searchPatients(tenantId, query) {
+  const value = String(query || '').trim();
+  if (!value) {
+    return [];
+  }
+
+  const exact = await Patient.findOne({
+    tenantId,
+    $or: [
+      { patientCode: value },
+      { phone: value },
+      { email: value.toLowerCase() },
+      { idProofNumber: value }
+    ]
+  }).select('-medicalHistory').lean();
+  if (exact) {
+    return [exact];
+  }
+
+  const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return Patient.find({
+    tenantId,
+    $or: [
+      { name: { $regex: escaped, $options: 'i' } },
+      { phone: { $regex: escaped, $options: 'i' } },
+      { email: { $regex: escaped, $options: 'i' } }
+    ]
+  }).select('-medicalHistory').sort({ createdAt: -1 }).limit(20).lean();
+}
+
 async function updatePatient(id, tenantId, data) {
   const patient = await Patient.findOne({ _id: id, tenantId });
   if (!patient) {
@@ -72,7 +118,7 @@ async function updatePatient(id, tenantId, data) {
     throw err;
   }
 
-  const allowedFields = ['userId', 'patientCode', 'name', 'dateOfBirth', 'gender', 'phone', 'email', 'address', 'emergencyContact', 'medicalHistory'];
+  const allowedFields = ['userId', 'patientCode', 'name', 'dateOfBirth', 'gender', 'phone', 'email', 'address', 'emergencyContact', 'medicalHistory', 'bloodGroup', 'allergies', 'currentMedications', 'idProofType', 'idProofNumber', 'nationality', 'insuranceProvider', 'insurancePolicyNumber', 'status'];
   const update: any = {};
 
   for (const field of allowedFields) {
@@ -114,4 +160,4 @@ async function deletePatient(id, tenantId) {
   return patient.toObject();
 }
 
-module.exports = { createPatient, listPatients, getPatientById, updatePatient, deletePatient };
+module.exports = { createPatient, listPatients, getPatientById, searchPatients, updatePatient, deletePatient };

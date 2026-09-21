@@ -1,6 +1,7 @@
 export {};
 
 const Appointment = require('./appointment.model');
+const Visit = require('../visit/visit.model');
 const { calculateSkip } = require('../../utils/pagination');
 
 async function createAppointment(data) {
@@ -48,5 +49,36 @@ async function updateAppointment(id, tenantId, updates) {
   ).lean();
 }
 
+async function checkInAppointment(id, tenantId, userId) {
+  const appointment = await Appointment.findOne({ _id: id, tenantId }).lean();
+  if (!appointment) {
+    const error = new Error('Appointment not found');
+    error.status = 404;
+    throw error;
+  }
+  if (!appointment.patientId) {
+    const error = new Error('Appointment must have a patientId before check-in');
+    error.status = 400;
+    throw error;
+  }
+  if (appointment.visitId) {
+    return Visit.findOne({ _id: appointment.visitId, tenantId }).lean();
+  }
 
-module.exports = { createAppointment, listAppointments, getAppointmentById, updateAppointment };
+  const visit = await Visit.create({
+    patientId: appointment.patientId,
+    tenantId,
+    visitType: appointment.appointmentType === 'Emergency' ? 'emergency' : appointment.appointmentType,
+    status: 'checked_in',
+    appointmentId: appointment._id,
+    doctorId: appointment.doctorId,
+    visitReason: appointment.visitReason,
+    checkedInAt: new Date(),
+    createdBy: userId
+  });
+  await Appointment.updateOne({ _id: id, tenantId }, { $set: { status: 'checked_in', visitId: visit._id } });
+  return visit.toObject();
+}
+
+
+module.exports = { createAppointment, listAppointments, getAppointmentById, updateAppointment, checkInAppointment };

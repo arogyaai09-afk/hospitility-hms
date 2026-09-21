@@ -2,6 +2,10 @@ export {};
 
 const Invoice = require('./invoice.model');
 const Payment = require('./payment.model');
+const Patient = require('../patient/patient.model');
+const Visit = require('../visit/visit.model');
+const Admission = require('../admission/admission.model');
+const Appointment = require('../appointment/appointment.model');
 const { getAppointmentById } = require('../appointment/appointment.service');
 const { getActiveTaxById, getDefaultTax } = require('../tax/tax.service');
 
@@ -68,7 +72,36 @@ async function resolveTax(payload) {
   return null;
 }
 
+async function validateInvoiceReferences(payload) {
+  const references = [
+    [Patient, payload.patientId, 'Patient'],
+    [Visit, payload.visitId, 'Visit'],
+    [Appointment, payload.appointmentId, 'Appointment'],
+    [Admission, payload.admissionId, 'Admission']
+  ];
+  const documents: any = {};
+  for (const [Model, id, name] of references) {
+    if (!id) {
+      continue;
+    }
+    const document = await Model.findOne({ _id: id, tenantId: payload.tenantId }).select('_id patientId').lean();
+    if (!document) {
+      const error = new Error(`${name} not found or does not belong to this tenant`);
+      error.status = 400;
+      throw error;
+    }
+    documents[name] = document;
+  }
+  if (documents.Visit && documents.Patient && String(documents.Visit.patientId) !== String(documents.Patient._id)) {
+    const error = new Error('Invoice patientId does not match visit patient');
+    error.status = 400;
+    throw error;
+  }
+  return documents;
+}
+
 async function createInvoice(payload) {
+  await validateInvoiceReferences(payload);
   const lineItems = buildLineItems(payload.lineItems);
   const tax = await resolveTax(payload);
   const taxRate = tax ? tax.rate : payload.taxRate;
@@ -133,6 +166,19 @@ async function createAppointmentInvoice(appointmentId, tenantId, payload) {
 
 async function listInvoices(tenantId) {
   return Invoice.find({ tenantId }).sort({ createdAt: -1 });
+}
+
+async function listPatientInvoices(patientId, tenantId) {
+  return Invoice.find({ patientId, tenantId }).sort({ createdAt: -1 }).lean();
+}
+
+async function listVisitInvoices(visitId, tenantId) {
+  return Invoice.find({ visitId, tenantId }).sort({ createdAt: -1 }).lean();
+}
+
+async function listPatientPayments(patientId, tenantId) {
+  const invoices = await Invoice.find({ patientId, tenantId }).select('_id').lean();
+  return Payment.find({ invoiceId: { $in: invoices.map(invoice => invoice._id) }, tenantId }).sort({ paidAt: -1 }).lean();
 }
 
 async function getInvoicePayments(invoiceId, tenantId) {
@@ -218,6 +264,9 @@ module.exports = {
   createInvoice,
   createAppointmentInvoice,
   listInvoices,
+  listPatientInvoices,
+  listVisitInvoices,
+  listPatientPayments,
   getInvoicePayments,
   collectPayment
 };

@@ -29,6 +29,7 @@ const invoiceSchema = new mongoose.Schema({
   orderStatus: { type: String, enum: ['draft', 'finalized', 'closed', 'cancelled'], default: 'finalized' },
   invoiceNumber: { type: String },
   patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient' },
+  visitId: { type: mongoose.Schema.Types.ObjectId, ref: 'Visit' },
   patientName: { type: String, required: true },
   admissionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Admission' },
   appointmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' },
@@ -62,5 +63,7 @@ const invoiceSchema = new mongoose.Schema({
 
 invoiceSchema.index({ tenantId: 1, orderNumber: 1 }, { unique: true, sparse: true });
 invoiceSchema.index({ tenantId: 1, invoiceNumber: 1 }, { unique: true, sparse: true });
+invoiceSchema.index({ tenantId: 1, patientId: 1, createdAt: -1 });
+invoiceSchema.index({ tenantId: 1, visitId: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Invoice', invoiceSchema);

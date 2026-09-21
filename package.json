@@ -8,6 +8,7 @@
     "dev": "nodemon --watch . --ext ts --exec ts-node --transpile-only app.ts",
     "build": "tsc -p tsconfig.json",
     "seed:dev": "NODE_ENV=development node -r ts-node/register/transpile-only scripts/seed/seed.js",
+    "migrate:patient-history": "node -r ts-node/register/transpile-only scripts/migrate-patient-history.js",
     "test": "node -e \"console.log('Test placeholder passed')\""
   },
   "dependencies": {
