@@ -587,6 +587,213 @@ Get patient details.
 }
 ```
 
+## Patient History and Clinical Workflow
+
+The current backend includes a patient summary and visit history layer built around the patient, visit, consultation, prescription, lab order, and procedure models.
+
+### GET /patients/:patientId/summary
+Return the patient dashboard summary for a specific patient, including the most recent visit and paginated prior visits.
+
+**Authorization:**
+- `admin`, `tenant`, `doctor`, or `staff` with `ACCESS_GROUPS.CLINICAL_OPERATIONS`
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Patient summary retrieved",
+  "data": {
+    "patient": {
+      "_id": "60d5ecb74b24c72b8c8b4570",
+      "patientCode": "PAT-1001",
+      "name": "Jane Doe",
+      "phone": "+91-9876501234",
+      "tenantId": "60d5ecb74b24c72b8c8b4568"
+    },
+    "currentMedications": [
+      {
+        "prescriptionId": "60d5ecb74b24c72b8c8b4590",
+        "prescribedAt": "2026-09-18T10:30:00.000Z",
+        "doctorId": "60d5ecb74b24c72b8c8b4569",
+        "items": [
+          {
+            "medicineName": "Amoxicillin",
+            "dosage": "500mg",
+            "frequency": "BD",
+            "status": "active"
+          }
+        ]
+      }
+    ],
+    "latestVisit": {
+      "_id": "60d5ecb74b24c72b8c8b4591",
+      "visitCode": "VIS-20260918-001",
+      "status": "in_consultation"
+    },
+    "visits": [
+      {
+        "visit": { "_id": "60d5ecb74b24c72b8c8b4591" },
+        "consultation": { "clinicalNotes": "Follow-up advised" },
+        "prescriptions": [],
+        "reports": [],
+        "procedures": [],
+        "invoices": [],
+        "payments": [],
+        "notes": ["Follow-up advised"]
+      }
+    ],
+    "appointments": [],
+    "admissions": [],
+    "discharges": [],
+    "invoices": [],
+    "payments": [],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 1,
+      "pages": 1
+    }
+  }
+}
+```
+
+### GET /visits/:visitId/history
+Return all structured clinical and billing data associated with a single visit.
+
+**Authorization:**
+- `admin`, `tenant`, `doctor`, or `staff` with `ACCESS_GROUPS.CLINICAL_OPERATIONS`
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Visit history retrieved",
+  "data": {
+    "visit": {
+      "_id": "60d5ecb74b24c72b8c8b4591",
+      "visitCode": "VIS-20260918-001",
+      "patientId": "60d5ecb74b24c72b8c8b4570",
+      "doctorId": "60d5ecb74b24c72b8c8b4569",
+      "status": "completed"
+    },
+    "consultation": {
+      "chiefComplaint": "Fever",
+      "diagnosis": "Viral fever",
+      "clinicalNotes": "Patient improving"
+    },
+    "prescriptions": [
+      {
+        "_id": "60d5ecb74b24c72b8c8b4592",
+        "items": [
+          {
+            "medicineName": "Paracetamol",
+            "dosage": "650mg",
+            "status": "active"
+          }
+        ]
+      }
+    ],
+    "reports": [],
+    "labOrders": [],
+    "procedures": [],
+    "invoices": [],
+    "payments": [],
+    "notes": ["Patient improving"]
+  }
+}
+```
+
+### Visit and clinical endpoints
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | `/patients/:patientId/visits` | Create a visit for the patient |
+| GET | `/patients/:patientId/visits` | List visits for a patient |
+| GET | `/visits/:visitId` | Get a visit by ID |
+| PATCH | `/visits/:visitId/status` | Update visit lifecycle status |
+| POST | `/visits/:visitId/consultation` | Save or upsert consultation for a visit |
+| GET | `/visits/:visitId/consultation` | Fetch consultation data |
+| PATCH | `/consultations/:consultationId` | Update consultation |
+| POST | `/visits/:visitId/prescriptions` | Create prescription |
+| GET | `/patients/:patientId/prescriptions` | List prescriptions for a patient |
+| GET | `/patients/:patientId/medications/current` | List active current medications |
+| GET | `/visits/:visitId/prescriptions` | List prescriptions for one visit |
+| PATCH | `/prescriptions/:prescriptionId` | Update prescription |
+| POST | `/visits/:visitId/lab-orders` | Create a lab order |
+| GET | `/patients/:patientId/lab-orders` | List lab orders for a patient |
+| POST | `/lab-orders/:labOrderId/report` | Create a lab result/report |
+| GET | `/visits/:visitId/reports` | List reports for a visit |
+| POST | `/visits/:visitId/procedures` | Create a procedure record |
+| GET | `/visits/:visitId/procedures` | List procedures for a visit |
+| GET | `/patients/:patientId/procedures` | List procedures for a patient |
+
+> These routes are protected under the clinical operations access group and are tenant-scoped using the authenticated user tenant.
+
+## Storage
+
+### POST /storage/upload
+Upload a file into a tenant-specific folder. Only image, video, and document formats are accepted.
+
+**Authorization:**
+- Any authenticated user
+
+**Form Data:**
+- `file`: binary file
+- `folder` (optional): `images`, `videos`, or `files`
+
+**Allowed file types:**
+- `images`: JPG, PNG, GIF, WEBP, BMP, SVG
+- `videos`: MP4, WEBM, MOV, AVI, MPEG
+- `files`: PDF, DOC, DOCX, XLS, XLSX, CSV, TXT, ZIP, JSON
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "File uploaded",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4588",
+    "tenantId": "60d5ecb74b24c72b8c8b4568",
+    "userId": "60d5ecb74b24c72b8c8b4567",
+    "folder": "images",
+    "originalName": "patient-photo.png",
+    "storedName": "1727000000000-patient-photo.png",
+    "mimeType": "image/png",
+    "size": 125432,
+    "filePath": "/home/trigital/Project/html/HMS/uploads/60d5ecb74b24c72b8c8b4568/images/1727000000000-patient-photo.png",
+    "url": "/uploads/60d5ecb74b24c72b8c8b4568/images/1727000000000-patient-photo.png",
+    "status": "active",
+    "createdAt": "2026-09-22T12:00:00.000Z"
+  }
+}
+```
+
+### DELETE /storage/files/:folder/:filename
+Delete a previously uploaded file from the tenant-specific storage folder.
+
+**Authorization:**
+- Any authenticated user
+
+**Example:**
+```http
+DELETE /api/v1/storage/files/images/1727000000000-patient-photo.png
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "File deleted",
+  "data": {
+    "deleted": true,
+    "tenantId": "60d5ecb74b24c72b8c8b4568",
+    "folder": "images",
+    "filename": "1727000000000-patient-photo.png",
+    "path": "/home/trigital/Project/html/HMS/uploads/60d5ecb74b24c72b8c8b4568/images/1727000000000-patient-photo.png"
+  }
+}
+```
+
 ## Admissions
 
 ### POST /admissions/from-opd

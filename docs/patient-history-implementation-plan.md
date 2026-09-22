@@ -4,6 +4,8 @@
 
 This document defines the implementation plan for maintaining a patient's complete medical history across multiple visits.
 
+Status as of the current codebase: the backend has already implemented the foundational patient-history flow for patient summaries, visit tracking, consultation records, prescriptions, lab orders, procedures, and aggregated visit history. The remaining work is focused on hardening validation, migration, and workflow completeness rather than creating the basic model from scratch.
+
 The target workflow is:
 
 ```text
@@ -23,18 +25,23 @@ A patient must have one permanent Patient ID. Each appointment, walk-in, emergen
 
 The backend currently contains patient, appointment, admission, discharge, invoice, payment, emergency, doctor, department, and authentication modules.
 
-### Current limitations
+### Current implementation status
 
-- `Patient` has a free-text `medicalHistory` field rather than structured clinical records.
-- `patientCode` is supplied by the client and is globally unique instead of tenant-scoped.
-- Patient lookup supports MongoDB `_id`, but there is no dedicated search by Patient ID, phone, email, or identity document.
-- `Appointment` stores scheduling information but is not a clinical visit.
-- `Admission` stores `patientName` and does not reliably store `patientId`.
-- `Invoice` can reference a patient, appointment, or admission, but not a visit.
-- `Payment` is linked to an invoice only.
-- Consultation, diagnosis, prescription, medicine, lab report, procedure, and clinical-note models do not exist.
-- Patient routes currently expose CRUD operations only.
-- The test command is a placeholder and does not exercise the clinical workflow.
+The following work is already present in the codebase:
+
+- `Patient` includes structured demographic and clinical fields such as `bloodGroup`, `allergies`, `currentMedications`, `insuranceProvider`, and `status`.
+- `Visit` is implemented as a first-class clinical encounter with `visitCode`, `patientId`, `tenantId`, `visitType`, and status transitions.
+- `Consultation`, `Prescription`, `LabOrder`, `LabReport`, and `Procedure` models are defined and exposed via clinical routes.
+- `GET /api/v1/patients/:patientId/summary` and `GET /api/v1/visits/:visitId/history` are implemented and aggregate patient and visit records.
+- `listCurrentMedications` calculates active medications from prescription items and date windows.
+
+The following remains as planned or hardening work:
+
+- `patientCode` is still application-managed rather than fully server-generated and search-driven.
+- Duplicate patient detection and robust patient search by patient ID, phone, email, or identity document still need stronger validation coverage.
+- Appointment/admission/invoice migration to a consistent `visitId` model still needs operational completion.
+- Historical billing and legacy `medicalHistory` data should be processed using migration scripts before final cleanup.
+- Production-quality audits, access validation, and automated coverage should continue to be expanded.
 
 ### Relevant current files
 
@@ -221,7 +228,7 @@ Search should support Patient ID, phone, email, and configured identity fields. 
 
 Create `src/modules/visit/` with model, service, controller, and routes.
 
-Recommended endpoints:
+Implemented endpoints:
 
 ```text
 POST  /api/v1/patients/:patientId/visits
@@ -233,11 +240,13 @@ GET   /api/v1/visits/:visitId/history
 
 The visit service must verify patient, doctor, appointment, admission, and department ownership within the same tenant.
 
+The current codebase already implements the route and service layer for these flows, with patient summary and visit history aggregation in `src/modules/history/history.service.ts`.
+
 ### 4.3 Consultation module
 
 Create a consultation module or a clinical module containing consultation and diagnosis services.
 
-Recommended endpoints:
+Implemented endpoints:
 
 ```text
 POST  /api/v1/visits/:visitId/consultation
@@ -245,11 +254,11 @@ GET   /api/v1/visits/:visitId/consultation
 PATCH /api/v1/consultations/:consultationId
 ```
 
-Doctors should be able to save draft notes and complete the consultation separately.
+Doctors should be able to save draft notes and complete the consultation separately. The current implementation supports both upsert behavior and update operations through `clinical.controller.ts` and `clinical.service.ts`.
 
 ### 4.4 Prescription and medicine module
 
-Recommended endpoints:
+Implemented endpoints:
 
 ```text
 POST  /api/v1/visits/:visitId/prescriptions
@@ -259,11 +268,11 @@ GET   /api/v1/visits/:visitId/prescriptions
 PATCH /api/v1/prescriptions/:prescriptionId
 ```
 
-The current medication endpoint should return medicines that are active based on their status and dates, with the latest prescription clearly identified.
+The current medication endpoint should return medicines that are active based on their status and dates, with the latest prescription clearly identified. The current service implementation already filters by active prescriptions and active item dates in `listCurrentMedications`.
 
 ### 4.5 Lab and report module
 
-Recommended endpoints:
+Implemented endpoints:
 
 ```text
 POST /api/v1/visits/:visitId/lab-orders
@@ -272,11 +281,11 @@ POST /api/v1/lab-orders/:labOrderId/report
 GET  /api/v1/visits/:visitId/reports
 ```
 
-Reports should support result text and future file or attachment references.
+Reports should support result text and future file or attachment references. The model currently supports `resultText` and `attachmentUrl`, with lab-order status changes handled on report creation.
 
 ### 4.6 Procedure and treatment module
 
-Recommended endpoints:
+Implemented endpoints:
 
 ```text
 POST /api/v1/visits/:visitId/procedures

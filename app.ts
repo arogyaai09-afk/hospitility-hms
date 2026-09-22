@@ -37,6 +37,7 @@ import analyticsRoutes = require('./src/modules/analytics/analytics.routes');
 import visitRoutes = require('./src/modules/visit/visit.routes');
 import clinicalRoutes = require('./src/modules/clinical/clinical.routes');
 import historyRoutes = require('./src/modules/history/history.routes');
+import storageRoutes = require('./src/modules/storage/storage.routes');
 
 const app = new Koa();
 const router = new Router({ prefix: '/api/v1' });
@@ -59,6 +60,7 @@ router.use((patientRoutes as any).routes());
 router.use((visitRoutes as any).routes());
 router.use((clinicalRoutes as any).routes());
 router.use((historyRoutes as any).routes());
+router.use((storageRoutes as any).routes());
 router.use((bedRoutes as any).routes());
 router.use((emergencyRoutes as any).routes());
 router.use((taxRoutes as any).routes());
