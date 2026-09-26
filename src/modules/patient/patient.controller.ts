@@ -26,7 +26,11 @@ async function show(ctx) {
 }
 
 async function search(ctx) {
-  const patients = await searchPatients(ctx.state.user.tenantId, ctx.query.q);
+  const tenantId = ctx.state.user.role === 'admin' ? ctx.query.tenantId : ctx.state.user.tenantId;
+  if (!tenantId) {
+    ctx.throw(400, 'tenantId is required for patient search');
+  }
+  const patients = await searchPatients(tenantId, ctx.query.q);
   ctx.body = success(patients, 'Patients searched');
 }
 

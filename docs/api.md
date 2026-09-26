@@ -212,6 +212,7 @@ List doctors for a tenant.
       "_id": "60d5ecb74b24c72b8c8b4569",
       "name": "Dr. Smith",
       "specialization": "Cardiology",
+      "profileImage": "https://storage.example.com/doctors/doctor-1.jpg",
       "phone": "+91-9876543210",
       "email": "smith@hospital.com",
       "userId": "60d5ecb74b24c72b8c8b4567",
@@ -233,6 +234,7 @@ Create a doctor profile.
 {
   "name": "Dr. Smith",
   "specialization": "Cardiology",
+  "profileImage": "https://storage.example.com/doctors/doctor-1.jpg",
   "phone": "+91-9876543210",
   "email": "smith@hospital.com",
   "userId": "60d5ecb74b24c72b8c8b4567",
@@ -242,6 +244,7 @@ Create a doctor profile.
 
 **Notes:**
 - `userId` is optional and links the profile to an auth user.
+- `profileImage` is required and should contain the stored image URL/reference.
 - Admin users must pass `tenantId`; tenant users are scoped automatically.
 
 **Response:**
@@ -253,6 +256,7 @@ Create a doctor profile.
     "_id": "60d5ecb74b24c72b8c8b4569",
     "name": "Dr. Smith",
     "specialization": "Cardiology",
+    "profileImage": "https://storage.example.com/doctors/doctor-1.jpg",
     "phone": "+91-9876543210",
     "email": "smith@hospital.com",
     "userId": "60d5ecb74b24c72b8c8b4567",
@@ -277,6 +281,7 @@ Get a single doctor profile for the current tenant.
     "_id": "60d5ecb74b24c72b8c8b4569",
     "name": "Dr. Smith",
     "specialization": "Cardiology",
+    "profileImage": "https://storage.example.com/doctors/doctor-1.jpg",
     "phone": "+91-9876543210",
     "email": "smith@hospital.com",
     "userId": "60d5ecb74b24c72b8c8b4567",
@@ -297,6 +302,7 @@ Update a doctor profile.
 {
   "name": "Dr. Smith Updated",
   "specialization": "Neurology",
+  "profileImage": "https://storage.example.com/doctors/doctor-1-updated.jpg",
   "phone": "+91-9988776655",
   "email": "smith.updated@hospital.com"
 }
@@ -315,6 +321,7 @@ Update a doctor profile.
     "_id": "60d5ecb74b24c72b8c8b4569",
     "name": "Dr. Smith Updated",
     "specialization": "Neurology",
+    "profileImage": "https://storage.example.com/doctors/doctor-1-updated.jpg",
     "phone": "+91-9988776655",
     "email": "smith.updated@hospital.com",
     "userId": "60d5ecb74b24c72b8c8b4567",
@@ -503,6 +510,7 @@ List patients for the current tenant.
       "_id": "60d5ecb74b24c72b8c8b4570",
       "patientCode": "PAT-1001",
       "name": "Jane Doe",
+      "profileImage": "https://storage.example.com/patients/patient-1.jpg",
       "dateOfBirth": "1990-07-20T00:00:00.000Z",
       "gender": "female",
       "phone": "+91-9876501234",
@@ -528,6 +536,7 @@ Create a patient.
 {
   "patientCode": "PAT-1001",
   "name": "Jane Doe",
+  "profileImage": "https://storage.example.com/patients/patient-1.jpg",
   "dateOfBirth": "1990-07-20",
   "gender": "female",
   "phone": "+91-9876501234",
@@ -538,6 +547,8 @@ Create a patient.
 }
 ```
 
+`profileImage` is optional on patient create and update and should contain the stored image URL/reference when provided.
+
 **Response:**
 ```json
 {
@@ -547,6 +558,7 @@ Create a patient.
     "_id": "60d5ecb74b24c72b8c8b4570",
     "patientCode": "PAT-1001",
     "name": "Jane Doe",
+    "profileImage": "https://storage.example.com/patients/patient-1.jpg",
     "dateOfBirth": "1990-07-20T00:00:00.000Z",
     "gender": "female",
     "phone": "+91-9876501234",
@@ -574,6 +586,7 @@ Get patient details.
     "_id": "60d5ecb74b24c72b8c8b4570",
     "patientCode": "PAT-1001",
     "name": "Jane Doe",
+    "profileImage": "https://storage.example.com/patients/patient-1.jpg",
     "dateOfBirth": "1990-07-20T00:00:00.000Z",
     "gender": "female",
     "phone": "+91-9876501234",
@@ -584,6 +597,55 @@ Get patient details.
     "tenantId": "60d5ecb74b24c72b8c8b4568",
     "createdAt": "2023-05-11T10:00:00.000Z"
   }
+}
+```
+
+### PATCH /patients/:id
+Update patient fields in the authenticated user's tenant. `profileImage` is optional and is returned in the updated patient response.
+
+**Request Body:**
+```json
+{
+  "profileImage": "https://storage.example.com/patients/patient-1-updated.jpg"
+}
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Patient updated",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4570",
+    "patientCode": "PAT-1001",
+    "name": "Jane Doe",
+    "profileImage": "https://storage.example.com/patients/patient-1-updated.jpg",
+    "tenantId": "60d5ecb74b24c72b8c8b4568"
+  }
+}
+```
+
+### GET /patients/search?q=Deepanshu
+Search patients by name, patient code, phone, email, or identity document number. Tenant users are scoped to their own tenant; admins must provide `tenantId` to scope the search.
+
+**Query Parameters:**
+- `q` required: search text.
+- `tenantId` required for admin callers.
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Patients searched",
+  "data": [
+    {
+      "_id": "60d5ecb74b24c72b8c8b4570",
+      "patientCode": "PAT-1001",
+      "name": "Deepanshu Kumar",
+      "profileImage": "https://storage.example.com/patients/patient-1.jpg",
+      "tenantId": "60d5ecb74b24c72b8c8b4568"
+    }
+  ]
 }
 ```
 
@@ -889,6 +951,50 @@ List admissions for the current tenant.
 }
 ```
 
+### PATCH /admissions/:id
+Update editable fields on an admitted record.
+
+**Authorization:**
+- `admin`, `tenant`, `doctor`, or `staff` via `ACCESS_GROUPS.CLINICAL_OPERATIONS`
+
+**Allowed Request Body Fields:**
+- `doctorId`: MongoDB ObjectId string or `null`
+- `bedNumber`: bed number string; when changed, the old bed is released and the new bed must be available
+- `admissionType`: one of `IPD`, `OPD`, or `Emergency`
+
+`status`, `patientName`, `tenantId`, and admission timestamps are not editable through this endpoint. Use `PATCH /admissions/:id/discharge` to discharge an admission.
+
+**Request Body:**
+```json
+{
+  "doctorId": "60d5ecb74b24c72b8c8b4569",
+  "bedNumber": "B-103",
+  "admissionType": "IPD"
+}
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Admission updated",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4572",
+    "patientName": "Jane Doe",
+    "admissionType": "IPD",
+    "bedNumber": "B-103",
+    "doctorId": {
+      "_id": "60d5ecb74b24c72b8c8b4569",
+      "name": "Dr. Smith",
+      "specialization": "Cardiology"
+    },
+    "tenantId": "60d5ecb74b24c72b8c8b4568",
+    "status": "admitted",
+    "admittedAt": "2023-05-11T10:00:00.000Z"
+  }
+}
+```
+
 ### PATCH /admissions/:id/discharge
 Discharge an admission.
 
@@ -1009,6 +1115,7 @@ List appointments for the current tenant.
       "appointmentType": "OPD",
       "visitReason": "Routine checkup",
       "doctorId": "60d5ecb74b24c72b8c8b4569",
+      "scheduledAt": "2026-09-28T09:30:00.000Z",
       "status": "scheduled",
       "tenantId": "60d5ecb74b24c72b8c8b4568",
       "createdBy": "60d5ecb74b24c72b8c8b4567",
@@ -1032,7 +1139,8 @@ Create an appointment.
   "patientType": "local",
   "appointmentType": "OPD",
   "visitReason": "Routine checkup",
-  "doctorId": "60d5ecb74b24c72b8c8b4569"
+  "doctorId": "60d5ecb74b24c72b8c8b4569",
+  "scheduledAt": "2026-09-28T09:30:00.000Z"
 }
 ```
 
@@ -1049,6 +1157,7 @@ Create an appointment.
     "appointmentType": "OPD",
     "visitReason": "Routine checkup",
     "doctorId": "60d5ecb74b24c72b8c8b4569",
+    "scheduledAt": "2026-09-28T09:30:00.000Z",
     "status": "scheduled",
     "tenantId": "60d5ecb74b24c72b8c8b4568",
     "createdBy": "60d5ecb74b24c72b8c8b4567",
@@ -1056,6 +1165,78 @@ Create an appointment.
   }
 }
 ```
+
+`scheduledAt` is an optional ISO-8601 datetime. When supplied, it is stored as a date and returned by create, list, detail, and update endpoints. The frontend should send the selected local appointment date/time as an ISO datetime with the intended timezone offset.
+
+### GET /appointments/:id
+Return one appointment for the authenticated user's tenant. The response uses the standard success envelope and includes populated patient and doctor references.
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Appointment retrieved",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4575",
+    "patientId": { "_id": "60d5ecb74b24c72b8c8b4570", "name": "Jane Doe" },
+    "doctorId": { "_id": "60d5ecb74b24c72b8c8b4569", "name": "Dr. Smith" },
+    "scheduledAt": "2026-09-28T09:30:00.000Z",
+    "status": "scheduled",
+    "tenantId": "60d5ecb74b24c72b8c8b4568"
+  }
+}
+```
+
+### PATCH /appointments/:id
+Update an existing appointment in the authenticated user's tenant. Editable fields are `patientId`, `patientName`, `patientType`, `appointmentType`, `visitReason`, `doctorId`, and `scheduledAt`. Tenant, status, `visitId`, and creation metadata cannot be changed through this endpoint.
+
+**Request Body:**
+```json
+{
+  "doctorId": "60d5ecb74b24c72b8c8b4569",
+  "visitReason": "Follow-up consultation",
+  "scheduledAt": "2026-09-29T10:00:00.000Z"
+}
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Appointment updated",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4575",
+    "patientName": "Jane Doe",
+    "appointmentType": "OPD",
+    "visitReason": "Follow-up consultation",
+    "scheduledAt": "2026-09-29T10:00:00.000Z",
+    "status": "scheduled",
+    "tenantId": "60d5ecb74b24c72b8c8b4568"
+  }
+}
+```
+
+### DELETE /appointments/:id
+Delete an appointment belonging to the authenticated user's tenant. A missing or other-tenant appointment returns 404.
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Appointment deleted",
+  "data": {
+    "_id": "60d5ecb74b24c72b8c8b4575",
+    "patientName": "Jane Doe",
+    "status": "scheduled",
+    "tenantId": "60d5ecb74b24c72b8c8b4568"
+  }
+}
+```
+
+### POST /appointments/:id/check-in
+Check in an appointment. This creates a visit, sets appointment status to `checked_in`, and links the visit through `visitId`. The response `data` is the created visit.
+
+Appointment API status values are `scheduled`, `checked_in`, `completed`, and `cancelled`. Frontend labels should map `Schedule` to `scheduled`, `Checked In` to `checked_in`, `Checked Out` to `completed`, and `Cancelled` to `cancelled`. There is no separate `confirmed` API status; map that label to `scheduled` only if the frontend treats confirmation as the scheduled state.
 
 ## Emergencies
 

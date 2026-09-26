@@ -62,6 +62,46 @@ async function listAdmissions(tenantId, page = 1, limit = 20) {
   };
 }
 
+async function updateAdmission(id, tenantId, data) {
+  const admission = await Admission.findOne({ _id: id, tenantId });
+  if (!admission) {
+    const err = new Error('Admission not found');
+    err.status = 404;
+    throw err;
+  }
+
+  const allowedFields = ['doctorId', 'bedNumber', 'admissionType'];
+  const update: any = {};
+
+  for (const field of allowedFields) {
+    if (data[field] !== undefined) {
+      update[field] = data[field];
+    }
+  }
+
+  if (Object.keys(update).length === 0) {
+    return admission.toObject();
+  }
+
+  const oldBedNumber = admission.bedNumber;
+  const newBedNumber = update.bedNumber;
+  if (newBedNumber !== undefined && newBedNumber !== oldBedNumber) {
+    await assignBedByNumber(newBedNumber, admission._id, tenantId);
+  }
+
+  const updated = await Admission.findOneAndUpdate(
+    { _id: id, tenantId },
+    { $set: { ...update, updatedAt: new Date() } },
+    { new: true, runValidators: true }
+  ).populate('doctorId', 'name specialization');
+
+  if (newBedNumber !== undefined && newBedNumber !== oldBedNumber) {
+    await releaseBedByNumber(oldBedNumber, tenantId);
+  }
+
+  return updated.toObject();
+}
+
 async function dischargeAdmission(id, tenantId) {
   const admission = await Admission.findOneAndUpdate(
     { _id: id, tenantId },
@@ -74,4 +114,4 @@ async function dischargeAdmission(id, tenantId) {
   return admission;
 }
 
-module.exports = { admitFromOPD, admitIPD, listAdmissions, dischargeAdmission };
+module.exports = { admitFromOPD, admitIPD, listAdmissions, updateAdmission, dischargeAdmission };

@@ -1,6 +1,6 @@
 export {};
 
-const { admitFromOPD, admitIPD, listAdmissions, dischargeAdmission } = require('./admission.service');
+const { admitFromOPD, admitIPD, listAdmissions, updateAdmission, dischargeAdmission } = require('./admission.service');
 const { success } = require('../../utils/response');
 
 async function admitFromOpd(ctx) {
@@ -22,6 +22,11 @@ async function index(ctx) {
   ctx.body = success(admissions);
 }
 
+async function update(ctx) {
+  const admission = await updateAdmission(ctx.params.id, ctx.state.user.tenantId, ctx.request.body);
+  ctx.body = success(admission, 'Admission updated');
+}
+
 async function discharge(ctx) {
   const admission = await dischargeAdmission(ctx.params.id, ctx.state.user.tenantId);
   if (!admission) {
@@ -30,4 +35,4 @@ async function discharge(ctx) {
   ctx.body = success(admission, 'Patient discharged');
 }
 
-module.exports = { admitFromOpd, admitIpd, index, discharge };
+module.exports = { admitFromOpd, admitIpd, index, update, discharge };

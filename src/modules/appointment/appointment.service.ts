@@ -42,11 +42,32 @@ async function getAppointmentById(id, tenantId) {
 }
 
 async function updateAppointment(id, tenantId, updates) {
+  updates = updates || {};
+  const allowedFields = ['patientId', 'patientName', 'patientType', 'appointmentType', 'visitReason', 'doctorId', 'scheduledAt'];
+  const update = {};
+
+  for (const field of allowedFields) {
+    if (updates[field] !== undefined) {
+      update[field] = updates[field];
+    }
+  }
+
+  if (Object.keys(update).length === 0) {
+    return getAppointmentById(id, tenantId);
+  }
+
   return Appointment.findOneAndUpdate(
     { _id: id, tenantId },
-    { ...updates, updatedAt: new Date() },
-    { new: true }
-  ).lean();
+    { $set: { ...update, updatedAt: new Date() } },
+    { new: true, runValidators: true }
+  )
+    .populate('patientId')
+    .populate('doctorId')
+    .lean();
+}
+
+async function deleteAppointment(id, tenantId) {
+  return Appointment.findOneAndDelete({ _id: id, tenantId }).lean();
 }
 
 async function checkInAppointment(id, tenantId, userId) {
@@ -81,4 +102,4 @@ async function checkInAppointment(id, tenantId, userId) {
 }
 
 
-module.exports = { createAppointment, listAppointments, getAppointmentById, updateAppointment, checkInAppointment };
+module.exports = { createAppointment, listAppointments, getAppointmentById, updateAppointment, deleteAppointment, checkInAppointment };

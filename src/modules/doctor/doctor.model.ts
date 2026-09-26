@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const doctorSchema = new mongoose.Schema({
   name: { type: String, required: true },
   specialization: { type: String, required: true },
+  profileImage: { type: String, required: true },
   phone: { type: String },
   email: { type: String, lowercase: true },
   departmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },

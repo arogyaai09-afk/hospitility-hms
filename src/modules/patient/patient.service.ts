@@ -86,8 +86,9 @@ async function searchPatients(tenantId, query) {
     return [];
   }
 
+  const tenantFilter = tenantId ? { tenantId } : {};
   const exact = await Patient.findOne({
-    tenantId,
+    ...tenantFilter,
     $or: [
       { patientCode: value },
       { phone: value },
@@ -95,19 +96,38 @@ async function searchPatients(tenantId, query) {
       { idProofNumber: value }
     ]
   }).select('-medicalHistory').lean();
+
   if (exact) {
     return [exact];
   }
 
   const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return Patient.find({
-    tenantId,
+  const matchingUsers = await User.find({
+    ...(tenantId ? { tenantId } : {}),
+    name: { $regex: escaped, $options: 'i' },
+    role: 'patient'
+  }).select('_id').lean();
+  const matchingUserIds = matchingUsers.map((user) => user._id);
+
+  const patients = await Patient.find({
+    ...tenantFilter,
     $or: [
       { name: { $regex: escaped, $options: 'i' } },
       { phone: { $regex: escaped, $options: 'i' } },
-      { email: { $regex: escaped, $options: 'i' } }
+      { email: { $regex: escaped, $options: 'i' } },
+      ...(matchingUserIds.length ? [{ userId: { $in: matchingUserIds } }] : [])
     ]
   }).select('-medicalHistory').sort({ createdAt: -1 }).limit(20).lean();
+
+  const uniquePatients = new Map();
+  for (const patient of patients) {
+    const key = patient.patientCode || String(patient._id);
+    if (!uniquePatients.has(key)) {
+      uniquePatients.set(key, patient);
+    }
+  }
+
+  return Array.from(uniquePatients.values());
 }
 
 async function updatePatient(id, tenantId, data) {
@@ -118,7 +138,7 @@ async function updatePatient(id, tenantId, data) {
     throw err;
   }
 
-  const allowedFields = ['userId', 'patientCode', 'name', 'dateOfBirth', 'gender', 'phone', 'email', 'address', 'emergencyContact', 'medicalHistory', 'bloodGroup', 'allergies', 'currentMedications', 'idProofType', 'idProofNumber', 'nationality', 'insuranceProvider', 'insurancePolicyNumber', 'status'];
+  const allowedFields = ['userId', 'patientCode', 'name', 'profileImage', 'dateOfBirth', 'gender', 'phone', 'email', 'address', 'emergencyContact', 'medicalHistory', 'bloodGroup', 'allergies', 'currentMedications', 'idProofType', 'idProofNumber', 'nationality', 'insuranceProvider', 'insurancePolicyNumber', 'status'];
   const update: any = {};
 
   for (const field of allowedFields) {

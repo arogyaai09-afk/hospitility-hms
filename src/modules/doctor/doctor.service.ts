@@ -42,7 +42,7 @@ async function listDoctors(tenantId, page = 1, limit = 20) {
   const skip = calculateSkip(page, limit);
   const [doctors, total] = await Promise.all([
     Doctor.find({ tenantId })
-      .select('name specialization phone email departmentId fees status availabilityDate userId createdAt')
+      .select('name specialization profileImage phone email departmentId fees status availabilityDate userId createdAt')
       .populate('departmentId', 'name code')
       .populate('userId', 'email')
       .lean()
@@ -86,7 +86,7 @@ async function updateDoctor(id, tenantId, data) {
     throw err;
   }
 
-  const allowedFields = ['name', 'specialization', 'phone', 'email', 'departmentId', 'fees', 'status', 'availabilityDate', 'userId'];
+  const allowedFields = ['name', 'specialization', 'profileImage', 'phone', 'email', 'departmentId', 'fees', 'status', 'availabilityDate', 'userId'];
   const update: any = {};
 
   for (const field of allowedFields) {

@@ -6,6 +6,7 @@ const patientSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   patientCode: { type: String, required: true, trim: true },
   name: { type: String, required: true },
+  profileImage: { type: String },
   dateOfBirth: { type: Date },
   gender: { type: String, enum: ['male', 'female', 'other'] },
   phone: { type: String },
