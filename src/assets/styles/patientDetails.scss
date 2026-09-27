@@ -528,3 +528,309 @@
     }
   }
 }
+
+/* ================================
+   VISIT HISTORY MODAL
+================================ */
+
+.vh-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 9999;
+}
+
+.vh-modal {
+  width: min(900px, 100%);
+  max-height: 90vh;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.vh-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.vh-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.vh-subtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.vh-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+}
+
+.vh-close:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.vh-content {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.vh-loading {
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 14px;
+}
+
+/* Sections */
+
+.vh-section {
+  margin-bottom: 20px;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.vh-section h3 {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Visit information */
+
+.vh-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.vh-info-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.vh-info-grid span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.vh-info-grid strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Empty state */
+
+.vh-empty {
+  padding: 14px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* JSON / consultation */
+
+.vh-pre {
+  margin: 0;
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #334155;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Lists */
+
+.vh-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vh-list-item {
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #334155;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Invoices + Payments */
+
+.vh-two-column {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.vh-two-column .vh-section {
+  margin-bottom: 0;
+}
+
+/* Scrollbar */
+
+.vh-content::-webkit-scrollbar {
+  width: 7px;
+}
+
+.vh-content::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+.vh-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.vh-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+  .vh-overlay {
+    padding: 12px;
+  }
+
+  .vh-modal {
+    max-height: 94vh;
+    border-radius: 12px;
+  }
+
+  .vh-header {
+    padding: 16px;
+  }
+
+  .vh-content {
+    padding: 16px;
+  }
+
+  .vh-info-grid,
+  .vh-two-column {
+    grid-template-columns: 1fr;
+  }
+
+  .vh-section {
+    padding: 14px;
+  }
+}
+
+/* Clinical Information */
+.clinical-info-row {
+  margin-top: 16px;
+}
+
+.clinical-content {
+  padding-top: 14px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.allergy-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid #fee2e2;
+}
+
+.medication-item {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.clinical-empty {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.visit-action-btn {
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+
+  &:hover {
+    background: #1d4ed8;
+  }
+
+  &.secondary {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+
+    &:hover {
+      background: #e2e8f0;
+    }
+  }
+}
+
+.visit-action-disabled {
+  color: #94a3b8;
+  font-size: 12px;
+}

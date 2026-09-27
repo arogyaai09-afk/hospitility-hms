@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { createEmergency } from "../api/emergencies";
@@ -8,66 +8,88 @@ import { useToast } from "../context/ToastContext";
 
 const initialState = {
   patientId: "",
-  doctorId: "",
-  emergencyType: "Trauma",
+  emergencyType: "accident",
   severity: "high",
-  description: "",
-  status: "pending",
+  assignedDoctor: "",
 };
 
 export default function AddEmergency() {
   const navigate = useNavigate();
   const { showToast } = useToast();
+
   const [form, setForm] = useState(initialState);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchFormData = async () => {
       try {
-        const [patientRes, doctorRes] = await Promise.all([
+        const [patientResponse, doctorResponse] = await Promise.all([
           getPatients(),
           getDoctors(),
         ]);
 
-        setPatients(
-          Array.isArray(patientRes?.data || patientRes)
-            ? patientRes?.data || patientRes
-            : [],
-        );
-        setDoctors(
-          Array.isArray(doctorRes?.data || doctorRes)
-            ? doctorRes?.data || doctorRes
-            : [],
-        );
+        const patientList = patientResponse?.data || patientResponse || [];
+
+        const doctorList = doctorResponse?.data || doctorResponse || [];
+
+        setPatients(Array.isArray(patientList) ? patientList : []);
+        setDoctors(Array.isArray(doctorList) ? doctorList : []);
       } catch (error) {
         console.error("Emergency form load error:", error);
+
+        showToast(
+          error?.message || "Failed to load patients and doctors",
+          "error",
+        );
       }
     };
 
-    fetchData();
-  }, []);
+    fetchFormData();
+  }, [showToast]);
 
-  const setField = (field, value) =>
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const setField = (field, value) => {
+    setForm((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!form.patientId) {
+      showToast("Please select a patient", "warning");
+      return;
+    }
+
+    if (!form.assignedDoctor) {
+      showToast("Please select a doctor", "warning");
+      return;
+    }
+
+    const selectedPatient = patients.find(
+      (patient) => String(patient._id || patient.id) === String(form.patientId),
+    );
 
     try {
+      setLoading(true);
+
       await createEmergency({
+        patientName: selectedPatient?.name || "",
         patientId: form.patientId,
-        doctorId: form.doctorId,
         emergencyType: form.emergencyType,
         severity: form.severity,
-        description: form.description,
-        status: form.status,
+        assignedDoctor: form.assignedDoctor,
       });
+
       showToast("Emergency case created successfully", "success");
+
       navigate("/emergencies");
     } catch (error) {
+      console.error("Create emergency error:", error);
+
       showToast(error?.message || "Failed to create emergency case", "error");
     } finally {
       setLoading(false);
@@ -78,7 +100,8 @@ export default function AddEmergency() {
     <div className="add-doctor-page">
       <div className="breadcrumb">
         <span className="bc-back" onClick={() => navigate("/emergencies")}>
-          <ArrowBackIosNewIcon /> Emergencies
+          <ArrowBackIosNewIcon />
+          Emergencies
         </span>
       </div>
 
@@ -91,30 +114,45 @@ export default function AddEmergency() {
               <label>
                 Patient <span className="req">*</span>
               </label>
+
               <select
                 value={form.patientId}
-                onChange={(e) => setField("patientId", e.target.value)}
+                onChange={(event) => setField("patientId", event.target.value)}
                 required
               >
                 <option value="">Select patient</option>
-                {patients.map((p) => (
-                  <option key={p._id || p.id} value={p._id || p.id}>
-                    {p.name}
+
+                {patients.map((patient) => (
+                  <option
+                    key={patient._id || patient.id}
+                    value={patient._id || patient.id}
+                  >
+                    {patient.name}
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="form-group">
-              <label>Doctor</label>
+              <label>
+                Doctor <span className="req">*</span>
+              </label>
+
               <select
-                value={form.doctorId}
-                onChange={(e) => setField("doctorId", e.target.value)}
+                value={form.assignedDoctor}
+                onChange={(event) =>
+                  setField("assignedDoctor", event.target.value)
+                }
+                required
               >
                 <option value="">Select doctor</option>
-                {doctors.map((d) => (
-                  <option key={d._id || d.id} value={d._id || d.id}>
-                    {d.name}
+
+                {doctors.map((doctor) => (
+                  <option
+                    key={doctor._id || doctor.id}
+                    value={doctor._id || doctor.id}
+                  >
+                    {doctor.name}
                   </option>
                 ))}
               </select>
@@ -124,23 +162,27 @@ export default function AddEmergency() {
           <div className="form-row">
             <div className="form-group">
               <label>Emergency Type</label>
+
               <select
                 value={form.emergencyType}
-                onChange={(e) => setField("emergencyType", e.target.value)}
+                onChange={(event) =>
+                  setField("emergencyType", event.target.value)
+                }
               >
-                <option value="Trauma">Trauma</option>
-                <option value="Cardiac">Cardiac</option>
-                <option value="Respiratory">Respiratory</option>
-                <option value="Neurological">Neurological</option>
-                <option value="Obstetric">Obstetric</option>
+                <option value="accident">Accident</option>
+                <option value="cardiac">Cardiac</option>
+                <option value="respiratory">Respiratory</option>
+                <option value="neurological">Neurological</option>
+                <option value="obstetric">Obstetric</option>
               </select>
             </div>
 
             <div className="form-group">
               <label>Severity</label>
+
               <select
                 value={form.severity}
-                onChange={(e) => setField("severity", e.target.value)}
+                onChange={(event) => setField("severity", event.target.value)}
               >
                 <option value="high">High</option>
                 <option value="medium">Medium</option>
@@ -149,27 +191,17 @@ export default function AddEmergency() {
             </div>
           </div>
 
-          <div className="form-group">
-            <label>Description</label>
-            <textarea
-              rows="5"
-              value={form.description}
-              onChange={(e) => setField("description", e.target.value)}
-              placeholder="Describe the emergency condition, symptoms, and initial assessment"
-            />
-          </div>
-
           <div className="form-footer">
             <button
               className="btn-cancel-form"
               type="button"
-              onClick={() => navigate("/admissions")}
+              onClick={() => navigate("/emergencies")}
             >
               Cancel
             </button>
 
             <button className="btn-submit" type="submit" disabled={loading}>
-              {loading ? "Creating..." : "Create Admission"}
+              {loading ? "Creating..." : "Create Emergency"}
             </button>
           </div>
         </div>

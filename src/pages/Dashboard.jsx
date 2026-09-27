@@ -1,8 +1,10 @@
+// dashboard.jsx
+// ─── IMPORTS ───────────────────────────────────────────────────────────────
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, Legend,
+  ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 import AddIcon from "@mui/icons-material/Add";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -20,49 +22,6 @@ import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import { getDashboardSummary } from "../api/dashboard";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
-
-const mockStatsCards = [
-  {
-    label: "Doctors",
-    value: "247",
-    icon: <PersonIcon style={{ fontSize: 22 }} />,
-    colorClass: "blue",
-    badge: "+95%",
-    badgeType: "up",
-    trend: [20, 35, 28, 45, 38, 52, 48, 60],
-    trendColor: "#3b82f6",
-  },
-  {
-    label: "Patients",
-    value: "4178",
-    icon: <PeopleIcon style={{ fontSize: 22 }} />,
-    colorClass: "red",
-    badge: "+25%",
-    badgeType: "up",
-    trend: [30, 25, 40, 35, 50, 42, 55, 48],
-    trendColor: "#ef4444",
-  },
-  {
-    label: "Appointment",
-    value: "12178",
-    icon: <CalendarMonthIcon style={{ fontSize: 22 }} />,
-    colorClass: "teal",
-    badge: "-15%",
-    badgeType: "down",
-    trend: [50, 40, 45, 35, 42, 38, 35, 30],
-    trendColor: "#0d9488",
-  },
-  {
-    label: "Revenue",
-    value: "$55,1240",
-    icon: <AttachMoneyIcon style={{ fontSize: 22 }} />,
-    colorClass: "green",
-    badge: "+25%",
-    badgeType: "up",
-    trend: [20, 30, 25, 38, 32, 45, 40, 52],
-    trendColor: "#10b981",
-  },
-];
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const appointmentData = months.map((month, i) => ({
@@ -85,61 +44,6 @@ const appointments = [
   { time: "Wed, 05 Apr 2025, 06:30 PM", type: "General Visit" },
   { time: "Wed, 05 Apr 2025, 04:10 PM", type: "General Visit" },
   { time: "Wed, 05 Apr 2025, 10:00 AM", type: "General Visit" },
-];
-
-const popularDoctors = [
-  { name: "Dr. Alex Morgan", specialty: "Cardiologist", bookings: 258, initials: "AM", color: "#3b82f6" },
-  { name: "Dr. Emily Carter", specialty: "Pediatrician", bookings: 125, initials: "EC", color: "#10b981" },
-  { name: "Dr. David Lee", specialty: "Gynecologist", bookings: 115, initials: "DL", color: "#8b5cf6" },
-];
-
-const deptData = [
-  { name: "Cardiology", value: 214, color: "#3b82f6" },
-  { name: "Dental", value: 150, color: "#10b981" },
-  { name: "Neurology", value: 121, color: "#8b5cf6" },
-];
-
-const scheduleData = [
-  { name: "Dr. Sarah Johnson", role: "Orthopedic Surgeon", initials: "SJ", color: "#3b82f6" },
-  { name: "Dr. Emily Carter", role: "Pediatrician", initials: "EC", color: "#10b981" },
-  { name: "Dr. David Lee", role: "Gynecologist", initials: "DL", color: "#8b5cf6" },
-  { name: "Dr. Michael Smith", role: "Cardiologist", initials: "MS", color: "#f59e0b" },
-];
-
-const incomeData = [
-  { name: "Cardiology", count: "4,556 Appointments", amount: "$5,985" },
-  { name: "Radiology", count: "4,125 Appointments", amount: "$5,194" },
-  { name: "Dental Surgery", count: "1,796 Appointments", amount: "$2,716" },
-  { name: "Orthopaedics", count: "3,827 Appointments", amount: "$4,682" },
-  { name: "General Medicine", count: "9,894 Appointments", amount: "$9,450" },
-];
-
-const allAppointments = [
-  {
-    doctor: "Dr. John Smith", dRole: "Neurosurgeon", dInitials: "JS", dColor: "#3b82f6",
-    patient: "Jesus Adams", pPhone: "+1 41254 45214", pInitials: "JA", pColor: "#8b5cf6",
-    dateTime: "28 May 2025 - 11:15 AM", mode: "Online", status: "confirmed",
-  },
-  {
-    doctor: "Dr. Lisa White", dRole: "Oncologist", dInitials: "LW", dColor: "#ef4444",
-    patient: "Ezra Belcher", pPhone: "+1 65895 41247", pInitials: "EB", pColor: "#f59e0b",
-    dateTime: "29 May 2025 - 11:30 AM", mode: "In-Person", status: "cancelled",
-  },
-  {
-    doctor: "Dr. Patricia Brown", dRole: "Pulmonologist", dInitials: "PB", dColor: "#10b981",
-    patient: "Glen Lentz", pPhone: "+1 62458 45845", pInitials: "GL", pColor: "#3b82f6",
-    dateTime: "30 May 2025 - 09:30 AM", mode: "Online", status: "confirmed",
-  },
-  {
-    doctor: "Dr. Rachel Green", dRole: "Urologist", dInitials: "RG", dColor: "#0d9488",
-    patient: "Bernard Griffith", pPhone: "+1 61422 45214", pInitials: "BG", pColor: "#10b981",
-    dateTime: "30 May 2025 - 10:00 AM", mode: "Online", status: "checked-out",
-  },
-  {
-    doctor: "Dr. Michael Smith", dRole: "Cardiologist", dInitials: "MS", dColor: "#f59e0b",
-    patient: "John Elsass", pPhone: "+1 47851 26371", pInitials: "JE", pColor: "#8b5cf6",
-    dateTime: "30 May 2025 - 11:00 AM", mode: "Online", status: "schedule",
-  },
 ];
 
 const topPatients = [
@@ -169,27 +73,10 @@ const leaveRequests = [
 const statusLabels = {
   confirmed: "Confirmed",
   cancelled: "Cancelled",
-  "checked-out": "Checked Out",
-  schedule: "Schedule",
+  "checked-in": "Checked In",
+  completed: "Completed",
+  scheduled: "Scheduled",
 };
-
-// ─── MINI SPARKLINE ───────────────────────────────────────────────────────────
-function Sparkline({ data, color }) {
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const h = 36;
-  const w = 80;
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w;
-    const y = h - ((v - min) / (max - min + 1)) * h;
-    return `${x},${y}`;
-  });
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ overflow: "visible" }}>
-      <polyline points={pts.join(" ")} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 // ─── MOCK DATA BADGE ──────────────────────────────────────────────────────────
 function MockDataBadge() {
@@ -255,36 +142,134 @@ export default function Dashboard() {
     };
   }, []);
 
-  const hasActual = (value) => typeof value === "number" && Number.isFinite(value);
+  const analytics = dashboardData || {};
 
-  const statsCards = mockStatsCards.map((card) => {
-    if (!dashboardData) return { ...card, isMock: true };
+  const fallbackStatsCards = [
+    {
+      label: "Doctors",
+      value: "247",
+      icon: <PersonIcon style={{ fontSize: 22 }} />,
+      colorClass: "blue",
+      badge: "+95%",
+      badgeType: "up",
+    },
+    {
+      label: "Patients",
+      value: "4178",
+      icon: <PeopleIcon style={{ fontSize: 22 }} />,
+      colorClass: "red",
+      badge: "+25%",
+      badgeType: "up",
+    },
+    {
+      label: "Appointment",
+      value: "12178",
+      icon: <CalendarMonthIcon style={{ fontSize: 22 }} />,
+      colorClass: "teal",
+      badge: "-15%",
+      badgeType: "down",
+    },
+    {
+      label: "Revenue",
+      value: "$55,1240",
+      icon: <AttachMoneyIcon style={{ fontSize: 22 }} />,
+      colorClass: "green",
+      badge: "+25%",
+      badgeType: "up",
+    },
+  ];
 
-    if (card.label === "Patients" && hasActual(dashboardData.totalPatients)) {
-      return { ...card, value: dashboardData.totalPatients.toLocaleString("en-US"), isMock: false };
-    }
+  const kpiConfig = {
+    "Total Patients": {
+      icon: <PeopleIcon style={{ fontSize: 22 }} />,
+      colorClass: "red",
+    },
+    Appointments: {
+      icon: <CalendarMonthIcon style={{ fontSize: 22 }} />,
+      colorClass: "teal",
+    },
+    Admissions: {
+      icon: <PersonIcon style={{ fontSize: 22 }} />,
+      colorClass: "blue",
+    },
+    Revenue: {
+      icon: <AttachMoneyIcon style={{ fontSize: 22 }} />,
+      colorClass: "green",
+    },
+  };
 
-    if (card.label === "Appointment" && hasActual(dashboardData.todayAppointments)) {
-      return { ...card, value: dashboardData.todayAppointments.toLocaleString("en-US"), isMock: false };
-    }
+  const statsCards =
+    analytics.kpis?.length > 0
+      ? analytics.kpis.map((kpi) => ({
+          label: kpi.label,
+          value: kpi.value,
+          icon: kpiConfig[kpi.label]?.icon || <PersonIcon style={{ fontSize: 22 }} />,
+          colorClass: kpiConfig[kpi.label]?.colorClass || "blue",
+          badge: kpi.delta || "",
+          badgeType: String(kpi.delta || "").startsWith("-") ? "down" : "up",
+          isMock: false,
+        }))
+      : fallbackStatsCards.map((card) => ({ ...card, isMock: true }));
 
-    if (card.label === "Revenue" && hasActual(dashboardData.monthlyRevenue)) {
-      return { ...card, value: formatCurrency(dashboardData.monthlyRevenue), isMock: false };
-    }
+  const popularDoctorColors = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b"];
 
-    // Dashboard summary currently does not provide a doctor count.
-    if (card.label === "Doctors" && hasActual(dashboardData.totalDoctors)) {
-      return { ...card, value: dashboardData.totalDoctors.toLocaleString("en-US"), isMock: false };
-    }
+  const dashboardPopularDoctors = (analytics.popularDoctors || []).map((doctor, index) => ({
+    ...doctor,
+    color: popularDoctorColors[index % popularDoctorColors.length],
+  }));
 
-    if (card.label === "Revenue" && hasActual(dashboardData.monthlyRevenue)) {
-      return { ...card, value: formatCurrency(dashboardData.monthlyRevenue), isMock: false };
-    }
+  const deptData = (analytics.donutChart?.segments || []).map((segment) => ({
+    name: segment.label,
+    value: Number(segment.value) || 0,
+    color: segment.color,
+  }));
 
-    return { ...card, isMock: true };
-  });
+  const scheduleColors = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b"];
 
-  const hasDashboardData = !!dashboardData && Object.keys(dashboardData).length > 0;
+  const scheduleData = (analytics.doctorsSchedule || []).map((doctor, index) => ({
+    name: doctor.name,
+    role: doctor.specialty,
+    initials: doctor.initials,
+    color: scheduleColors[index % scheduleColors.length],
+  }));
+
+  const scheduleSummary = (analytics.doctorsSchedule || []).reduce(
+    (summary, doctor) => ({
+      available: summary.available + (Number(doctor.available) || 0),
+      unavailable: summary.unavailable + (Number(doctor.unavailable) || 0),
+      leave: summary.leave + (Number(doctor.leave) || 0),
+    }),
+    { available: 0, unavailable: 0, leave: 0 }
+  );
+
+  const incomeData = (analytics.incomeByTreatment || []).map((item) => ({
+    name: item.treatment,
+    count: `${Number(item.appointments) || 0} Appointments`,
+    amount: formatCurrency(item.value),
+  }));
+
+  const appointmentColors = ["#3b82f6", "#ef4444", "#10b981", "#8b5cf6", "#f59e0b"];
+
+  const getInitials = (name = "") =>
+    name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase();
+
+  const allAppointments = (analytics.appointmentsTable || []).map((appt, index) => ({
+    doctor: appt.doctor,
+    dInitials: getInitials(appt.doctor),
+    dColor: appointmentColors[index % appointmentColors.length],
+    patient: appt.patient,
+    pInitials: getInitials(appt.patient),
+    pColor: appointmentColors[(index + 2) % appointmentColors.length],
+    dateTime: `${appt.date} - ${appt.time}`,
+    mode: appt.mode,
+    status: String(appt.status || "").toLowerCase().replace(" ", "-"),
+  }));
 
   return (
     <div className="dashboard">
@@ -316,10 +301,9 @@ export default function Dashboard() {
                 {card.badgeType === "up" ? <TrendingUpIcon style={{ fontSize: 11, marginRight: 2 }} /> : <TrendingDownIcon style={{ fontSize: 11, marginRight: 2 }} />}
                 {card.badge}
               </div>
-              <div className="stat-chart">
-                <Sparkline data={card.trend} color={card.trendColor} />
+              <div style={{ fontSize: 11, color: "#94a3b8" }}>
+                {card.isMock ? "Mock data" : "Current period"}
               </div>
-              <div style={{ fontSize: 11, color: "#94a3b8" }}>in last 7 Days</div>
             </div>
           </div>
         ))}
@@ -328,12 +312,6 @@ export default function Dashboard() {
       {dashboardError && !loading && (
         <div style={{ margin: "8px 0 20px", padding: 12, background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, color: "#9a4d00" }}>
           {dashboardError}
-        </div>
-      )}
-
-      {!hasDashboardData && !loading && (
-        <div style={{ padding: 20, textAlign: "center", background: "#f8fafc", borderRadius: 12, color: "#475569" }}>
-          No data found.
         </div>
       )}
 
@@ -447,17 +425,17 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Popular Doctors */}
+      {/* Popular Doctors - API */}
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="card-header">
-          <span className="card-title">Popular Doctors<MockDataBadge /></span>
+          <span className="card-title">Popular Doctors</span>
           <div className="card-actions">
             <select className="filter-select"><option>Weekly</option></select>
           </div>
         </div>
         <div className="card-body popular-doctors">
           <div className="doctors-grid">
-            {popularDoctors.map((doc) => (
+            {dashboardPopularDoctors.map((doc) => (
               <div className="doctor-card" key={doc.name}>
                 <div className="doctor-avatar">
                   <div style={{ width: "100%", height: "100%", background: doc.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 18, color: doc.color }}>
@@ -475,10 +453,10 @@ export default function Dashboard() {
 
       {/* Bottom 3-col: Departments + Schedule + Income */}
       <div className="bottom-grid">
-        {/* Top 3 Departments */}
+        {/* Departments - API */}
         <div className="card departments-card">
           <div className="card-header">
-            <span className="card-title">Top 3 Departments<MockDataBadge /></span>
+            <span className="card-title">Top Departments</span>
             <div className="card-actions">
               <select className="filter-select"><option>Weekly</option></select>
             </div>
@@ -494,7 +472,7 @@ export default function Dashboard() {
               </PieChart>
               <div style={{ position: "absolute", textAlign: "center", pointerEvents: "none" }}>
                 <div style={{ fontSize: 11, color: "#94a3b8" }}>Total Patient</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#1e293b" }}>638</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: "#1e293b" }}>{analytics.donutChart?.total ?? 0}</div>
               </div>
             </div>
             <div className="donut-legend">
@@ -508,15 +486,19 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Doctors Schedule */}
+        {/* Doctors Schedule - API */}
         <div className="card schedule-card">
           <div className="card-header">
-            <span className="card-title">Doctors Schedule<MockDataBadge /></span>
+            <span className="card-title">Doctors Schedule</span>
             <span className="view-all" style={{ fontSize: 13, color: "#3b82f6", fontWeight: 500, cursor: "pointer" }}>View All</span>
           </div>
           <div className="card-body">
             <div className="schedule-summary">
-              {[{ label: "Available", value: 48, color: "#10b981" }, { label: "Unavailable", value: 28, color: "#ef4444" }, { label: "Leave", value: 12, color: "#f59e0b" }].map((s) => (
+              {[
+                { label: "Available", value: scheduleSummary.available, color: "#10b981" },
+                { label: "Unavailable", value: scheduleSummary.unavailable, color: "#ef4444" },
+                { label: "Leave", value: scheduleSummary.leave, color: "#f59e0b" },
+              ].map((s) => (
                 <div className="sum-item" key={s.label}>
                   <div className="sum-value" style={{ color: s.color }}>{s.value}</div>
                   <div className="sum-label">{s.label}</div>
@@ -542,10 +524,10 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Income By Treatment */}
+        {/* Income By Treatment - API */}
         <div className="card income-card">
           <div className="card-header">
-            <span className="card-title">Income By Treatment<MockDataBadge /></span>
+            <span className="card-title">Income By Treatment</span>
             <div className="card-actions">
               <select className="filter-select"><option>Weekly</option></select>
             </div>
@@ -566,10 +548,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* All Appointments Table */}
+      {/* All Appointments - API */}
       <div className="card appointments-table" style={{ marginBottom: 16 }}>
         <div className="card-header">
-          <span className="card-title">All Appointments<MockDataBadge /></span>
+          <span className="card-title">All Appointments</span>
           <span className="view-all" style={{ fontSize: 13, color: "#3b82f6", fontWeight: 500, cursor: "pointer" }}>View All</span>
         </div>
         <div className="table-wrap">
@@ -585,13 +567,13 @@ export default function Dashboard() {
             </thead>
             <tbody>
               {allAppointments.map((appt, i) => (
-                <tr key={i}>
+                <tr key={`${appt.dateTime}-${appt.patient}-${i}`}>
                   <td>
                     <div className="doc-cell">
                       <div className="cell-avatar" style={{ background: appt.dColor + "22", color: appt.dColor }}>{appt.dInitials}</div>
                       <div>
                         <div className="cell-name">{appt.doctor}</div>
-                        <div className="cell-sub">{appt.dRole}</div>
+                        {appt.dRole && <div className="cell-sub">{appt.dRole}</div>}
                       </div>
                     </div>
                   </td>
@@ -600,14 +582,14 @@ export default function Dashboard() {
                       <div className="cell-avatar" style={{ background: appt.pColor + "22", color: appt.pColor }}>{appt.pInitials}</div>
                       <div>
                         <div className="cell-name">{appt.patient}</div>
-                        <div className="cell-sub">{appt.pPhone}</div>
+                        {appt.pPhone && <div className="cell-sub">{appt.pPhone}</div>}
                       </div>
                     </div>
                   </td>
                   <td>{appt.dateTime}</td>
                   <td>{appt.mode}</td>
                   <td>
-                    <span className={`status-badge ${appt.status}`}>{statusLabels[appt.status]}</span>
+                    <span className={`status-badge ${appt.status}`}>{statusLabels[appt.status] || appt.status}</span>
                   </td>
                 </tr>
               ))}

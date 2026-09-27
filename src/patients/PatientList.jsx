@@ -1,7 +1,9 @@
 //patientlist.jsx
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getPatients, deletePatient } from "../api/patients";
+import { getPatients, searchPatients, deletePatient } from "../api/patients";
+import { getAppointments } from "../api/appointments";
+import { API_BASE_URL } from "../api/axiosInstance";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -18,248 +20,6 @@ import { useToast } from "../context/ToastContext";
 import ConfirmModal from "../components/ConfirmModal";
 
 // ─── MOCK DATA ─────────────────────────────────────────────────────────────────
-const patientsData = [
-  {
-    id: 1,
-    name: "Alberto Ripley",
-    age: 26,
-    gender: "Male",
-    phone: "+1 41245 54132",
-    doctor: "Dr. Mick Thompson",
-    docRole: "Cardiologist",
-    docColor: "#3b82f6",
-    docInitials: "MT",
-    address: "Miami, Florida",
-    lastVisit: "30 Apr 2025",
-    location: "Green Square, New York, USA",
-    status: "Available",
-    color: "#3b82f6",
-  },
-  {
-    id: 2,
-    name: "Susan Babin",
-    age: 21,
-    gender: "Female",
-    phone: "+1 54554 54789",
-    doctor: "Dr. Sarah Johnson",
-    docRole: "Orthopedic Surgeon",
-    docColor: "#10b981",
-    docInitials: "SJ",
-    address: "Austin, Texas",
-    lastVisit: "15 Apr 2025",
-    location: "Elm Road, Chicago, USA",
-    status: "Available",
-    color: "#ec4899",
-  },
-  {
-    id: 3,
-    name: "Carol Lam",
-    age: 28,
-    gender: "Female",
-    phone: "+1 43554 54985",
-    doctor: "Dr. Emily Carter",
-    docRole: "Pediatrician",
-    docColor: "#8b5cf6",
-    docInitials: "EC",
-    address: "Seattle, Washington",
-    lastVisit: "02 Apr 2025",
-    location: "Ocean Avenue, Miami, USA",
-    status: "Available",
-    color: "#8b5cf6",
-  },
-  {
-    id: 4,
-    name: "Marsha Noland",
-    age: 25,
-    gender: "Female",
-    phone: "+1 47554 54257",
-    doctor: "Dr. David Lee",
-    docRole: "Gynecologist",
-    docColor: "#f59e0b",
-    docInitials: "DL",
-    address: "Chicago, Illinois",
-    lastVisit: "27 Mar 2025",
-    location: "Elm Road, Austin, USA",
-    status: "Unavailable",
-    color: "#f59e0b",
-  },
-  {
-    id: 5,
-    name: "Irma Armstrong",
-    age: 32,
-    gender: "Female",
-    phone: "+1 54114 57526",
-    doctor: "Dr. Anna Kim",
-    docRole: "Psychiatrist",
-    docColor: "#0d9488",
-    docInitials: "AK",
-    address: "Phoenix, Arizona",
-    lastVisit: "12 Mar 2025",
-    location: "Elm Road, Austin, USA",
-    status: "Available",
-    color: "#ef4444",
-  },
-  {
-    id: 6,
-    name: "Jesus Adams",
-    age: 27,
-    gender: "Male",
-    phone: "+1 51247 56574",
-    doctor: "Dr. John Smith",
-    docRole: "Neurosurgeon",
-    docColor: "#ef4444",
-    docInitials: "JS",
-    address: "Atlanta, Georgia",
-    lastVisit: "05 Mar 2025",
-    location: "Maple Street, San Francisco, USA",
-    status: "Unavailable",
-    color: "#10b981",
-  },
-  {
-    id: 7,
-    name: "Ezra Belcher",
-    age: 28,
-    gender: "Male",
-    phone: "+1 41452 25741",
-    doctor: "Dr. Lisa White",
-    docRole: "Oncologist",
-    docColor: "#ec4899",
-    docInitials: "LW",
-    address: "San Diego, California",
-    lastVisit: "24 Feb 2025",
-    location: "Pine Valley, Seattle, USA",
-    status: "Available",
-    color: "#6366f1",
-  },
-  {
-    id: 8,
-    name: "Glen Lentz",
-    age: 22,
-    gender: "Male",
-    phone: "+1 62458 45845",
-    doctor: "Dr. Patricia Brown",
-    docRole: "Pulmonologist",
-    docColor: "#6366f1",
-    docInitials: "PB",
-    address: "San Diego, California",
-    lastVisit: "16 Feb 2025",
-    location: "Pine Valley, Seattle, USA",
-    status: "Available",
-    color: "#0d9488",
-  },
-  {
-    id: 9,
-    name: "Bernard Griffith",
-    age: 34,
-    gender: "Male",
-    phone: "+1 61422 45214",
-    doctor: "Dr. Rachel Green",
-    docRole: "Urologist",
-    docColor: "#14b8a6",
-    docInitials: "RG",
-    address: "Houston, Texas",
-    lastVisit: "01 Feb 2025",
-    location: "River Walk, Houston, USA",
-    status: "Available",
-    color: "#f59e0b",
-  },
-  {
-    id: 10,
-    name: "John Elsass",
-    age: 23,
-    gender: "Male",
-    phone: "+1 47851 26371",
-    doctor: "Dr. Michael Smith",
-    docRole: "Cardiologist",
-    docColor: "#f59e0b",
-    docInitials: "MS",
-    address: "Denver, Colorado",
-    lastVisit: "25 Jan 2025",
-    location: "Forest Hill, Denver, USA",
-    status: "Available",
-    color: "#3b82f6",
-  },
-  {
-    id: 11,
-    name: "Martin Lisa",
-    age: 26,
-    gender: "Female",
-    phone: "+1 54785 36241",
-    doctor: "Dr. Mick Thompson",
-    docRole: "Cardiologist",
-    docColor: "#3b82f6",
-    docInitials: "MT",
-    address: "Orlando, Florida",
-    lastVisit: "22 Jan 2025",
-    location: "Garden Circle, Orlando, USA",
-    status: "Unavailable",
-    color: "#ec4899",
-  },
-  {
-    id: 12,
-    name: "Ava Mitchell",
-    age: 25,
-    gender: "Female",
-    phone: "+1 58741 25481",
-    doctor: "Dr. Sarah Johnson",
-    docRole: "Orthopedic Surgeon",
-    docColor: "#10b981",
-    docInitials: "SJ",
-    address: "Atlanta, Georgia",
-    lastVisit: "18 Jan 2025",
-    location: "Crystal Court, Atlanta, USA",
-    status: "Available",
-    color: "#8b5cf6",
-  },
-  {
-    id: 13,
-    name: "Noah Davis",
-    age: 32,
-    gender: "Male",
-    phone: "+1 47852 36548",
-    doctor: "Dr. Emily Carter",
-    docRole: "Pediatrician",
-    docColor: "#8b5cf6",
-    docInitials: "EC",
-    address: "Phoenix, Arizona",
-    lastVisit: "15 Jan 2025",
-    location: "Oakwood Street, Phoenix, USA",
-    status: "Available",
-    color: "#10b981",
-  },
-  {
-    id: 14,
-    name: "Emily Ross",
-    age: 29,
-    gender: "Female",
-    phone: "+1 63254 87412",
-    doctor: "Dr. David Lee",
-    docRole: "Gynecologist",
-    docColor: "#f59e0b",
-    docInitials: "DL",
-    address: "Dallas, Texas",
-    lastVisit: "10 Jan 2025",
-    location: "Hilltop Lane, Dallas, USA",
-    status: "Available",
-    color: "#f59e0b",
-  },
-  {
-    id: 15,
-    name: "Ryan Anderson",
-    age: 30,
-    gender: "Male",
-    phone: "+1 45871 26354",
-    doctor: "Dr. Anna Kim",
-    docRole: "Psychiatrist",
-    docColor: "#0d9488",
-    docInitials: "AK",
-    address: "Dallas, Texas",
-    lastVisit: "04 Jan 2025",
-    location: "Hilltop Lane, Dallas, USA",
-    status: "Unavailable",
-    color: "#6366f1",
-  },
-];
 
 const SORT_OPTIONS = [
   { label: "Recently Added", value: "recent" },
@@ -271,13 +31,52 @@ const SORT_OPTIONS = [
 
 const PAGE_SIZE = 9;
 
+// ─── API HELPERS ─────────────────────────────────────────────────────────────
+
+const API_ORIGIN = API_BASE_URL.replace(/\/api\/v1\/?$/, "");
+
+const getProfileImageUrl = (image) => {
+  if (!image) return "";
+
+  // Already full URL
+  if (image.startsWith("http://") || image.startsWith("https://")) {
+    return image;
+  }
+
+  // Backend returns something like:
+  // /uploads/tenantId/images/file.png
+  return `${API_ORIGIN}${image.startsWith("/") ? image : `/${image}`}`;
+};
+
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
-function Avatar({ name, color, size = 38 }) {
+function Avatar({ name = "", color = "#3b82f6", image, size = 38 }) {
   const initials = name
     .split(" ")
+    .filter(Boolean)
     .slice(0, 2)
     .map((w) => w[0])
-    .join("");
+    .join("")
+    .toUpperCase();
+
+  if (image) {
+    return (
+      <img
+        src={image}
+        alt={name}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          objectFit: "cover",
+          flexShrink: 0,
+        }}
+        onError={(e) => {
+          e.currentTarget.style.display = "none";
+        }}
+      />
+    );
+  }
+
   return (
     <div
       style={{
@@ -614,8 +413,9 @@ export default function Patients() {
   const [search, setSearch] = useState("");
   const [showFilter, setShowFilter] = useState(false);
   const [patients, setPatients] = useState([]);
+  const [allPatients, setAllPatients] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [usingMockData, setUsingMockData] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const [appliedFilters, setAppliedFilters] = useState({
     patient: [],
@@ -684,11 +484,22 @@ export default function Patients() {
       try {
         setLoading(true);
 
-        const response = await getPatients();
+        const [patientsResponse, appointmentsResponse] = await Promise.all([
+          getPatients(),
+          getAppointments(),
+        ]);
 
-        const backendPatients = Array.isArray(response?.data)
-          ? response.data
+        const backendPatients = Array.isArray(patientsResponse?.data)
+          ? patientsResponse.data
           : [];
+
+        const backendAppointments = Array.isArray(
+          appointmentsResponse?.data?.data,
+        )
+          ? appointmentsResponse.data.data
+          : Array.isArray(appointmentsResponse?.data)
+            ? appointmentsResponse.data
+            : [];
 
         const normalizedPatients = backendPatients.map((patient) => {
           const age = patient.dateOfBirth
@@ -700,34 +511,97 @@ export default function Patients() {
             ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)
             : "";
 
+          // Get appointments belonging to this patient
+          const patientAppointments = backendAppointments.filter(
+            (appointment) => {
+              const appointmentPatientId =
+                typeof appointment.patientId === "object"
+                  ? appointment.patientId?._id
+                  : appointment.patientId;
+
+              return String(appointmentPatientId) === String(patient._id);
+            },
+          );
+
+          // Find latest appointment
+          const latestAppointment = patientAppointments.reduce(
+            (latest, current) => {
+              const latestDate = new Date(
+                latest?.date ||
+                  latest?.appointmentDate ||
+                  latest?.createdAt ||
+                  0,
+              ).getTime();
+
+              const currentDate = new Date(
+                current?.date ||
+                  current?.appointmentDate ||
+                  current?.createdAt ||
+                  0,
+              ).getTime();
+
+              return currentDate > latestDate ? current : latest;
+            },
+            null,
+          );
+
+          const lastAppointmentDate = latestAppointment
+            ? latestAppointment.date ||
+              latestAppointment.appointmentDate ||
+              latestAppointment.createdAt
+            : "";
+
           return {
             id: patient._id,
             name: patient.name || "",
             age,
             gender,
+
             phone: patient.phone || "",
-            address: patient.address || "",
-            patientCode: patient.patientCode || "",
             email: patient.email || "",
-            doctor: "",
-            docRole: "",
+            address: patient.address || "",
+
+            patientCode: patient.patientCode || "",
+
+            profileImage: getProfileImageUrl(patient.profileImage),
+
+            status: patient.status || "",
+
+            doctor:
+              latestAppointment?.doctorId?.name ||
+              latestAppointment?.doctorName ||
+              "",
+            docRole:
+              latestAppointment?.doctorId?.specialization ||
+              latestAppointment?.designation ||
+              "",
             docColor: "#3b82f6",
             docInitials: "",
-            lastVisit: "",
-            status: "",
+
+            lastVisit: lastAppointmentDate
+              ? new Date(lastAppointmentDate).toLocaleDateString("en-IN", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
+              : "",
+
+              lastAppointment: latestAppointment,
+
             location: patient.address || "",
             color: "#3b82f6",
+
             dateOfBirth: patient.dateOfBirth,
             createdAt: patient.createdAt,
+            updatedAt: patient.updatedAt,
           };
         });
 
+        setAllPatients(normalizedPatients);
         setPatients(normalizedPatients);
-        setUsingMockData(false);
       } catch (error) {
         console.error("Patients API Error:", error);
         setPatients([]);
-        setUsingMockData(false);
       } finally {
         setLoading(false);
       }
@@ -736,16 +610,38 @@ export default function Patients() {
     fetchPatients();
   }, []);
 
+  useEffect(() => {
+  const query = search.trim().toLowerCase();
+
+  setVisibleCount(PAGE_SIZE);
+
+  if (!query) {
+    setPatients(allPatients);
+    return;
+  }
+
+  setSearchLoading(true);
+
+  const timer = setTimeout(() => {
+    const filteredPatients = allPatients.filter((patient) => {
+      return (
+        patient.name?.toLowerCase().includes(query) ||
+        patient.patientCode?.toLowerCase().includes(query) ||
+        patient.phone?.toLowerCase().includes(query) ||
+        patient.email?.toLowerCase().includes(query)
+      );
+    });
+
+    setPatients(filteredPatients);
+    setSearchLoading(false);
+  }, 200);
+
+  return () => clearTimeout(timer);
+}, [search, allPatients]);
+
   const filtered = patients
     .filter((p) => {
-      const searchValue = search.toLowerCase();
-
-      const matchesSearch =
-        p.name?.toLowerCase().includes(searchValue) ||
-        p.doctor?.toLowerCase().includes(searchValue) ||
-        p.address?.toLowerCase().includes(searchValue) ||
-        p.phone?.toLowerCase().includes(searchValue) ||
-        p.patientCode?.toLowerCase().includes(searchValue);
+      const matchesSearch = true;
 
       const matchesPatient =
         appliedFilters.patient.length === 0 ||
@@ -825,59 +721,35 @@ export default function Patients() {
               padding: "4px 8px",
             }}
           >
-            {usingMockData && (
-              <span
-                style={{
-                  padding: "4px 8px",
-                  borderRadius: "6px",
-                  background: "#fef3c7",
-                  color: "#92400e",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  lineHeight: "1",
-                }}
-              >
-                MOCK DATA
-              </span>
-            )}
-
             <span>Total Patients : {filtered.length}</span>
           </div>
         </div>
 
         <div className="page-actions">
-          {/* Export */}
-          <div className="export-dropdown-wrap" ref={exportRef}>
-            {view === "list" ? (
-              <>
-                <button
-                  className="btn-export"
-                  onClick={() => setExportOpen((o) => !o)}
-                >
-                  Export <KeyboardArrowDownIcon />
-                </button>
-                {exportOpen && (
-                  <div className="dropdown-menu">
-                    <div className="dd-item">
-                      <PictureAsPdfIcon style={{ color: "#ef4444" }} /> Download
-                      as PDF
-                    </div>
-                    <div className="dd-item">
-                      <TableChartIcon style={{ color: "#10b981" }} /> Download
-                      as Excel
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
+          {/* Export — only shown in List view */}
+          {view === "list" && (
+            <div className="export-dropdown-wrap" ref={exportRef}>
               <button
-                className="btn-filter"
-                onClick={() => setShowFilter(true)}
+                className="btn-export"
+                onClick={() => setExportOpen((o) => !o)}
               >
-                <FilterListIcon /> Filters
+                Export <KeyboardArrowDownIcon />
               </button>
-            )}
-          </div>
+
+              {exportOpen && (
+                <div className="dropdown-menu">
+                  <div className="dd-item">
+                    <PictureAsPdfIcon style={{ color: "#ef4444" }} /> Download
+                    as PDF
+                  </div>
+                  <div className="dd-item">
+                    <TableChartIcon style={{ color: "#10b981" }} /> Download as
+                    Excel
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* View Toggle */}
           <div className="view-toggle">
@@ -906,52 +778,57 @@ export default function Patients() {
         </div>
       </div>
 
-      {/* ── Toolbar (list only) ── */}
-      {view === "list" && (
-        <div className="toolbar">
-          <div className="search-input-wrap">
-            <SearchIcon />
-            <input
-              type="text"
-              placeholder="Search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="toolbar-right">
-            <button
-              className="btn-filter-sm"
-              onClick={() => setShowFilter(true)}
+      {/* ── Common patient toolbar ── */}
+      <div className="toolbar">
+        <div className="search-input-wrap">
+          <SearchIcon />
+
+          <input
+            type="text"
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          {searchLoading && (
+            <span
+              style={{
+                fontSize: "12px",
+                color: "#64748b",
+                marginLeft: "8px",
+              }}
             >
-              <FilterListIcon /> Filters
+              Searching...
+            </span>
+          )}
+        </div>
+        <div className="toolbar-right">
+          <button className="btn-filter-sm" onClick={() => setShowFilter(true)}>
+            <FilterListIcon /> Filters
+          </button>
+          <div className="sort-dropdown-wrap" ref={sortRef}>
+            <button className="btn-sort" onClick={() => setSortOpen((o) => !o)}>
+              Sort By : {sortLabel} <KeyboardArrowDownIcon />
             </button>
-            <div className="sort-dropdown-wrap" ref={sortRef}>
-              <button
-                className="btn-sort"
-                onClick={() => setSortOpen((o) => !o)}
-              >
-                Sort By : {sortLabel} <KeyboardArrowDownIcon />
-              </button>
-              {sortOpen && (
-                <div className="dropdown-menu">
-                  {SORT_OPTIONS.map((opt) => (
-                    <div
-                      key={opt.value}
-                      className={`dd-item ${sortVal === opt.value ? "active" : ""}`}
-                      onClick={() => {
-                        setSortVal(opt.value);
-                        setSortOpen(false);
-                      }}
-                    >
-                      {opt.label}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            {sortOpen && (
+              <div className="dropdown-menu">
+                {SORT_OPTIONS.map((opt) => (
+                  <div
+                    key={opt.value}
+                    className={`dd-item ${sortVal === opt.value ? "active" : ""}`}
+                    onClick={() => {
+                      setSortVal(opt.value);
+                      setSortOpen(false);
+                    }}
+                  >
+                    {opt.label}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       {/* ══ LIST VIEW ══ */}
       {view === "list" && (
@@ -977,11 +854,18 @@ export default function Patients() {
                 >
                   <td>
                     <div className="patient-cell">
-                      <Avatar name={pat.name} color={pat.color} size={38} />
+                      <Avatar
+                        name={pat.name}
+                        color={pat.color}
+                        image={pat.profileImage}
+                        size={38}
+                      />
                       <div>
                         <div className="cell-name">{pat.name}</div>
                         <div className="cell-sub">
-                          {pat.age}, {pat.gender}
+                          {pat.patientCode
+                            ? `Patient ID: ${pat.patientCode}`
+                            : `${pat.age}, ${pat.gender}`}
                         </div>
                       </div>
                     </div>
@@ -1033,7 +917,14 @@ export default function Patients() {
                       <button
                         className="icon-btn"
                         title="Appointments"
-                        onClick={() => navigate("/appointments")}
+                        onClick={() =>
+  navigate("/appointments/new", {
+    state: {
+      patient: pat,
+      lastAppointment: pat.lastAppointment,
+    },
+  })
+}
                       >
                         <CalendarTodayIcon />
                       </button>
@@ -1101,7 +992,14 @@ export default function Patients() {
                 setOpenMenu={setOpenMenu}
                 onCardClick={() => navigate(`/patients/${pat.id}`)}
                 onDoctorClick={() => navigate(`/doctors/${pat.id}`)}
-                onApptClick={() => navigate("/appointments")}
+                onApptClick={() =>
+  navigate("/appointments/new", {
+    state: {
+      patient: pat,
+      lastAppointment: pat.lastAppointment,
+    },
+  })
+}
                 onDelete={() => {
                   setPatientToDelete(pat.id);
                   setShowDeleteModal(true);
@@ -1158,18 +1056,41 @@ function PatientGridCard({
         <div className="pgc-info">
           <div
             className="pgc-avatar"
-            style={{ background: pat.color + "22", color: pat.color }}
+            style={{
+              background: pat.color + "22",
+              color: pat.color,
+              overflow: "hidden",
+            }}
           >
-            {pat.name
-              .split(" ")
-              .slice(0, 2)
-              .map((w) => w[0])
-              .join("")}
+            {pat.profileImage ? (
+              <img
+                src={pat.profileImage}
+                alt={pat.name}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            ) : (
+              pat.name
+                .split(" ")
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((w) => w[0])
+                .join("")
+                .toUpperCase()
+            )}
           </div>
           <div>
             <div className="pgc-name">{pat.name}</div>
             <div className="pgc-meta">
-              {pat.age}, {pat.gender}
+              {pat.patientCode
+                ? `Patient ID: ${pat.patientCode}`
+                : `${pat.age}, ${pat.gender}`}
             </div>
           </div>
         </div>

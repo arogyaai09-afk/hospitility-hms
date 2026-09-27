@@ -1,5 +1,6 @@
 // AddPatient.js
 import { useState, useEffect } from "react";
+import { Country, State, City } from "country-state-city";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import PersonIcon from "@mui/icons-material/Person";
@@ -9,29 +10,46 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { createPatient } from "../api/patients";
 import { getDoctors } from "../api/doctors";
 import { useToast } from "../context/ToastContext";
+import { uploadFile } from "../api/storage";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const GENDERS = ["Male", "Female", "Other"];
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 const STATUSES = ["Available", "Unavailable"];
-const COUNTRIES = ["United States", "United Kingdom", "India", "Canada", "Australia"];
-const STATES = ["California", "New York", "Texas", "Florida", "Illinois", "Washington", "Arizona"];
-const CITIES = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Seattle", "Miami"];
-const COUNTRY_CODES = [
-  { code: "+1", flag: "🇺🇸", label: "US" },
-  { code: "+44", flag: "🇬🇧", label: "GB" },
-  { code: "+91", flag: "🇮🇳", label: "IN" },
-  { code: "+61", flag: "🇦🇺", label: "AU" },
-  { code: "+1", flag: "🇨🇦", label: "CA" },
+const DEPARTMENTS = [
+  "Cardiology",
+  "Orthopedics",
+  "Pediatrics",
+  "Gynecology",
+  "Neurology",
+  "Oncology",
+  "Psychiatry",
+  "Radiology",
+  "Urology",
+  "Pulmonology",
 ];
 
+const SPECIALIZATION_TO_DEPARTMENT = {
+  Cardiologist: "Cardiology",
+  "Orthopedic Surgeon": "Orthopedics",
+  Pediatrician: "Pediatrics",
+  Gynecologist: "Gynecology",
+  Neurosurgeon: "Neurology",
+  Oncologist: "Oncology",
+  Psychiatrist: "Psychiatry",
+  Radiologist: "Radiology",
+  Urologist: "Urology",
+  Pulmonologist: "Pulmonology",
+};
+
+const COUNTRIES = Country.getAllCountries();
 // ─── VALIDATION ───────────────────────────────────────────────────────────────
 function validate(form) {
   const e = {};
   if (!form.firstName.trim()) e.firstName = "First name is required";
   if (!form.lastName.trim()) e.lastName = "Last name is required";
   if (!form.phone.trim()) e.phone = "Phone number is required";
-  else if (!/^\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{4}$/.test(form.phone.trim()))
+  else if (!/^\d{6,15}$/.test(form.phone.trim()))
     e.phone = "Enter a valid phone number";
   if (!form.email.trim()) e.email = "Email address is required";
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
@@ -76,9 +94,16 @@ export default function CreatePatient() {
   const [form, setForm] = useState({
     profileImage: null, profilePreview: "",
     firstName: "", lastName: "",
-    countryCode: "+1", phone: "",
-    email: "", primaryDoctor: "",
-    dob: "", gender: "", bloodGroup: "", status: "",
+    countryCode: "+91",
+    countryCodeIso: "IN",
+    phone: "",
+    email: "",
+    department: "",
+    primaryDoctor: "",
+    dob: "",
+    gender: "",
+    bloodGroup: "",
+    status: "",
     address1: "", address2: "",
     country: "", state: "", city: "", pincode: "",
   });
@@ -88,6 +113,9 @@ export default function CreatePatient() {
   const [ccOpen, setCcOpen] = useState(false);
   const [doctors, setDoctors] = useState([]);
   const [doctorsLoading, setDoctorsLoading] = useState(true);
+
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
 
   // Fetch doctors on mount
   useEffect(() => {
@@ -118,6 +146,58 @@ export default function CreatePatient() {
     fetchDoctors();
   }, []);
 
+  useEffect(() => {
+    if (!form.country) {
+      setStates([]);
+      setCities([]);
+      return;
+    }
+
+    const selectedCountry = COUNTRIES.find(
+      (country) => country.name === form.country
+    );
+
+    if (!selectedCountry) {
+      setStates([]);
+      setCities([]);
+      return;
+    }
+
+    const countryStates = State.getStatesOfCountry(
+      selectedCountry.isoCode
+    );
+
+    setStates(countryStates);
+    setCities([]);
+  }, [form.country]);
+
+  useEffect(() => {
+    if (!form.country || !form.state) {
+      setCities([]);
+      return;
+    }
+
+    const selectedCountry = COUNTRIES.find(
+      (country) => country.name === form.country
+    );
+
+    const selectedState = states.find(
+      (state) => state.name === form.state
+    );
+
+    if (!selectedCountry || !selectedState) {
+      setCities([]);
+      return;
+    }
+
+    const stateCities = City.getCitiesOfState(
+      selectedCountry.isoCode,
+      selectedState.isoCode
+    );
+
+    setCities(stateCities);
+  }, [form.country, form.state, states]);
+
   // ── field updater ──
   const set = (field, val) => {
     setForm(p => ({ ...p, [field]: val }));
@@ -134,42 +214,132 @@ export default function CreatePatient() {
   };
 
   // ── submit ──
+  // ── submit ──
   const handleSubmit = async () => {
     const errs = validate(form);
     setErrors(errs);
 
     if (Object.keys(errs).length !== 0) {
       const first = document.querySelector(".error");
+
       if (first) {
-        first.scrollIntoView({ behavior: "smooth", block: "center" });
+        first.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+        first.focus?.();
       }
+
       return;
     }
 
     try {
-      const response = await createPatient({
-        patientCode: `PT-${Date.now()}`,
+      let profileImageUrl = "";
+
+      // 1️⃣ Upload profile image first, if selected
+      if (form.profileImage) {
+        const uploadResponse = await uploadFile(
+          form.profileImage,
+          "images"
+        );
+
+        console.log("Profile image upload response:", uploadResponse);
+
+        if (uploadResponse?.status !== "success") {
+          throw new Error(
+            uploadResponse?.message || "Failed to upload profile image"
+          );
+        }
+
+        // Storage API ka returned URL
+        profileImageUrl =
+          uploadResponse?.data?.url ||
+          uploadResponse?.data?.fileUrl ||
+          uploadResponse?.data?.path ||
+          "";
+      }
+
+      // 2️⃣ Create patient
+      const patientPayload = {
         name: `${form.firstName.trim()} ${form.lastName.trim()}`,
         email: form.email.trim(),
         phone: `${form.countryCode}${form.phone.trim()}`,
         gender: form.gender.toLowerCase(),
         dateOfBirth: form.dob,
-        address: `${form.address1.trim()}, ${form.address2.trim()}`,
-      });
+
+        address: [
+          form.address1.trim(),
+          form.address2.trim(),
+          form.city,
+          form.state,
+          form.country,
+          form.pincode,
+        ]
+          .filter(Boolean)
+          .join(", "),
+
+        bloodGroup: form.bloodGroup,
+
+        status:
+          form.status === "Available"
+            ? "active"
+            : "inactive",
+      };
+
+      // Only send profileImage when upload succeeded
+      if (profileImageUrl) {
+        patientPayload.profileImage = profileImageUrl;
+      }
+
+      console.log("Create patient payload:", patientPayload);
+
+      const response = await createPatient(patientPayload);
 
       console.log("Create patient response:", response);
 
-      if (response.status === "success") {
-        showToast("Patient added successfully!", "success");
+      if (response?.status === "success") {
+        const createdPatient = response?.data;
+
+        console.log(
+          "Created patient:",
+          createdPatient
+        );
+
+        showToast(
+          `Patient added successfully${createdPatient?.patientCode
+            ? ` - ${createdPatient.patientCode}`
+            : ""
+          }`,
+          "success"
+        );
+
         navigate("/patients");
+      } else {
+        throw new Error(
+          response?.message ||
+          "Failed to create patient"
+        );
       }
     } catch (error) {
-      console.error("Create patient error:", error);
-      showToast(error.message || "Failed to create patient", "error");
+      console.error(
+        "Create patient error:",
+        error
+      );
+
+      showToast(
+        error?.message ||
+        "Failed to create patient",
+        "error"
+      );
     }
   };
 
-  const selectedCC = COUNTRY_CODES.find(c => c.code === form.countryCode) || COUNTRY_CODES[0];
+  const selectedCC =
+    COUNTRIES.find(
+      (country) => country.isoCode === form.countryCodeIso
+    ) ||
+    COUNTRIES.find((country) => country.isoCode === "IN") ||
+    COUNTRIES[0];
 
   return (
     <div className="add-doctor-page">
@@ -229,40 +399,111 @@ export default function CreatePatient() {
                     type="button"
                     onClick={() => setCcOpen(o => !o)}
                     style={{
-                      display: "flex", alignItems: "center", gap: 5,
-                      height: "100%", padding: "9px 10px",
-                      border: "1px solid #e2e8f0", borderRadius: 8,
-                      background: "white", cursor: "pointer",
-                      fontSize: 13, fontFamily: "inherit", color: "#1e293b",
-                      minWidth: 80,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      height: "100%",
+                      padding: "9px 10px",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: 8,
+                      background: "white",
+                      cursor: "pointer",
+                      fontSize: 13,
+                      fontFamily: "inherit",
+                      color: "#1e293b",
+                      minWidth: 90,
                     }}
                   >
-                    <span style={{ fontSize: 16 }}>{selectedCC.flag}</span>
-                    <span>{selectedCC.code}</span>
-                    <KeyboardArrowDownIcon style={{ fontSize: 14, color: "#94a3b8" }} />
+                    <span style={{ fontSize: 16 }}>
+                      {selectedCC.flag}
+                    </span>
+
+                    <span>
+                      +{selectedCC.phonecode}
+                    </span>
+
+                    <KeyboardArrowDownIcon
+                      style={{
+                        fontSize: 14,
+                        color: "#94a3b8",
+                      }}
+                    />
                   </button>
+
                   {ccOpen && (
-                    <div style={{
-                      position: "absolute", top: "calc(100% + 4px)", left: 0,
-                      background: "white", border: "1px solid #e2e8f0",
-                      borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                      zIndex: 50, minWidth: 130, overflow: "hidden",
-                    }}>
-                      {COUNTRY_CODES.map((c, i) => (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "calc(100% + 4px)",
+                        left: 0,
+                        background: "white",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: 8,
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                        zIndex: 50,
+                        width: 300,
+                        maxHeight: 350,
+                        overflowY: "auto",
+                      }}
+                    >
+                      {COUNTRIES.map((country) => (
                         <div
-                          key={i}
-                          onClick={() => { set("countryCode", c.code); setCcOpen(false); }}
-                          style={{
-                            display: "flex", alignItems: "center", gap: 8,
-                            padding: "9px 14px", cursor: "pointer", fontSize: 13,
-                            color: "#475569",
+                          key={country.isoCode}
+                          onClick={() => {
+                            setForm((prev) => ({
+                              ...prev,
+                              countryCode: country.phonecode,
+                              countryCodeIso: country.isoCode,
+                            }));
+
+                            setCcOpen(false);
                           }}
-                          onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
-                          onMouseLeave={e => e.currentTarget.style.background = ""}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            padding: "9px 12px",
+                            cursor: "pointer",
+                            fontSize: 13,
+                            color: "#475569",
+                            whiteSpace: "nowrap",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "#f8fafc";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "";
+                          }}
                         >
-                          <span style={{ fontSize: 16 }}>{c.flag}</span>
-                          <span>{c.label}</span>
-                          <span style={{ color: "#94a3b8", marginLeft: "auto" }}>{c.code}</span>
+                          {/* Flag */}
+                          <span
+                            style={{
+                              fontSize: 16,
+                              width: 24,
+                            }}
+                          >
+                            {country.flag}
+                          </span>
+
+                          {/* Country name */}
+                          <span
+                            style={{
+                              flex: 1,
+                            }}
+                          >
+                            {country.name}
+                          </span>
+
+                          {/* Country code */}
+                          <span
+                            style={{
+                              color: "#94a3b8",
+                              minWidth: 55,
+                              textAlign: "right",
+                            }}
+                          >
+                            +{country.phonecode}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -271,7 +512,7 @@ export default function CreatePatient() {
                 <input
                   type="tel"
                   className={errors.phone ? "error" : ""}
-                  placeholder="(201) 555-0123"
+                  placeholder="98765 43210"
                   value={form.phone}
                   onChange={e => set("phone", e.target.value)}
                   style={{ flex: 1 }}
@@ -290,24 +531,91 @@ export default function CreatePatient() {
             </FormGroup>
           </div>
 
+          <div className="form-row">
+            <FormGroup label="Department" required error={errors.department}>
+              <select
+                className={errors.department ? "error" : ""}
+                value={form.department}
+                onChange={(e) => {
+                  const department = e.target.value;
+
+                  setForm((current) => ({
+                    ...current,
+                    department,
+                    primaryDoctor: "",
+                  }));
+
+                  if (errors.department) {
+                    setErrors((current) => ({
+                      ...current,
+                      department: "",
+                      primaryDoctor: "",
+                    }));
+                  }
+                }}
+              >
+                <option value="">Select</option>
+
+                {DEPARTMENTS.map((department) => (
+                  <option key={department} value={department}>
+                    {department}
+                  </option>
+                ))}
+              </select>
+            </FormGroup>
+
+            <div />
+          </div>
+
           {/* Row 3 — Primary Doctor / DOB */}
           <div className="form-row">
             <FormGroup label="Primary Doctor" required error={errors.primaryDoctor}>
               <select
                 className={errors.primaryDoctor ? "error" : ""}
                 value={form.primaryDoctor}
-                onChange={e => set("primaryDoctor", e.target.value)}
+                onChange={(e) => {
+                  const doctorId = e.target.value;
+
+                  const selectedDoctor = doctors.find(
+                    (doctor) => doctor._id === doctorId
+                  );
+
+                  const doctorDepartment =
+                    SPECIALIZATION_TO_DEPARTMENT[selectedDoctor?.specialization];
+
+                  setForm((current) => ({
+                    ...current,
+                    primaryDoctor: doctorId,
+                    department: doctorDepartment || current.department,
+                  }));
+
+                  if (errors.primaryDoctor) {
+                    setErrors((current) => ({
+                      ...current,
+                      primaryDoctor: "",
+                    }));
+                  }
+                }}
               >
                 <option value="">
                   {doctorsLoading ? "Loading doctors..." : "Select"}
                 </option>
 
                 {!doctorsLoading &&
-                  doctors.map((doctor) => (
-                    <option key={doctor._id} value={doctor._id}>
-                      {doctor.name}
-                    </option>
-                  ))}
+                  doctors
+                    .filter((doctor) => {
+                      if (!form.department) return true;
+
+                      const doctorDepartment =
+                        SPECIALIZATION_TO_DEPARTMENT[doctor.specialization];
+
+                      return doctorDepartment === form.department;
+                    })
+                    .map((doctor) => (
+                      <option key={doctor._id} value={doctor._id}>
+                        {doctor.name}
+                      </option>
+                    ))}
               </select>
             </FormGroup>
 
@@ -446,20 +754,40 @@ export default function CreatePatient() {
               <select
                 className={errors.country ? "error" : ""}
                 value={form.country}
-                onChange={e => set("country", e.target.value)}
+                onChange={(e) => {
+                  set("country", e.target.value);
+                  set("state", "");
+                  set("city", "");
+                }}
               >
                 <option value="">Select</option>
-                {COUNTRIES.map(c => <option key={c}>{c}</option>)}
+
+                {COUNTRIES.map((country) => (
+                  <option key={country.isoCode} value={country.name}>
+                    {country.name}
+                  </option>
+                ))}
               </select>
             </FormGroup>
             <FormGroup label="State" required error={errors.state}>
               <select
                 className={errors.state ? "error" : ""}
                 value={form.state}
-                onChange={e => set("state", e.target.value)}
+                disabled={!form.country}
+                onChange={(e) => {
+                  set("state", e.target.value);
+                  set("city", "");
+                }}
               >
-                <option value="">Select</option>
-                {STATES.map(s => <option key={s}>{s}</option>)}
+                <option value="">
+                  {!form.country ? "Select country first" : "Select"}
+                </option>
+
+                {states.map((state) => (
+                  <option key={state.isoCode} value={state.name}>
+                    {state.name}
+                  </option>
+                ))}
               </select>
             </FormGroup>
           </div>
@@ -470,10 +798,18 @@ export default function CreatePatient() {
               <select
                 className={errors.city ? "error" : ""}
                 value={form.city}
-                onChange={e => set("city", e.target.value)}
+                disabled={!form.state}
+                onChange={(e) => set("city", e.target.value)}
               >
-                <option value="">Select</option>
-                {CITIES.map(c => <option key={c}>{c}</option>)}
+                <option value="">
+                  {!form.state ? "Select state first" : "Select"}
+                </option>
+
+                {cities.map((city, index) => (
+                  <option key={`${city.name}-${index}`} value={city.name}>
+                    {city.name}
+                  </option>
+                ))}
               </select>
             </FormGroup>
             <FormGroup label="Pincode" required error={errors.pincode}>

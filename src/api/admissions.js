@@ -6,19 +6,19 @@ export const getAdmissions = async () => {
     const response = await axiosInstance.get('/admissions');
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to fetch admissions" };
+    throw error || { message: "Failed to fetch admissions" };
   }
 };
 
-// Get admission by ID
-export const getAdmissionById = async (id) => {
-  try {
-    const response = await axiosInstance.get(`/admissions/${id}`);
-    return response;
-  } catch (error) {
-    throw error.response?.data || { message: "Failed to fetch admission" };
-  }
-};
+// // Get admission by ID
+// export const getAdmissionById = async (id) => {
+//   try {
+//     const response = await axiosInstance.get(`/admissions/${id}`);
+//     return response;
+//   } catch (error) {
+//     throw error.response?.data || { message: "Failed to fetch admission" };
+//   }
+// };
 
 // Create admission from OPD appointment
 export const createAdmissionFromOPD = async (appointmentId, bedNumber, doctorId) => {
@@ -30,7 +30,7 @@ export const createAdmissionFromOPD = async (appointmentId, bedNumber, doctorId)
     });
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to create admission from OPD" };
+    throw error || { message: "Failed to create admission from OPD" };
   }
 };
 
@@ -40,7 +40,7 @@ export const createIPDAdmission = async (admissionData) => {
     const response = await axiosInstance.post('/admissions/ipd', admissionData);
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to create IPD admission" };
+    throw error || { message: "Failed to create IPD admission" };
   }
 };
 
@@ -50,6 +50,6 @@ export const dischargeAdmission = async (admissionId) => {
     const response = await axiosInstance.patch(`/admissions/${admissionId}/discharge`);
     return response;
   } catch (error) {
-    throw error.response?.data || { message: "Failed to discharge admission" };
+    throw error || { message: "Failed to discharge admission" };
   }
 };

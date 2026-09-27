@@ -1,27 +1,74 @@
 // EditPatient.jsx
-import { useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { updatePatient } from "../api/patients";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { getPatientById, updatePatient } from "../api/patients";
+import { useToast } from "../context/ToastContext";
 
 const EditPatient = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const location = useLocation();
+  const { showToast } = useToast();
 
-  const patient = location.state?.patient;
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
 
   const [formData, setFormData] = useState({
-    patientCode: patient?.patientCode || `PT${id}`,
-    name: patient?.name || "",
-    age: patient?.age || "",
-    gender: patient?.gender || "",
-    phone: patient?.phone || "",
-    doctor: patient?.doctor || "",
-    address: patient?.address || "",
-    status: patient?.status || "Available",
+    patientCode: "",
+    name: "",
+    dateOfBirth: "",
+    gender: "",
+    phone: "",
+    email: "",
+    address: "",
+    status: "active",
   });
 
-  const [saved, setSaved] = useState(false);
+  // Fetch actual patient from backend
+  useEffect(() => {
+    const fetchPatient = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await getPatientById(id);
+
+        const patient = response?.data;
+
+        if (!patient) {
+          throw new Error("Patient data not found");
+        }
+
+        setFormData({
+          patientCode: patient.patientCode || "",
+          name: patient.name || "",
+          dateOfBirth: patient.dateOfBirth
+            ? patient.dateOfBirth.substring(0, 10)
+            : "",
+          gender: patient.gender || "",
+          phone: patient.phone || "",
+          email: patient.email || "",
+          address: patient.address || "",
+          status: patient.status || "active",
+        });
+      } catch (err) {
+        console.error("Fetch patient error:", err);
+
+        setError(
+          err?.message ||
+            err?.error?.message ||
+            "Failed to load patient information"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchPatient();
+    }
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,30 +80,81 @@ const EditPatient = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const response = await updatePatient(id, {
-      name: formData.name.trim(),
-      phone: formData.phone.trim(),
-      gender: formData.gender.toLowerCase(),
-      address: formData.address.trim(),
-    });
+    try {
+      setSaving(true);
+      setError("");
+      setSaved(false);
 
-    console.log("Update patient response:", response);
+      const payload = {
+        name: formData.name.trim(),
+        dateOfBirth: formData.dateOfBirth || null,
+        gender: formData.gender.toLowerCase(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
+        address: formData.address.trim(),
+        status: formData.status,
+      };
 
-    if (response.status === "success") {
-      setSaved(true);
+      console.log("Updating patient:", payload);
 
-      setTimeout(() => {
-        navigate("/patients");
-      }, 500);
+      const response = await updatePatient(id, payload);
+
+      console.log("Update patient response:", response);
+
+      if (response?.status === "success") {
+  setSaved(true);
+
+  showToast("Patient updated successfully", "success");
+
+  setTimeout(() => {
+    navigate(`/patients/${id}`);
+  }, 700);
+} else {
+        throw new Error(
+          response?.message || "Failed to update patient"
+        );
+      }
+    } catch (err) {
+  console.error("Update patient error:", err);
+
+  const errorMessage =
+    err?.message ||
+    err?.error?.message ||
+    "Failed to update patient";
+
+  setError(errorMessage);
+  showToast(errorMessage, "error");
+} finally {
+      setSaving(false);
     }
-  } catch (error) {
-    console.error("Update patient error:", error);
-    alert(error?.message || "Failed to update patient");
+  };
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          padding: "28px",
+          background: "#f4f7fb",
+          minHeight: "100vh",
+        }}
+      >
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: "14px",
+            padding: "30px",
+            maxWidth: "1000px",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+            color: "#64748b",
+          }}
+        >
+          Loading patient information...
+        </div>
+      </div>
+    );
   }
-};
 
   return (
     <div
@@ -109,6 +207,23 @@ const EditPatient = () => {
         </div>
       </div>
 
+      {/* Error */}
+      {error && (
+        <div
+          style={{
+            marginBottom: "18px",
+            padding: "12px 14px",
+            borderRadius: "8px",
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            color: "#dc2626",
+            fontSize: "14px",
+          }}
+        >
+          {error}
+        </div>
+      )}
+
       {/* Form */}
       <form
         onSubmit={handleSubmit}
@@ -134,10 +249,19 @@ const EditPatient = () => {
             <input
               name="patientCode"
               value={formData.patientCode}
-              onChange={handleChange}
               style={inputStyle}
               readOnly
             />
+
+            <small
+              style={{
+                display: "block",
+                marginTop: "5px",
+                color: "#94a3b8",
+              }}
+            >
+              Patient ID cannot be changed.
+            </small>
           </div>
 
           {/* Name */}
@@ -154,18 +278,16 @@ const EditPatient = () => {
             />
           </div>
 
-          {/* Age */}
+          {/* Date of Birth */}
           <div>
-            <label style={labelStyle}>Age</label>
+            <label style={labelStyle}>Date of Birth</label>
 
             <input
-              type="number"
-              name="age"
-              value={formData.age}
+              type="date"
+              name="dateOfBirth"
+              value={formData.dateOfBirth}
               onChange={handleChange}
               style={inputStyle}
-              placeholder="Enter age"
-              min="0"
             />
           </div>
 
@@ -178,11 +300,12 @@ const EditPatient = () => {
               value={formData.gender}
               onChange={handleChange}
               style={inputStyle}
+              required
             >
               <option value="">Select gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
             </select>
           </div>
 
@@ -199,16 +322,17 @@ const EditPatient = () => {
             />
           </div>
 
-          {/* Doctor */}
+          {/* Email */}
           <div>
-            <label style={labelStyle}>Doctor</label>
+            <label style={labelStyle}>Email</label>
 
             <input
-              name="doctor"
-              value={formData.doctor}
+              type="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
               style={inputStyle}
-              placeholder="Enter doctor name"
+              placeholder="Enter email"
             />
           </div>
 
@@ -222,8 +346,9 @@ const EditPatient = () => {
               onChange={handleChange}
               style={inputStyle}
             >
-              <option value="Available">Available</option>
-              <option value="Unavailable">Unavailable</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="deceased">Deceased</option>
             </select>
           </div>
 
@@ -258,17 +383,27 @@ const EditPatient = () => {
         >
           <button
             type="button"
-            onClick={() => navigate("/patients")}
+            onClick={() => navigate(`/patients/${id}`)}
             style={cancelButtonStyle}
+            disabled={saving}
           >
             Cancel
           </button>
 
           <button
             type="submit"
-            style={saveButtonStyle}
+            style={{
+              ...saveButtonStyle,
+              opacity: saving ? 0.7 : 1,
+              cursor: saving ? "not-allowed" : "pointer",
+            }}
+            disabled={saving}
           >
-            {saved ? "Saved ✓" : "Save Changes"}
+            {saving
+              ? "Saving..."
+              : saved
+                ? "Saved ✓"
+                : "Save Changes"}
           </button>
         </div>
       </form>

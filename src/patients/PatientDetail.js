@@ -1,4 +1,6 @@
 //patientdetails.js
+import VisitHistoryModal from "./VisitHistoryModal";
+
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
@@ -25,75 +27,18 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { getPatientById } from "../api/patients";
-import { getAppointments } from "../api/appointments";
+import {
+  getPatientById,
+  getPatientSummary,
+} from "../api/patients";
+import {
+  getDoctorById,
+} from "../api/doctors";
+import {
+  getVisitHistory,
+} from "../api/visits";
 
 // ─── MOCK DATA ─────────────────────────────────────────────────────────────────
-const patientsMap = {
-  1: {
-    id: "PT0025", name: "Alberto Ripley", age: 26, gender: "Male",
-    address: "4150 Hiney Road, Las Vegas, NV 89109",
-    phone: "+1 54546 45648", lastVisited: "30 Apr 2025",
-    dob: "25 Jan 1990", bloodGroup: "O +ve",
-    email: "alberto@example.com", color: "#3b82f6",
-    vitals: {
-      bloodPressure: "100/67 mmHg", heartRate: "89 Bpm",
-      spo2: "98 %", temperature: "101 C",
-      respiratoryRate: "24 rpm", weight: "100 kg",
-    },
-  },
-  2: {
-    id: "PT0024", name: "Susan Babin", age: 21, gender: "Female",
-    address: "220 Elm Road, Chicago, IL 60601",
-    phone: "+1 54554 54789", lastVisited: "15 Apr 2025",
-    dob: "05 Mar 2003", bloodGroup: "A +ve",
-    email: "susan@example.com", color: "#ec4899",
-    vitals: {
-      bloodPressure: "110/70 mmHg", heartRate: "78 Bpm",
-      spo2: "99 %", temperature: "98 C",
-      respiratoryRate: "18 rpm", weight: "58 kg",
-    },
-  },
-};
-
-const defaultPatient = {
-  id: "PT0023", name: "Carol Lam", age: 28, gender: "Female",
-  address: "88 Ocean Avenue, Miami, FL 33101",
-  phone: "+1 43554 54985", lastVisited: "02 Apr 2025",
-  dob: "14 Jun 1996", bloodGroup: "B +ve",
-  email: "carol@example.com", color: "#8b5cf6",
-  vitals: {
-    bloodPressure: "120/80 mmHg", heartRate: "72 Bpm",
-    spo2: "97 %", temperature: "99 C",
-    respiratoryRate: "20 rpm", weight: "62 kg",
-  },
-};
-
-const appointmentsData = [
-  { id: 1, date: "30 Apr 2025 - 09:30 AM", doctor: "Dr. Mick Thompson", role: "Cardiologist", color: "#3b82f6", initials: "MT", mode: "In-person", status: "Checked Out" },
-  { id: 2, date: "15 Apr 2025 - 11:20 AM", doctor: "Dr. Sarah Johnson", role: "Orthopedic Surgeon", color: "#10b981", initials: "SJ", mode: "Online", status: "Checked In" },
-  { id: 3, date: "02 Apr 2025 - 08:15 AM", doctor: "Dr. Emily Carter", role: "Pediatrician", color: "#8b5cf6", initials: "EC", mode: "In-Person", status: "Cancelled" },
-  { id: 4, date: "27 Mar 2025 - 02:00 PM", doctor: "Dr. David Lee", role: "Gynecologist", color: "#f59e0b", initials: "DL", mode: "In-person", status: "Schedule" },
-  { id: 5, date: "12 Mar 2025 - 05:40 PM", doctor: "Dr. Anna Kim", role: "Psychiatrist", color: "#0d9488", initials: "AK", mode: "Online", status: "Confirmed" },
-  { id: 6, date: "24 Feb 2025 - 09:20 AM", doctor: "Dr. John Smith", role: "Neurosurgeon", color: "#ef4444", initials: "JS", mode: "In-Person", status: "Cancelled" },
-  { id: 7, date: "16 Feb 2025 - 11:40 AM", doctor: "Dr. Lisa White", role: "Oncologist", color: "#ec4899", initials: "LW", mode: "Online", status: "Confirmed" },
-  { id: 8, date: "01 Feb 2025 - 04:00 PM", doctor: "Dr. Patricia Brown", role: "Pulmonologist", color: "#6366f1", initials: "PB", mode: "Online", status: "Checked Out" },
-  { id: 9, date: "25 Jan 2025 - 03:10 PM", doctor: "Dr. Rachel Green", role: "Urologist", color: "#14b8a6", initials: "RG", mode: "Online", status: "Schedule" },
-  { id: 10, date: "12 Jan 2025 - 03:10 PM", doctor: "Dr. Michael Smith", role: "Cardiologist", color: "#f59e0b", initials: "MS", mode: "In-Person", status: "Cancelled" },
-];
-
-const transactionsData = [
-  { id: "#TNX0025", desc: "General Consultation", date: "30 Apr 2025", method: "PayPal", amount: "$800", status: "Completed" },
-  { id: "#TNX0024", desc: "Dental Cleaning", date: "15 Apr 2025", method: "Debit Card", amount: "$930", status: "Pending" },
-  { id: "#TNX0023", desc: "Eye Checkup", date: "02 Apr 2025", method: "Cheque", amount: "$850", status: "Completed" },
-  { id: "#TNX0022", desc: "X-Ray", date: "27 Mar 2025", method: "Debit Card", amount: "$80", status: "Completed" },
-  { id: "#TNX0021", desc: "Physiotherapy Session", date: "12 Mar 2025", method: "PayPal", amount: "$650", status: "Completed" },
-  { id: "#TNX0020", desc: "Cardiac Screening", date: "05 Mar 2025", method: "Cheque", amount: "$430", status: "Completed" },
-  { id: "#TNX0019", desc: "Skin Allergy Test", date: "24 Feb 2025", method: "Debit Card", amount: "$300", status: "Pending" },
-  { id: "#TNX0018", desc: "Blood Test", date: "16 Feb 2025", method: "Cheque", amount: "$450", status: "Completed" },
-  { id: "#TNX0017", desc: "ENT Consultation", date: "01 Feb 2025", method: "Debit Card", amount: "$570", status: "Completed" },
-  { id: "#TNX0016", desc: "Nutrition Counseling", date: "25 Jan 2025", method: "PayPal", amount: "$800", status: "Completed" },
-];
 
 const DATE_OPTIONS = ["Today", "Yesterday", "Last 7 Days", "Last 30 Days", "This Month", "Last Month", "Custom Range"];
 const ROWS_OPTIONS = [5, 10, 15, 20];
@@ -102,6 +47,7 @@ const statusClass = (s) => {
   const map = {
     "checked out": "checked-out",
     "checked in": "checked-in",
+    "checked_in": "checked-in",
     "cancelled": "cancelled",
     "schedule": "schedule",
     "confirmed": "confirmed",
@@ -125,7 +71,7 @@ export default function PatientDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const [activeTab, setActiveTab] = useState("appointments");
+  const [activeTab, setActiveTab] = useState("visits");
   const [search, setSearch] = useState("");
   const [dateLabel, setDateLabel] = useState("Last 30 Days");
   const [dateOpen, setDateOpen] = useState(false);
@@ -135,7 +81,16 @@ export default function PatientDetail() {
 
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [patientVisits, setPatientVisits] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [doctorMap, setDoctorMap] = useState({});
+
+  const [selectedVisitHistory, setSelectedVisitHistory] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const [patientSummary, setPatientSummary] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(true);
 
   useEffect(() => {
     const fetchPatient = async () => {
@@ -169,7 +124,7 @@ export default function PatientDetail() {
                 year: "numeric",
               })
               : "",
-            bloodGroup: "N/A",
+            bloodGroup: data.bloodGroup || "N/A",
             lastVisited: "N/A",
             color: "#3b82f6",
             vitals: {
@@ -195,62 +150,242 @@ export default function PatientDetail() {
     fetchPatient();
   }, [id]);
 
+
   useEffect(() => {
-  const fetchAppointments = async () => {
-    try {
-      const response = await getAppointments();
+    const fetchPatientSummary = async () => {
+      if (!id) return;
 
-      console.log("Appointments API Response:", response);
+      try {
+        setSummaryLoading(true);
 
-      if (response?.status === "success" && Array.isArray(response?.data)) {
-        const patientAppointments = response.data.filter(
-          (appointment) =>
-            appointment.patientId === id ||
-            appointment.patientName === patient?.name
-        );
+        const response = await getPatientSummary(id);
 
-        setAppointments(patientAppointments);
-      } else {
-        setAppointments([]);
+        console.log("PATIENT SUMMARY:", response);
+
+        if (response?.status === "success" && response?.data) {
+
+          if (response.data.patient?.bloodGroup) {
+            setPatient((prev) =>
+              prev
+                ? {
+                  ...prev,
+                  bloodGroup: response.data.patient.bloodGroup,
+                }
+                : prev
+            );
+          }
+
+          const visits = (response.data.visits || []).map((item) => ({
+            ...item.visit,
+            clinicalHistory: item,
+          }));
+
+          setPatientVisits(visits);
+
+          const summaryAppointments = response.data.appointments || [];
+
+          setAppointments(summaryAppointments);
+
+          // Appointment API me doctorId sirf ID aa rahi hai,
+          // isliye doctor details separately fetch kar rahe hain.
+          const doctorIds = [
+            ...new Set(
+              summaryAppointments
+                .map((appointment) =>
+                  typeof appointment.doctorId === "string"
+                    ? appointment.doctorId
+                    : appointment.doctorId?._id
+                )
+                .filter(Boolean)
+            ),
+          ];
+
+          const doctorResults = await Promise.all(
+            doctorIds.map(async (doctorId) => {
+              try {
+                const doctorResponse = await getDoctorById(doctorId);
+
+                if (
+                  doctorResponse?.status === "success" &&
+                  doctorResponse?.data
+                ) {
+                  return [doctorId, doctorResponse.data];
+                }
+
+                return [doctorId, null];
+              } catch (error) {
+                console.error(`Doctor ${doctorId} fetch error:`, error);
+                return [doctorId, null];
+              }
+            })
+          );
+
+          setDoctorMap(Object.fromEntries(doctorResults));
+        } else {
+          setPatientSummary(null);
+          setPatientVisits([]);
+          setAppointments([]);
+        }
+      } catch (error) {
+        console.error("Patient Summary API Error:", error);
+        setPatientSummary(null);
+      } finally {
+        setSummaryLoading(false);
       }
-    } catch (error) {
-      console.error("Appointments API Error:", error);
-      setAppointments([]);
-    }
-  };
+    };
 
-  if (id) {
-    fetchAppointments();
-  }
-}, [id, patient?.name]);
+    fetchPatientSummary();
+  }, [id]);
+
 
   const dateRef = useRef();
   useOutsideClick(dateRef, () => setDateOpen(false));
 
   useEffect(() => { setPage(1); }, [activeTab, search]);
 
-  // ── Filter data ──
-const apptFiltered = appointments.filter((a) =>
-  (a.doctorName || a.doctorId?.name || "")
-    .toLowerCase()
-    .includes(search.toLowerCase()) ||
-  (a.appointmentType || "")
-    .toLowerCase()
-    .includes(search.toLowerCase()) ||
-  (a.status || "")
-    .toLowerCase()
-    .includes(search.toLowerCase())
-);
+  const handleVisitClick = async (visit) => {
+    const visitId = visit._id || visit.id;
 
-  const txnFiltered = transactionsData.filter(t =>
-    t.desc.toLowerCase().includes(search.toLowerCase()) ||
-    t.id.toLowerCase().includes(search.toLowerCase()) ||
-    t.method.toLowerCase().includes(search.toLowerCase())
+    if (!visitId) return;
+
+    try {
+      setHistoryLoading(true);
+
+      const response = await getVisitHistory(visitId);
+
+      console.log("VISIT HISTORY API RESPONSE:", response);
+
+      if (response?.status === "success" && response?.data) {
+        setSelectedVisitHistory(response.data);
+      } else {
+        setSelectedVisitHistory(null);
+      }
+    } catch (error) {
+      console.error("Visit History API Error:", error);
+      setSelectedVisitHistory(null);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const visits = [...patientVisits].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
   );
 
-  const currentData = activeTab === "appointments" ? apptFiltered : txnFiltered;
-  const totalPages = Math.ceil(currentData.length / rowsPerPage);
-  const pageData = currentData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+  // ── Filter data ──
+  const apptFiltered = appointments.filter((a) => {
+    const doctorId =
+      typeof a.doctorId === "string"
+        ? a.doctorId
+        : a.doctorId?._id;
+
+    const doctor = doctorMap[doctorId];
+
+    const doctorName =
+      a.doctorName ||
+      doctor?.name ||
+      (typeof a.doctorId === "object" ? a.doctorId?.name : "");
+
+    const doctorSpecialization =
+      doctor?.specialization ||
+      (typeof a.doctorId === "object"
+        ? a.doctorId?.specialization
+        : "") ||
+      a.designation ||
+      "";
+
+    return (
+      `${doctorName} ${doctorSpecialization} ${doctorId} ${a.appointmentType || ""} ${a.status || ""}`
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    );
+  });
+
+
+  const visitFiltered = visits.filter((visit) => {
+    const visitId = visit._id || visit.id || "";
+    const visitType = visit.visitType || "";
+    const status = visit.status || "";
+
+    return (
+      visitId.toLowerCase().includes(search.toLowerCase()) ||
+      visitType.toLowerCase().includes(search.toLowerCase()) ||
+      status.toLowerCase().includes(search.toLowerCase())
+    );
+  });
+
+  const admissions = patientSummary?.admissions || [];
+
+  const admissionFiltered = admissions.filter((admission) => {
+    const searchText = `
+    ${admission.patientId || ""}
+    ${admission.visitId || ""}
+    ${admission.admissionType || ""}
+    ${admission.bedNumber || ""}
+    ${admission.status || ""}
+  `.toLowerCase();
+
+    return searchText.includes(search.toLowerCase());
+  });
+
+  const discharges = patientSummary?.discharges || [];
+
+  const transactions = [
+    ...(patientSummary?.invoices || []).map((invoice) => ({
+      id: invoice.invoiceNumber || invoice._id || invoice.id || "N/A",
+      desc: "Invoice",
+      date: invoice.createdAt || invoice.date || invoice.invoiceDate,
+      method: "-",
+      amount:
+        invoice.totalAmount ??
+        invoice.amount ??
+        invoice.grandTotal ??
+        0,
+      status: invoice.status || "Pending",
+      type: "invoice",
+    })),
+
+    ...(patientSummary?.payments || []).map((payment) => ({
+      id: payment._id || payment.id || "N/A",
+      desc: "Payment",
+      date: payment.createdAt || payment.paymentDate || payment.date,
+      method:
+        payment.paymentMethod ||
+        payment.method ||
+        "N/A",
+      amount:
+        payment.amount ??
+        payment.paidAmount ??
+        payment.totalAmount ??
+        0,
+      status: payment.status || "Paid",
+      type: "payment",
+    })),
+  ];
+
+  const transactionFiltered = transactions.filter((transaction) =>
+    `${transaction.id} ${transaction.desc} ${transaction.method} ${transaction.status}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  const currentData =
+    activeTab === "visits"
+      ? visitFiltered
+      : activeTab === "appointments"
+        ? apptFiltered
+        : activeTab === "admissions"
+          ? admissionFiltered
+          : transactionFiltered;
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(currentData.length / rowsPerPage)
+  );
+  const pageData = currentData.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
 
   if (loading) {
     return <div style={{ padding: "40px" }}>Loading patient...</div>;
@@ -260,11 +395,20 @@ const apptFiltered = appointments.filter((a) =>
     return <div style={{ padding: "40px" }}>Patient not found.</div>;
   }
 
+  const lastVisited = patientSummary?.latestVisit?.createdAt
+    ? new Date(patientSummary.latestVisit.createdAt).toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+    : "N/A";
+
   const initials = patient.name.split(" ").slice(0, 2).map(w => w[0]).join("");
 
   return (
     <div className="patient-details-page">
-
 
       {/* Breadcrumb */}
       <div className="breadcrumb" onClick={() => navigate("/patients")}>
@@ -303,7 +447,7 @@ const apptFiltered = appointments.filter((a) =>
                   <PhoneIcon /> Phone : {patient.phone}
                 </div>
                 <div className="meta-item">
-                  <CalendarTodayIcon /> Last Visited : {patient.lastVisited}
+                  <CalendarTodayIcon /> Last Visited : {lastVisited}
                 </div>
               </div>
             </div>
@@ -313,8 +457,25 @@ const apptFiltered = appointments.filter((a) =>
             <div className="icon-action-btn"><CallIcon /></div>
             <div className="icon-action-btn"><ChatIcon /></div>
             <div className="icon-action-btn"><VideoCallIcon /></div>
-            <button className="btn-book">
-              <CalendarMonthIcon /> Book Apppointment
+            <button
+              className="btn-book"
+              onClick={() => {
+                const latestAppointment = [...appointments].sort(
+                  (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+                )[0];
+
+                navigate("/appointments/new", {
+                  state: {
+                    patient: {
+                      ...patient,
+                      _id: id,
+                    },
+                    lastAppointment: latestAppointment || null,
+                  },
+                });
+              }}
+            >
+              <CalendarMonthIcon /> Book Appointment
             </button>
           </div>
         </div>
@@ -373,6 +534,86 @@ const apptFiltered = appointments.filter((a) =>
             ))}
           </div>
         </div>
+
+        {/* ── Allergies + Current Medications ── */}
+
+        {/* Allergies */}
+        <div className="info-card">
+          <div className="ic-title">
+            <FavoriteIcon /> Allergies
+          </div>
+
+          <div style={{ padding: "12px 0" }}>
+            {patientSummary?.patient?.allergies &&
+              (Array.isArray(patientSummary.patient.allergies)
+                ? patientSummary.patient.allergies.length > 0
+                : patientSummary.patient.allergies) ? (
+              Array.isArray(patientSummary.patient.allergies) ? (
+                patientSummary.patient.allergies.map((allergy, index) => (
+                  <span
+                    key={index}
+                  >
+                    {typeof allergy === "object"
+                      ? allergy.name || allergy.allergen || "-"
+                      : allergy}
+                  </span>
+                ))
+              ) : (
+                <span>{patientSummary.patient.allergies}</span>
+              )
+            ) : (
+              <span style={{ color: "#64748b" }}>No known allergies</span>
+            )}
+          </div>
+        </div>
+
+        {/* Current Medications */}
+        <div className="info-card">
+          <div className="ic-title">
+            <MonitorHeartIcon /> Current Medications
+          </div>
+
+          <div style={{ padding: "12px 0" }}>
+            {patientSummary?.patient?.currentMedications &&
+              (Array.isArray(patientSummary.patient.currentMedications)
+                ? patientSummary.patient.currentMedications.length > 0
+                : patientSummary.patient.currentMedications) ? (
+              Array.isArray(patientSummary.patient.currentMedications) ? (
+                patientSummary.patient.currentMedications.map((medication, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      padding: "8px 10px",
+                      marginBottom: "6px",
+                      borderRadius: "6px",
+                      background: "#f8fafc",
+                      color: "#334155",
+                      fontSize: "13px",
+                    }}
+                  >
+                    {typeof medication === "object"
+                      ? medication.name ||
+                      medication.medicineName ||
+                      medication.medicationName ||
+                      "-"
+                      : medication}
+                  </div>
+                ))
+              ) : (
+                <span>{patientSummary.patient.currentMedications}</span>
+              )
+            ) : (
+              <span style={{ color: "#64748b" }}>
+                No current medications
+              </span>
+            )}
+          </div>
+        </div>
+
+
+
+
+
       </div>
 
       {/* ── Tabs Card ── */}
@@ -380,7 +621,7 @@ const apptFiltered = appointments.filter((a) =>
 
         {/* Tab Nav */}
         <div className="tabs-nav">
-          {["appointments", "transactions"].map(tab => (
+          {["visits", "appointments", "admissions", "transactions"].map(tab => (
             <button
               key={tab}
               className={`tab-btn ${activeTab === tab ? "active" : ""}`}
@@ -433,6 +674,103 @@ const apptFiltered = appointments.filter((a) =>
           </button>
         </div>
 
+        {/* ── VISITS TABLE ── */}
+        {activeTab === "visits" && (
+          <div className="tab-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Visit ID</th>
+                  <th>Visit Type</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {visits.length > 0 ? (
+                  pageData.map((visit) => {
+                    const visitId = visit.visitCode || visit._id || visit.id;
+
+                    const visitDate = visit.createdAt
+                      ? new Date(visit.createdAt).toLocaleString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                      : "N/A";
+
+                    return (
+                      <tr
+                        key={visitId}
+                        onClick={() => handleVisitClick(visit)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <td>{visitDate}</td>
+                        <td>{visitId || "N/A"}</td>
+                        <td>{visit.visitType || "N/A"}</td>
+
+                        <td>
+                          <span className={`appt-status ${statusClass(visit.status || "")}`}>
+                            {visit.status || "N/A"}
+                          </span>
+                        </td>
+
+                        <td>
+                          {visit.status === "checked_in" && (
+                            <button
+                              type="button"
+                              className="visit-action-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(
+                                  `/patients/${id}/visits/${visit._id}/consultation`
+                                );
+                              }}
+                            >
+                              Consult
+                            </button>
+                          )}
+
+                          {visit.status === "completed" && (
+                            <button
+                              type="button"
+                              className="visit-action-btn secondary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleVisitClick(visit);
+                              }}
+                            >
+                              View History
+                            </button>
+                          )}
+
+                          {visit.status === "registered" && (
+                            <span className="visit-action-disabled">
+                              Check-in required
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: "center", padding: "30px" }}>
+                      {summaryLoading
+                        ? "Loading visits..."
+                        : "No visits found."}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {/* ── APPOINTMENTS TABLE ── */}
         {activeTab === "appointments" && (
           <div className="tab-table">
@@ -447,152 +785,240 @@ const apptFiltered = appointments.filter((a) =>
                 </tr>
               </thead>
               <tbody>
-  {pageData.map((appt) => {
-    const doctorName =
-      appt.doctorName ||
-      appt.doctorId?.name ||
-      "Unknown Doctor";
+                {pageData.map((appt) => {
+                  const appointmentDoctorId =
+                    typeof appt.doctorId === "string"
+                      ? appt.doctorId
+                      : appt.doctorId?._id;
 
-    const doctorRole =
-      appt.doctorId?.specialization ||
-      appt.designation ||
-      "";
+                  const doctor = doctorMap[appointmentDoctorId];
 
-    const doctorInitials = doctorName
-      .split(" ")
-      .map((word) => word[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
+                  const doctorName =
+                    appt.doctorName ||
+                    doctor?.name ||
+                    (typeof appt.doctorId === "object"
+                      ? appt.doctorId?.name
+                      : "") ||
+                    "Unknown Doctor";
 
-    const appointmentDate = appt.createdAt
-      ? new Date(appt.createdAt).toLocaleString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : "N/A";
+                  const doctorRole =
+                    doctor?.specialization ||
+                    (typeof appt.doctorId === "object"
+                      ? appt.doctorId?.specialization
+                      : "") ||
+                    appt.designation ||
+                    "";
 
-    const appointmentMode =
-      appt.appointmentType || "N/A";
+                  const doctorInitials = doctorName
+                    .split(" ")
+                    .map((word) => word[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase();
 
-    const appointmentStatus =
-      appt.status || "N/A";
+                  const appointmentDate = appt.createdAt
+                    ? new Date(appt.createdAt).toLocaleString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                    : "N/A";
 
-    const appointmentId =
-      appt._id || appt.id;
+                  const appointmentMode =
+                    appt.appointmentType || "N/A";
 
-    return (
-      <tr key={appointmentId}>
-        <td>{appointmentDate}</td>
+                  const appointmentStatus =
+                    appt.status || "N/A";
 
-        <td>
-          <div
-            className="doc-cell"
-            onClick={() =>
-              appt.doctorId?._id &&
-              navigate(`/doctors/${appt.doctorId._id}`)
-            }
-          >
-            <div
-              className="cell-avatar"
-              style={{
-                background: "#3b82f622",
-                color: "#3b82f6",
-              }}
-            >
-              {doctorInitials}
-            </div>
+                  const appointmentId =
+                    appt._id || appt.id;
 
-            <div>
-              <div className="cell-name">
-                {doctorName}
-              </div>
+                  return (
+                    <tr key={appointmentId}>
+                      <td>{appointmentDate}</td>
 
-              <div className="cell-sub">
-                {doctorRole}
-              </div>
-            </div>
+                      <td>
+                        <div
+                          className="doc-cell"
+                          onClick={() =>
+                            appointmentDoctorId &&
+                            navigate(`/doctors/${appointmentDoctorId}`)
+                          }
+                        >
+                          <div
+                            className="cell-avatar"
+                            style={{
+                              background: "#3b82f622",
+                              color: "#3b82f6",
+                            }}
+                          >
+                            {doctorInitials}
+                          </div>
+
+                          <div>
+                            <div className="cell-name">
+                              {doctorName}
+                            </div>
+
+                            <div className="cell-sub">
+                              {doctorRole}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td>{appointmentMode}</td>
+
+                      <td>
+                        <span
+                          className={`appt-status ${statusClass(
+                            appointmentStatus
+                          )}`}
+                        >
+                          {appointmentStatus}
+                        </span>
+                      </td>
+
+                      <td>
+                        <div style={{ position: "relative" }}>
+                          <button
+                            className="icon-btn"
+                            onClick={() =>
+                              setOpenMenu(
+                                openMenu === appointmentId
+                                  ? null
+                                  : appointmentId
+                              )
+                            }
+                          >
+                            <MoreVertIcon />
+                          </button>
+
+                          {openMenu === appointmentId && (
+                            <div
+                              style={{
+                                position: "absolute",
+                                right: 0,
+                                top: "calc(100% + 4px)",
+                                background: "white",
+                                border: "1px solid #e2e8f0",
+                                borderRadius: 8,
+                                boxShadow:
+                                  "0 4px 12px rgba(0,0,0,0.08)",
+                                minWidth: 130,
+                                zIndex: 50,
+                                overflow: "hidden",
+                              }}
+                            >
+                              {["View", "Edit", "Cancel"].map((opt) => (
+                                <div
+                                  key={opt}
+                                  onClick={() => setOpenMenu(null)}
+                                  style={{
+                                    padding: "9px 16px",
+                                    fontSize: 13,
+                                    color:
+                                      opt === "Cancel"
+                                        ? "#ef4444"
+                                        : "#475569",
+                                    cursor: "pointer",
+                                  }}
+                                  onMouseEnter={(e) =>
+                                  (e.currentTarget.style.background =
+                                    "#f8fafc")
+                                  }
+                                  onMouseLeave={(e) =>
+                                    (e.currentTarget.style.background = "")
+                                  }
+                                >
+                                  {opt}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        </td>
+        )}
 
-        <td>{appointmentMode}</td>
+        {/* ── ADMISSIONS TABLE ── */}
+        {activeTab === "admissions" && (
+          <div className="tab-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Patient ID</th>
+                  <th>Visit ID</th>
+                  <th>Admission Type</th>
+                  <th>Bed Number</th>
+                  <th>Status</th>
+                  <th>Admitted Date</th>
+                  <th>Discharged Date</th>
+                </tr>
+              </thead>
 
-        <td>
-          <span
-            className={`appt-status ${statusClass(
-              appointmentStatus
-            )}`}
-          >
-            {appointmentStatus}
-          </span>
-        </td>
+              <tbody>
+                {pageData.length > 0 ? (
+                  pageData.map((admission) => (
+                    <tr key={admission._id}>
+                      <td>{admission.patientId || "N/A"}</td>
 
-        <td>
-          <div style={{ position: "relative" }}>
-            <button
-              className="icon-btn"
-              onClick={() =>
-                setOpenMenu(
-                  openMenu === appointmentId
-                    ? null
-                    : appointmentId
-                )
-              }
-            >
-              <MoreVertIcon />
-            </button>
+                      <td>{admission.visitId || "N/A"}</td>
 
-            {openMenu === appointmentId && (
-              <div
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  top: "calc(100% + 4px)",
-                  background: "white",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 8,
-                  boxShadow:
-                    "0 4px 12px rgba(0,0,0,0.08)",
-                  minWidth: 130,
-                  zIndex: 50,
-                  overflow: "hidden",
-                }}
-              >
-                {["View", "Edit", "Cancel"].map((opt) => (
-                  <div
-                    key={opt}
-                    onClick={() => setOpenMenu(null)}
-                    style={{
-                      padding: "9px 16px",
-                      fontSize: 13,
-                      color:
-                        opt === "Cancel"
-                          ? "#ef4444"
-                          : "#475569",
-                      cursor: "pointer",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.background =
-                        "#f8fafc")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.background = "")
-                    }
-                  >
-                    {opt}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </td>
-      </tr>
-    );
-  })}
-</tbody>
+                      <td>{admission.admissionType || "N/A"}</td>
+
+                      <td>{admission.bedNumber || "N/A"}</td>
+
+                      <td>
+                        <span
+                          className={`appt-status ${statusClass(
+                            admission.status || "pending"
+                          )}`}
+                        >
+                          {admission.status || "N/A"}
+                        </span>
+                      </td>
+
+                      <td>
+                        {admission.admittedAt
+                          ? new Date(admission.admittedAt).toLocaleDateString(
+                            "en-GB"
+                          )
+                          : "N/A"}
+                      </td>
+                      <td>
+                        {admission.dischargedAt
+                          ? new Date(admission.dischargedAt).toLocaleDateString(
+                            "en-GB"
+                          )
+                          : "N/A"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="7"
+                      style={{
+                        textAlign: "center",
+                        padding: "30px",
+                        color: "#64748b",
+                      }}
+                    >
+                      {summaryLoading
+                        ? "Loading admissions..."
+                        : "No admissions found."}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
             </table>
           </div>
         )}
@@ -612,20 +1038,43 @@ const apptFiltered = appointments.filter((a) =>
                 </tr>
               </thead>
               <tbody>
-                {pageData.map(txn => (
-                  <tr key={txn.id}>
-                    <td style={{ fontWeight: 600, color: "#1e293b" }}>{txn.id}</td>
-                    <td>{txn.desc}</td>
-                    <td>{txn.date}</td>
-                    <td>{txn.method}</td>
-                    <td style={{ fontWeight: 700, color: "#1e293b" }}>{txn.amount}</td>
-                    <td>
-                      <span className={`txn-status ${txn.status.toLowerCase()}`}>
-                        {txn.status}
-                      </span>
+                {pageData.length > 0 ? (
+                  pageData.map((txn) => (
+                    <tr key={txn.id}>
+                      <td style={{ fontWeight: 600, color: "#1e293b" }}>{txn.id}</td>
+                      <td>{txn.desc}</td>
+                      <td>
+                        {txn.date
+                          ? new Date(txn.date).toLocaleDateString("en-GB")
+                          : "N/A"}
+                      </td>
+                      <td>{txn.method}</td>
+                      <td style={{ fontWeight: 700, color: "#1e293b" }}>
+                        ₹{Number(txn.amount || 0).toLocaleString("en-IN")}
+                      </td>
+                      <td>
+                        <span className={`txn-status ${txn.status.toLowerCase()}`}>
+                          {txn.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="6"
+                      style={{
+                        textAlign: "center",
+                        padding: "30px",
+                        color: "#64748b",
+                      }}
+                    >
+                      {summaryLoading
+                        ? "Loading transactions..."
+                        : "No transactions found."}
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -674,6 +1123,12 @@ const apptFiltered = appointments.filter((a) =>
         </div>
 
       </div>
+
+      <VisitHistoryModal
+        history={selectedVisitHistory}
+        loading={historyLoading}
+        onClose={() => setSelectedVisitHistory(null)}
+      />
     </div>
   );
 }

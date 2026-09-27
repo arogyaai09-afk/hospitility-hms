@@ -1,6 +1,6 @@
 //appointments/AddAppointmentList.jsx
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -8,12 +8,14 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { getPatients } from "../api/patients";
 import { getDoctors } from "../api/doctors";
-import { createAppointment } from "../api/appointments";
+import {
+  createAppointment,
+  getAppointmentById,
+  updateAppointment,
+} from "../api/appointments";
 import { useToast } from "../context/ToastContext";
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
-const PATIENTS = ["Alberto Ripley", "Susan Babin", "Martin Lisa", "Stella Mary", "Carol Lam", "Marsha Noland", "Irma Armstrong", "Ezra Belcher", "Glen Lentz"];
-const DOCTORS = ["Dr. Mick Thompson", "Dr. Sarah Johnson", "Dr. Emily Carter", "Dr. David Lee", "Dr. Anna Kim", "Dr. John Smith", "Dr. Lisa White", "Dr. Patricia Brown"];
 const DEPARTMENTS = ["General Medicine", "Pediatrics", "Gynecology", "Cardiology", "Orthopedics", "Neurology", "Oncology", "Psychiatry", "Urology"];
 const APPT_TYPES = ["OPD", "IPD", "Emergency"];
 const STATUSES = ["Checked Out", "Checked In", "Cancelled", "Schedule", "Confirmed"];
@@ -95,6 +97,31 @@ function CustomSelect({
   );
 }
 
+// DATE/TIME helper
+function getDateTimeParts(dateValue) {
+  if (!dateValue) {
+    return { date: "", time: "" };
+  }
+
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return { date: "", time: "" };
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return {
+    date: `${year}-${month}-${day}`,
+    time: `${hours}:${minutes}`,
+  };
+}
+
 // ─── VALIDATION ───────────────────────────────────────────────────────────────
 function validate(form) {
   const e = {};
@@ -112,11 +139,15 @@ function validate(form) {
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function NewAppointment() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { id } = useParams();
   const { showToast } = useToast();
 
+  const isEditMode = Boolean(id);
+
   const [form, setForm] = useState({
-  appointmentId: `AP${Date.now()}`,
-  patient: "",
+    appointmentId: `AP${Date.now()}`,
+    patient: "",
     patientId: "",
     patientType: "",
     department: "",
@@ -133,6 +164,8 @@ export default function NewAppointment() {
   const [patientsLoading, setPatientsLoading] = useState(true);
   const [doctors, setDoctors] = useState([]);
   const [doctorsLoading, setDoctorsLoading] = useState(true);
+  const [appointmentLoading, setAppointmentLoading] = useState(false);
+  const [existingAppointment, setExistingAppointment] = useState(null);
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -184,64 +217,261 @@ export default function NewAppointment() {
     fetchDoctors();
   }, []);
 
+  useEffect(() => {
+  if (!isEditMode || !id) return;
+
+  const fetchAppointment = async () => {
+    try {
+      setAppointmentLoading(true);
+
+      const response = await getAppointmentById(id);
+
+      const appointment =
+        response?.data?.data ||
+        response?.data ||
+        null;
+
+      if (!appointment) {
+        showToast("Appointment not found.", "error");
+        navigate("/appointments");
+        return;
+      }
+
+      setExistingAppointment(appointment);
+    } catch (error) {
+      console.error("Appointment API Error:", error);
+
+      showToast(
+        error?.message ||
+          error?.error ||
+          "Failed to load appointment.",
+        "error"
+      );
+    } finally {
+      setAppointmentLoading(false);
+    }
+  };
+
+  fetchAppointment();
+}, [id, isEditMode, navigate, showToast]);
+
+useEffect(() => {
+  if (!isEditMode || !existingAppointment) return;
+
+  const patientId =
+    typeof existingAppointment.patientId === "object"
+      ? existingAppointment.patientId?._id
+      : existingAppointment.patientId;
+
+  const doctorId =
+    typeof existingAppointment.doctorId === "object"
+      ? existingAppointment.doctorId?._id
+      : existingAppointment.doctorId;
+
+  const patient = patients.find(
+    (item) => String(item._id) === String(patientId)
+  );
+
+  const doctor = doctors.find(
+    (item) => String(item._id) === String(doctorId)
+  );
+
+  const statusMap = {
+    scheduled: "Schedule",
+    checked_in: "Checked In",
+    completed: "Checked Out",
+    cancelled: "Cancelled",
+  };
+
+  const { date, time } = getDateTimeParts(
+  existingAppointment.scheduledAt
+);
+
+  setForm((current) => ({
+    ...current,
+
+    appointmentId:
+      existingAppointment._id ||
+      existingAppointment.id ||
+      current.appointmentId,
+
+    patient:
+      patient?.name ||
+      existingAppointment.patientName ||
+      existingAppointment.patientId?.name ||
+      "",
+
+    patientId: patientId || "",
+
+    patientType:
+      patient?.patientType ||
+      existingAppointment.patientType ||
+      "local",
+
+    department:
+      doctor?.specialization ||
+      existingAppointment.doctorId?.specialization ||
+      "",
+
+    doctor:
+      doctor?.name ||
+      existingAppointment.doctorId?.name ||
+      existingAppointment.doctorName ||
+      "",
+
+    doctorId: doctorId || "",
+
+    appointmentType:
+      existingAppointment.appointmentType || "",
+
+    reason:
+      existingAppointment.visitReason || "",
+
+    status:
+      statusMap[existingAppointment.status] ||
+      existingAppointment.status ||
+      "",
+  }));
+}, [existingAppointment, patients, doctors, isEditMode]);
+
+  useEffect(() => {
+    const selectedPatient = location.state?.patient;
+    const lastAppointment = location.state?.lastAppointment;
+
+    if (!selectedPatient) return;
+
+    // Wait until patient and doctor APIs are loaded
+    if (!patients.length || !doctors.length) return;
+
+    const patientFromApi =
+      patients.find(
+        (patient) => String(patient._id) === String(selectedPatient.id)
+      ) || selectedPatient;
+
+    const lastDoctorId =
+      typeof lastAppointment?.doctorId === "object"
+        ? lastAppointment?.doctorId?._id
+        : lastAppointment?.doctorId;
+
+    const doctorFromApi = doctors.find(
+      (doctor) => String(doctor._id) === String(lastDoctorId)
+    );
+
+    setForm((current) => ({
+      ...current,
+
+      // Patient details
+      patient: patientFromApi?.name || selectedPatient?.name || "",
+      patientId: patientFromApi?._id || selectedPatient?.id || "",
+      patientType: patientFromApi?.patientType || "local",
+
+      // Latest appointment details
+      doctor:
+        doctorFromApi?.name ||
+        lastAppointment?.doctorId?.name ||
+        lastAppointment?.doctorName ||
+        "",
+
+      doctorId:
+        doctorFromApi?._id ||
+        lastDoctorId ||
+        "",
+
+      department:
+        doctorFromApi?.specialization ||
+        lastAppointment?.doctorId?.specialization ||
+        lastAppointment?.designation ||
+        "",
+
+      appointmentType:
+        lastAppointment?.appointmentType || "",
+
+      reason:
+        lastAppointment?.visitReason || "",
+
+      status: "Schedule",
+    }));
+  }, [patients, doctors, location.state]);
+
   const set = (field, val) => {
     setForm(p => ({ ...p, [field]: val }));
     if (errors[field]) setErrors(p => ({ ...p, [field]: "" }));
   };
 
   const handleSubmit = async () => {
-    const errs = validate(form);
-    setErrors(errs);
+  const errs = validate(form);
+  setErrors(errs);
 
-    if (Object.keys(errs).length !== 0) {
-      const first = document.querySelector(".error-msg");
+  if (Object.keys(errs).length !== 0) {
+    const first = document.querySelector(".error-msg");
 
-      if (first) {
-        first.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
-
-      return;
+    if (first) {
+      first.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     }
 
-    try {
-      const statusMap = {
-        "Checked Out": "completed",
-        "Checked In": "completed",
-        Cancelled: "cancelled",
-        Schedule: "scheduled",
-        Confirmed: "scheduled",
-      };
+    return;
+  }
 
-      const payload = {
-        patientId: form.patientId,
-        patientName: form.patient,
-        patientType: form.patientType || "local",
-        appointmentType: form.appointmentType,
-        visitReason: form.reason,
-        doctorId: form.doctorId,
-      };
+  try {
+    const scheduledAt = new Date(
+      `${form.date}T${form.time}:00`
+    ).toISOString();
 
-      console.log("Creating appointment:", payload);
+    const payload = {
+      patientId: form.patientId,
+      patientName: form.patient,
+      patientType: form.patientType || "local",
+      appointmentType: form.appointmentType,
+      visitReason: form.reason,
+      doctorId: form.doctorId,
+      scheduledAt,
+    };
 
-      await createAppointment(payload);
+    console.log(
+      isEditMode
+        ? "Updating appointment:"
+        : "Creating appointment:",
+      payload
+    );
 
-      showToast("Appointment created successfully!", "success");
-
-      navigate("/appointments");
-    } catch (error) {
-      console.error("Create Appointment Error:", error);
+    if (isEditMode) {
+      await updateAppointment(form.appointmentId, payload);
 
       showToast(
-        error?.message ||
-        error?.error ||
-        "Failed to create appointment",
-        "error"
+        "Appointment updated successfully!",
+        "success"
+      );
+    } else {
+      await createAppointment(payload);
+
+      showToast(
+        "Appointment created successfully!",
+        "success"
       );
     }
-  };
+
+    navigate("/appointments");
+  } catch (error) {
+    console.error(
+      isEditMode
+        ? "Update Appointment Error:"
+        : "Create Appointment Error:",
+      error
+    );
+
+    showToast(
+      error?.message ||
+        error?.error ||
+        (isEditMode
+          ? "Failed to update appointment"
+          : "Failed to create appointment"),
+      "error"
+    );
+  }
+};
 
   return (
     <div className="add-doctor-page">
@@ -411,7 +641,7 @@ export default function NewAppointment() {
               value={form.status}
               onChange={v => set("status", v)}
               error={errors.status}
-              dropUp 
+              dropUp
             />
           </div>
 
@@ -424,8 +654,8 @@ export default function NewAppointment() {
           Cancel
         </button>
         <button className="btn-submit" onClick={handleSubmit}>
-          Create Appointment
-        </button>
+  {isEditMode ? "Update Appointment" : "Create Appointment"}
+</button>
       </div>
 
     </div>

@@ -30,9 +30,9 @@ const SORT_OPTIONS = [
 ];
 
 const AMOUNT_OPTIONS = [
-  { label: "Under $500", value: "under500" },
-  { label: "$501 - $1000", value: "501-1000" },
-  { label: "Above $1000", value: "above1000" },
+  { label: "Under ₹500", value: "under500" },
+  { label: "₹501 - ₹1000", value: "501-1000" },
+  { label: "Above ₹1000", value: "above1000" },
 ];
 
 const STATUS_OPTIONS = ["Available", "Unavailable"];
@@ -54,12 +54,16 @@ const EMPTY_FILTERS = {
 // AVATAR
 // ─────────────────────────────────────────────────────────────────────────────
 
-function Avatar({ name, color, size = 38 }) {
+function Avatar({ name, color, image, size = 38 }) {
   const initials = name
     .split(" ")
-    .slice(1, 3)
+    .slice(0, 2)
     .map((word) => word[0])
     .join("");
+
+  const imageUrl = image
+    ? `http://16.4.26.131:4000${image}`
+    : "";
 
   return (
     <div
@@ -76,9 +80,22 @@ function Avatar({ name, color, size = 38 }) {
         fontWeight: 700,
         fontSize: size * 0.34,
         flexShrink: 0,
+        overflow: "hidden",
       }}
     >
-      {initials}
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={name}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      ) : (
+        initials
+      )}
     </div>
   );
 }
@@ -547,6 +564,7 @@ export default function Doctors() {
             phone: doctor.phone || "",
             email: doctor.email || "",
             fee: doctor.fees ?? "",
+            profileImage: doctor.profileImage || "",
             status: "",
             avail: "",
             color: "#3b82f6",
@@ -621,15 +639,15 @@ export default function Doctors() {
       // Amount filter
       if (appliedFilters.amount.length > 0) {
         const amountMatches = appliedFilters.amount.some((range) => {
-          if (range === "Under $500") {
+          if (range === "Under ₹500") {
             return doctor.fee < 500;
           }
 
-          if (range === "$501 - $1000") {
+          if (range === "₹501 - ₹1000") {
             return doctor.fee >= 501 && doctor.fee <= 1000;
           }
 
-          if (range === "Above $1000") {
+          if (range === "Above ₹1000") {
             return doctor.fee > 1000;
           }
 
@@ -707,7 +725,7 @@ export default function Doctors() {
         doctor.dept,
         doctor.phone,
         doctor.email,
-        `$${doctor.fee}`,
+        `₹${doctor.fee}`,
         doctor.status,
       ]),
     });
@@ -911,10 +929,11 @@ export default function Doctors() {
                     <td>
                       <div className="doc-name-cell">
                         <Avatar
-                          name={doctor.name}
-                          color={doctor.color}
-                          size={38}
-                        />
+  name={doctor.name}
+  color={doctor.color}
+  image={doctor.profileImage}
+  size={38}
+/>
 
                         <div>
                           <div className="doc-name">{doctor.name}</div>
@@ -929,7 +948,7 @@ export default function Doctors() {
                     <td>{doctor.email}</td>
 
                     <td>
-                      <span className="fee-val">${doctor.fee}</span>
+                      <span className="fee-val">₹{doctor.fee}</span>
                     </td>
 
                     <td>
@@ -1037,9 +1056,9 @@ export default function Doctors() {
                   navigate(`/doctors/${doctor.id}/edit`, { state: { doctor } })
                 }
                 onDelete={() => {
-  setDoctorToDelete(doctor.id);
-  setShowDeleteModal(true);
-}}
+                  setDoctorToDelete(doctor.id);
+                  setShowDeleteModal(true);
+                }}
               />
             ))
           )}
@@ -1059,17 +1078,17 @@ export default function Doctors() {
         />
       )}
       <ConfirmModal
-  open={showDeleteModal}
-  title="Delete Doctor"
-  message="Are you sure you want to delete this doctor?"
-  confirmText="Delete Doctor"
-  cancelText="Cancel"
-  onCancel={() => {
-    setShowDeleteModal(false);
-    setDoctorToDelete(null);
-  }}
-  onConfirm={handleDeleteDoctor}
-/>
+        open={showDeleteModal}
+        title="Delete Doctor"
+        message="Are you sure you want to delete this doctor?"
+        confirmText="Delete Doctor"
+        cancelText="Cancel"
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setDoctorToDelete(null);
+        }}
+        onConfirm={handleDeleteDoctor}
+      />
     </div>
   );
 }
@@ -1098,13 +1117,26 @@ function GridCard({
           background: doc.color + "18",
         }}
       >
-        <div className="img-placeholder" style={{ color: doc.color }}>
-          {doc.name
-            .split(" ")
-            .slice(1, 3)
-            .map((word) => word[0])
-            .join("")}
-        </div>
+        {doc.profileImage ? (
+  <img
+    src={`http://16.4.26.131:4000${doc.profileImage}`}
+    alt={doc.name}
+    style={{
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      borderRadius: "inherit",
+    }}
+  />
+) : (
+  <div className="img-placeholder" style={{ color: doc.color }}>
+    {doc.name
+      .split(" ")
+      .slice(0, 2)
+      .map((word) => word[0])
+      .join("")}
+  </div>
+)}
       </div>
 
       <div className="card-body">
@@ -1117,7 +1149,7 @@ function GridCard({
         </div>
 
         <div className="card-fee">
-          Starts From : <span>${doc.fee}</span>
+          Starts From : <span>₹{doc.fee}</span>
         </div>
 
         <button

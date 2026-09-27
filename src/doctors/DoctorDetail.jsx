@@ -55,20 +55,21 @@ export default function DoctorDetails() {
           degree: doctorData.specialization || "",
           department: doctorData.specialization || "",
           clinic: "",
-          status: "",
-          charge: "",
+          status: doctorData.status || "",
+          charge: doctorData.fees ?? "",
           duration: "",
+          profileImage: doctorData.profileImage || "",
           color: "#3b82f6",
           bio: "",
           availability: {},
           about: {
-            licenseNumber: "",
+            licenseNumber: doctorData.licenseNumber || "",
             phone: doctorData.phone || "",
             email: doctorData.email || "",
-            location: "",
-            dob: "",
-            bloodGroup: "",
-            experience: "",
+            location: doctorData.location || "",
+            dob: doctorData.dateOfBirth || "",
+            bloodGroup: doctorData.bloodGroup || "",
+            experience: doctorData.experience || "",
           },
           education: [],
           awards: [],
@@ -131,14 +132,22 @@ export default function DoctorDetails() {
       {/* ── Profile Hero ── */}
       <div className="profile-hero">
         <div className="hero-img" style={{ background: doc.color + "18" }}>
-          <span className="hero-initials" style={{ color: doc.color }}>
-            {doc.name
-              .split(" ")
-              .slice(1, 3)
-              .map((w) => w[0])
-              .join("")}
-          </span>
-        </div>
+  {doc.profileImage ? (
+    <img
+      src={`http://16.4.26.131:4000${doc.profileImage}`}
+      alt={doc.name}
+      className="hero-profile-image"
+    />
+  ) : (
+    <span className="hero-initials" style={{ color: doc.color }}>
+      {doc.name
+        .split(" ")
+        .slice(0, 2)
+        .map((w) => w[0])
+        .join("")}
+    </span>
+  )}
+</div>
 
         <div className="hero-info">
           <div className="hero-name-row">
@@ -161,12 +170,15 @@ export default function DoctorDetails() {
         <div className="hero-right">
           <div className="charge-label">Consultation Charge</div>
           <div className="charge-value">
-            {doc.charge ? `$${doc.charge}` : "Not available"}
+            {doc.charge ? `₹${doc.charge}` : "Not available"}
             {doc.charge && doc.duration && <span>/ {doc.duration}</span>}
           </div>
-          <button className="btn-book">
-            <CalendarBookmarkIcon /> Book Apppointment
-          </button>
+          <button
+  className="btn-book"
+  onClick={() => navigate(`/doctors/${id}/today-appointments`)}
+>
+  <CalendarBookmarkIcon /> Today's Appointment
+</button>
         </div>
       </div>
 

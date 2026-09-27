@@ -17,31 +17,33 @@ const Admissions = () => {
     fetchAdmissions();
   }, []);
 
-const fetchAdmissions = async () => {
-  try {
-    setLoading(true);
+  const fetchAdmissions = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-    const response = await getAdmissions();
+      const response = await getAdmissions();
 
-    if (response.status === "success") {
-      setAdmissions(response.data?.data || []);
-    } else {
+      const admissionList = Array.isArray(response?.data?.data)
+        ? response.data.data
+        : [];
+
+      setAdmissions(admissionList);
+    } catch (err) {
+      setError(err?.message || "Failed to fetch admissions");
+      console.error("Admissions fetch error:", err);
       setAdmissions([]);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError(err.message || "Failed to fetch admissions");
-    console.error("Admissions fetch error:", err);
-    setAdmissions([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const filteredAdmissions = admissions.filter((admission) => {
     const matchesSearch =
       admission.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      admission.patientId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      admission.visitId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       admission.bedNumber?.toLowerCase().includes(searchTerm.toLowerCase());
-
     const matchesStatus =
       filterStatus === "all" || admission.status === filterStatus;
 
@@ -72,7 +74,10 @@ const fetchAdmissions = async () => {
           <h1>Admissions</h1>
           <p>Manage patient admissions and bed assignments</p>
         </div>
-        <button className="btn-primary" onClick={() => navigate("/admissions/new")}>
+        <button
+          className="btn-primary"
+          onClick={() => navigate("/admissions/new")}
+        >
           <Add /> New Admission
         </button>
       </div>
@@ -82,7 +87,7 @@ const fetchAdmissions = async () => {
       <div className="filters-section">
         <input
           type="text"
-          placeholder="Search by patient name or bed number..."
+          placeholder="Search by patient name, Patient ID, Visit ID or bed number..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
@@ -112,6 +117,8 @@ const fetchAdmissions = async () => {
             <thead>
               <tr>
                 <th>Patient Name</th>
+                <th>Patient ID</th>
+                <th>Visit ID</th>
                 <th>Admission Type</th>
                 <th>Bed Number</th>
                 <th>Status</th>
@@ -123,10 +130,14 @@ const fetchAdmissions = async () => {
               {filteredAdmissions.map((admission) => (
                 <tr key={admission._id}>
                   <td className="patient-name">{admission.patientName}</td>
+                  <td>{admission.patientId || "-"}</td>
+                  <td>{admission.visitId || "-"}</td>
                   <td>{admission.admissionType}</td>
                   <td className="bed-number">{admission.bedNumber}</td>
                   <td>
-                    <span className={`badge ${getStatusBadgeClass(admission.status)}`}>
+                    <span
+                      className={`badge ${getStatusBadgeClass(admission.status)}`}
+                    >
                       {admission.status}
                     </span>
                   </td>
@@ -141,7 +152,9 @@ const fetchAdmissions = async () => {
                     </button>
                     <button
                       className="btn-icon btn-edit"
-                      onClick={() => navigate(`/admissions/${admission._id}/edit`)}
+                      onClick={() =>
+                        navigate(`/admissions/${admission._id}/edit`)
+                      }
                       title="Edit"
                     >
                       <Edit />

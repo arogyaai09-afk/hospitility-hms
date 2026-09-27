@@ -1,7 +1,9 @@
 //doctors/AddDoctor.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Country, State, City } from "country-state-city";
 import { createDoctor } from "../api/doctors";
+import { uploadFile } from "../api/storage";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import PersonIcon from "@mui/icons-material/Person";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
@@ -48,13 +50,7 @@ const DESIGNATIONS = [
 ];
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 const GENDERS = ["Male", "Female", "Other"];
-const COUNTRIES = [
-  "United States",
-  "United Kingdom",
-  "India",
-  "Canada",
-  "Australia",
-];
+const COUNTRIES = Country.getAllCountries();
 const APPT_TYPES = ["Online", "In-Person", "Both"];
 const SESSIONS = ["Morning", "Afternoon", "Evening", "Night"];
 
@@ -217,6 +213,10 @@ export default function AddDoctor() {
   const [address, setAddress] = useState(initAddress);
   const [availability, setAvailability] = useState(initAvailability);
   const [activeDay, setActiveDay] = useState("Thursday");
+
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+
   const [appointment, setAppointment] = useState(initAppointment);
   const [education, setEducation] = useState(initEducation);
   const [awards, setAwards] = useState(initAwards);
@@ -245,6 +245,57 @@ export default function AddDoctor() {
     if (appointmentErrors[field])
       setAppointmentErrors((p) => ({ ...p, [field]: "" }));
   };
+
+
+  // Country → State
+  useEffect(() => {
+    if (!address.country) {
+      setStates([]);
+      setCities([]);
+      return;
+    }
+
+    const selectedCountry = COUNTRIES.find(
+      (country) => country.name === address.country,
+    );
+
+    if (!selectedCountry) {
+      setStates([]);
+      setCities([]);
+      return;
+    }
+
+    const countryStates = State.getStatesOfCountry(selectedCountry.isoCode);
+
+    setStates(countryStates);
+    setCities([]);
+  }, [address.country]);
+
+  // State → City
+  useEffect(() => {
+    if (!address.country || !address.state) {
+      setCities([]);
+      return;
+    }
+
+    const selectedCountry = COUNTRIES.find(
+      (country) => country.name === address.country,
+    );
+
+    const selectedState = states.find((state) => state.name === address.state);
+
+    if (!selectedCountry || !selectedState) {
+      setCities([]);
+      return;
+    }
+
+    const stateCities = City.getCitiesOfState(
+      selectedCountry.isoCode,
+      selectedState.isoCode,
+    );
+
+    setCities(stateCities);
+  }, [address.country, address.state, states]);
 
   // Profile image
   const handleImage = (e) => {
@@ -299,8 +350,6 @@ export default function AddDoctor() {
   const handleSubmit = async () => {
     const cErr = validateContact(contact);
 
-    // Address and appointment sections will be in UI,
-    // but not required for backend Doctor API.
     const aErr = {};
     const apErr = {};
 
@@ -325,41 +374,81 @@ export default function AddDoctor() {
     try {
       setSubmitting(true);
 
-      /*
-       * Backend Doctor API only needs:
-       * name
-       * specialization
-       * phone
-       * email
-       *
-       * Department and Designation are the same concept
-       * in our frontend, so Designation is sent as specialization.
-       */
+      // Profile image is required by backend
+      if (!contact.profileImage) {
+        setSubmitError("Profile image is required.");
+        setSubmitting(false);
+        return;
+      }
+
+      // 1. Upload profile image
+      const uploadResponse = await uploadFile(contact.profileImage, "images");
+
+      console.log("Profile image upload response:", uploadResponse);
+
+      if (uploadResponse?.status !== "success") {
+        throw new Error(
+          uploadResponse?.message || "Failed to upload profile image",
+        );
+      }
+
+      // Get uploaded image URL/path
+      const profileImage =
+        uploadResponse?.data?.url ||
+        uploadResponse?.data?.fileUrl ||
+        uploadResponse?.data?.path ||
+        "";
+
+      if (!profileImage) {
+        throw new Error(
+          "Profile image uploaded but URL was not returned by the server.",
+        );
+      }
+
+      // 2. Create doctor
       const doctorData = {
         name: contact.name.trim(),
         specialization: contact.designation || contact.department,
         phone: contact.phone.trim(),
         email: contact.email.trim(),
         fees: Number(appointment.consultationCharge),
+        profileImage: profileImage,
+
+        licenseNumber: contact.licenseNumber,
+        dateOfBirth: contact.dob,
+        bloodGroup: contact.bloodGroup,
+        experience: Number(contact.experience),
+
+        location: {
+          address1: address.address1,
+          address2: address.address2,
+          country: address.country,
+          state: address.state,
+          city: address.city,
+          pincode: address.pincode,
+        },
       };
 
+      console.log("DOCTOR PAYLOAD:", doctorData);
+
+      // 3. Create doctor
       await createDoctor(doctorData);
 
       showToast("Doctor added successfully!", "success");
 
       navigate("/doctors");
-} catch (error) {
-  console.error("Create doctor error:", error);
+    } catch (error) {
+      console.error("Create doctor error:", error);
 
-  showToast(
-    error?.message ||
-      error?.error ||
-      "Failed to add doctor. Please try again.",
-    "error"
-  );
-} finally {
-  setSubmitting(false);
-}
+      showToast(
+        error?.message ||
+          error?.error ||
+          "Failed to add doctor. Please try again.",
+        "error",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -474,13 +563,13 @@ export default function AddDoctor() {
 
           <div className="form-row">
             <SelectField
-              label="Department"
-              required
-              options={DEPARTMENTS}
-              value={contact.department}
-              onChange={(e) => handleContact("department", e.target.value)}
-              error={contactErrors.department}
-            />
+  label="Department"
+  required
+  options={DEPARTMENTS}
+  value={contact.department}
+  onChange={(e) => handleContact("department", e.target.value)}
+  error={contactErrors.department}
+/>
             <SelectField
               label="Designation"
               required
@@ -580,41 +669,40 @@ export default function AddDoctor() {
             <SelectField
               label="Country"
               required
-              options={COUNTRIES}
+              options={COUNTRIES.map((country) => country.name)}
               value={address.country}
-              onChange={(e) => handleAddress("country", e.target.value)}
+              onChange={(e) => {
+                handleAddress("country", e.target.value);
+                handleAddress("state", "");
+                handleAddress("city", "");
+              }}
               error={addressErrors.country}
             />
             <SelectField
-              label="City"
+              label="State"
               required
-              options={[
-                "New York",
-                "Los Angeles",
-                "Chicago",
-                "Houston",
-                "Phoenix",
-              ]}
-              value={address.city}
-              onChange={(e) => handleAddress("city", e.target.value)}
-              error={addressErrors.city}
+              options={states.map((state) => state.name)}
+              placeholder={!address.country ? "Select country first" : "Select"}
+              value={address.state}
+              disabled={!address.country}
+              onChange={(e) => {
+                handleAddress("state", e.target.value);
+                handleAddress("city", "");
+              }}
+              error={addressErrors.state}
             />
           </div>
 
           <div className="form-row">
             <SelectField
-              label="State"
+              label="City"
               required
-              options={[
-                "California",
-                "New York",
-                "Texas",
-                "Florida",
-                "Illinois",
-              ]}
-              value={address.state}
-              onChange={(e) => handleAddress("state", e.target.value)}
-              error={addressErrors.state}
+              options={cities.map((city) => city.name)}
+              placeholder={!address.state ? "Select state first" : "Select"}
+              value={address.city}
+              disabled={!address.state}
+              onChange={(e) => handleAddress("city", e.target.value)}
+              error={addressErrors.city}
             />
             <InputField
               label="Pincode"
@@ -803,7 +891,7 @@ export default function AddDoctor() {
                   className="input-icon"
                   style={{ left: 10, right: "auto" }}
                 >
-                  $
+                  ₹
                 </span>
               </div>
             </FormGroup>

@@ -4,9 +4,8 @@ class ApiClient {
   async request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers = {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    };
+  ...(options.headers || {}),
+};
 
     const accessToken = localStorage.getItem('accessToken');
     if (accessToken) {
@@ -68,30 +67,50 @@ class ApiClient {
   }
 
   async post(endpoint, body, options = {}) {
+    const isFormData = body instanceof FormData;
+
     const response = await this.request(endpoint, {
       ...options,
-      method: 'POST',
-      body: JSON.stringify(body),
+      method: "POST",
+      body: isFormData ? body : JSON.stringify(body),
+      headers: isFormData
+        ? {
+            ...(options.headers || {}),
+          }
+        : {
+            "Content-Type": "application/json",
+            ...(options.headers || {}),
+          },
     });
+
     const data = await response.json();
+
     if (!response.ok) {
       throw data;
     }
+
     return data;
   }
 
   async patch(endpoint, body, options = {}) {
-    const response = await this.request(endpoint, {
-      ...options,
-      method: 'PATCH',
-      body: JSON.stringify(body),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw data;
-    }
-    return data;
+  const response = await this.request(endpoint, {
+    ...options,
+    method: "PATCH",
+    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw data;
   }
+
+  return data;
+}
 
   async delete(endpoint, options = {}) {
     const response = await this.request(endpoint, {

@@ -47,3 +47,19 @@ export const deletePatient = async (id) => {
     throw error || { message: "Failed to fetch patient" };
   }
 };
+
+// Get patient summary by ID
+export const getPatientSummary = async (patientId) => {
+  return axiosInstance.get(`/patients/${patientId}/summary`);
+};
+
+// Search patients
+export const searchPatients = async (query) => {
+  try {
+    return await axiosInstance.get(
+      `/patients/search?q=${encodeURIComponent(query)}`
+    );
+  } catch (error) {
+    throw error || { message: "Failed to search patients" };
+  }
+};

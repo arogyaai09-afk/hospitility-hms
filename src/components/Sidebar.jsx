@@ -1,3 +1,4 @@
+// ui/src/components/Sidebar.jsx
 import { useState, createContext, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -55,8 +56,6 @@ export const SidebarContext = createContext({
   setCollapsed: () => {},
 });
 
-
-
 export default function Sidebar() {
   const location = useLocation();
   const { collapsed, setCollapsed } = useContext(SidebarContext);
@@ -65,121 +64,127 @@ export default function Sidebar() {
   const isAdmin = user?.role === "admin";
 
   const menuData = [
-  {
-    section: "Main Menu",
-    items: [
-      {
-        label: "Dashboard",
-        icon: <DashboardIcon style={{ fontSize: 18 }} />,
-        key: "dashboard",
-        sub: [{ label: "Admin Dashboard", path: "/" }],
-      },
-    ],
-  },
-  {
-    section: "Clinic",
-    items: [
-      {
-        label: "Doctors",
-        icon: <PersonIcon style={{ fontSize: 18 }} />,
-        key: "doctors",
-        chevron: true,
-        sub: [
-          { label: "Doctor List", path: "/doctors" },
-          { label: "Add Doctor", path: "/doctors/add" },
-        ],
-      },
-      {
-        label: "Departments",
-        icon: <ApartmentIcon style={{ fontSize: 18 }} />,
-        key: "departments",
-        path: "/departments",
-      },
-      {
-        label: "Staff",
-        icon: <GroupIcon style={{ fontSize: 18 }} />,
-        key: "staff",
-        path: "/staff",
-      },
-      {
-        label: "Patients",
-        icon: <PeopleIcon style={{ fontSize: 18 }} />,
-        key: "patients",
-        chevron: true,
-        sub: [
-          { label: "Patients", path: "/patients" },
-          { label: "Create Patient", path: "/patients/create" },
-        ],
-      },
-      {
-        label: "Appointments",
-        icon: <CalendarMonthIcon style={{ fontSize: 18 }} />,
-        key: "appointments",
-        chevron: true,
-        sub: [
-          { label: "Appointments", path: "/appointments" },
-          { label: "New Appointment", path: "/appointments/new" },
-        ],
-      },
-      // {
-      //   label: "Services",
-      //   icon: <MedicalServicesIcon style={{ fontSize: 18 }} />,
-      //   key: "services",
-      //   path: "/services",
-      // },
-      // {
-      //   label: "Rooms",
-      //   icon: <MeetingRoomIcon style={{ fontSize: 18 }} />,
-      //   key: "rooms",
-      //   path: "/rooms",
-      // },
-      ...(isAdmin
-        ? [
-            {
-              label: "Tenants",
-              icon: <BusinessIcon style={{ fontSize: 18 }} />,
-              key: "tenants",
-              path: "/tenants",
-            },
-          ]
-        : []),
-    ],
-  },
-  {
-    section: "Patient Management",
-    items: [
-      {
-        label: "Admissions",
-        icon: <HotelIcon style={{ fontSize: 18 }} />,
-        key: "admissions",
-        path: "/admissions",
-      },
-      {
-        label: "Emergencies",
-        icon: <EmergencyShareIcon style={{ fontSize: 18 }} />,
-        key: "emergencies",
-        path: "/emergencies",
-      },
-      {
-        label: "Beds",
-        icon: <HotelIcon style={{ fontSize: 18 }} />,
-        key: "beds",
-        path: "/beds",
-      },
-    ],
-  },
-  {
-    section: "Finance",
-    items: [
-      {
-        label: "Invoices",
-        icon: <DescriptionIcon style={{ fontSize: 18 }} />,
-        key: "invoices",
-        path: "/invoices",
-      },
-    ],
-  },
-];
+    {
+      section: "Main Menu",
+      items: [
+        {
+          label: "Dashboard",
+          icon: <DashboardIcon style={{ fontSize: 18 }} />,
+          key: "dashboard",
+          sub: [{ label: "Admin Dashboard", path: "/" }],
+        },
+      ],
+    },
+    {
+      section: "Clinic",
+      items: [
+        {
+          label: "Doctors",
+          icon: <PersonIcon style={{ fontSize: 18 }} />,
+          key: "doctors",
+          chevron: true,
+          sub: [
+            { label: "Doctor List", path: "/doctors" },
+            { label: "Add Doctor", path: "/doctors/add" },
+          ],
+        },
+        {
+          label: "Departments",
+          icon: <ApartmentIcon style={{ fontSize: 18 }} />,
+          key: "departments",
+          path: "/departments",
+        },
+        {
+          label: "Staff",
+          icon: <GroupIcon style={{ fontSize: 18 }} />,
+          key: "staff",
+          path: "/staff",
+        },
+        {
+          label: "Patients",
+          icon: <PeopleIcon style={{ fontSize: 18 }} />,
+          key: "patients",
+          chevron: true,
+          sub: [
+            { label: "Patients", path: "/patients" },
+            { label: "Create Patient", path: "/patients/create" },
+          ],
+        },
+        {
+          label: "Appointments",
+          icon: <CalendarMonthIcon style={{ fontSize: 18 }} />,
+          key: "appointments",
+          chevron: true,
+          sub: [
+            { label: "Appointments", path: "/appointments" },
+            { label: "New Appointment", path: "/appointments/new" },
+          ],
+        },
+        // {
+        //   label: "Services",
+        //   icon: <MedicalServicesIcon style={{ fontSize: 18 }} />,
+        //   key: "services",
+        //   path: "/services",
+        // },
+        // {
+        //   label: "Rooms",
+        //   icon: <MeetingRoomIcon style={{ fontSize: 18 }} />,
+        //   key: "rooms",
+        //   path: "/rooms",
+        // },
+        ...(isAdmin
+          ? [
+              {
+                label: "Tenants",
+                icon: <BusinessIcon style={{ fontSize: 18 }} />,
+                key: "tenants",
+                path: "/tenants",
+              },
+            ]
+          : []),
+      ],
+    },
+    {
+      section: "Patient Management",
+      items: [
+        {
+          label: "Admissions",
+          icon: <HotelIcon style={{ fontSize: 18 }} />,
+          key: "admissions",
+          path: "/admissions",
+        },
+        {
+          label: "Emergencies",
+          icon: <EmergencyShareIcon style={{ fontSize: 18 }} />,
+          key: "emergencies",
+          path: "/emergencies",
+        },
+        {
+          label: "Beds",
+          icon: <HotelIcon style={{ fontSize: 18 }} />,
+          key: "beds",
+          path: "/beds",
+        },
+      ],
+    },
+    {
+      section: "Finance",
+      items: [
+        {
+          label: "Invoices",
+          icon: <DescriptionIcon style={{ fontSize: 18 }} />,
+          key: "invoices",
+          path: "/invoices",
+        },
+        {
+          label: "Taxes",
+          icon: <ReceiptIcon style={{ fontSize: 18 }} />,
+          key: "taxes",
+          path: "/taxes",
+        },
+      ],
+    },
+  ];
 
   const toggleMenu = (key) => {
     if (collapsed) return;
@@ -234,7 +239,33 @@ export default function Sidebar() {
       </div>
 
       {/* ── Navigation ── */}
-      {menuData.map((section) => (
+      {(isAdmin
+  ? [
+      {
+        section: "Main Menu",
+        items: [
+          {
+            label: "Dashboard",
+            icon: <DashboardIcon style={{ fontSize: 18 }} />,
+            key: "dashboard",
+            sub: [{ label: "Admin Dashboard", path: "/" }],
+          },
+        ],
+      },
+      {
+        section: "Tenant Management",
+        items: [
+          {
+            label: "Tenants",
+            icon: <BusinessIcon style={{ fontSize: 18 }} />,
+            key: "tenants",
+            path: "/tenants",
+          },
+        ],
+      },
+    ]
+  : menuData
+).map((section) => (
         <div className="nav-section" key={section.section}>
           {!collapsed ? (
             <div className="nav-section-title">{section.section}</div>

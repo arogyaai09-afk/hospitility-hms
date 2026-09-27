@@ -1,3 +1,4 @@
+// ui/src/components/AdminRoute.jsx
 import { Navigate, Outlet } from "react-router-dom";
 
 export default function AdminRoute() {

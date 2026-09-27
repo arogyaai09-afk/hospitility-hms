@@ -1,3 +1,4 @@
+// AddStaff.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
@@ -98,7 +99,6 @@ export default function AddStaff() {
       nextErrors.phone = "Enter a valid phone number";
     }
     if (!form.role) nextErrors.role = "Role is required";
-    if (!form.department) nextErrors.department = "Department is required";
 
     return nextErrors;
   };
@@ -216,7 +216,7 @@ export default function AddStaff() {
           </div>
 
           <div className="form-row">
-            <FormGroup label="Department" required error={errors.department}>
+            <FormGroup label="Department" >
               <select
                 className={errors.department ? "error" : ""}
                 value={form.department}

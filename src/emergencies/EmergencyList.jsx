@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Add, Edit, Visibility } from "@mui/icons-material";
 import { getEmergencies } from "../api/emergencies";
@@ -6,6 +6,7 @@ import "./emergencies.scss";
 
 const Emergencies = () => {
   const navigate = useNavigate();
+
   const [emergencies, setEmergencies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -13,38 +14,42 @@ const Emergencies = () => {
   const [filterSeverity, setFilterSeverity] = useState("all");
 
   useEffect(() => {
+    const fetchEmergencies = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await getEmergencies();
+        const list = response?.data || response || [];
+
+        setEmergencies(Array.isArray(list) ? list : []);
+      } catch (err) {
+        console.error("Emergencies fetch error:", err);
+        setError(err?.message || "Failed to fetch emergencies");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchEmergencies();
   }, []);
 
-  const fetchEmergencies = async () => {
-    try {
-      setLoading(true);
-      const response = await getEmergencies();
-      if (response.status === "success") {
-        setEmergencies(response.data);
-      }
-    } catch (err) {
-      setError(err.message || "Failed to fetch emergencies");
-      console.error("Emergencies fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredEmergencies = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
 
-  const filteredEmergencies = emergencies.filter((emergency) => {
-    const matchesSearch =
-      emergency.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emergency.emergencyType?.toLowerCase().includes(searchTerm.toLowerCase());
+    return emergencies.filter((emergency) => {
+      const matchesSearch =
+        !search ||
+        emergency.patientName?.toLowerCase().includes(search) ||
+        emergency.emergencyType?.toLowerCase().includes(search);
 
-    const matchesSeverity =
-      filterSeverity === "all" || emergency.severity === filterSeverity;
+      const matchesSeverity =
+        filterSeverity === "all" ||
+        emergency.severity === filterSeverity;
 
-    return matchesSearch && matchesSeverity;
-  });
-
-  const handleViewDetails = (id) => {
-    navigate(`/emergencies/${id}`);
-  };
+      return matchesSearch && matchesSeverity;
+    });
+  }, [emergencies, searchTerm, filterSeverity]);
 
   const getSeverityBadgeClass = (severity) => {
     switch (severity) {
@@ -79,8 +84,13 @@ const Emergencies = () => {
           <h1>Emergency Cases</h1>
           <p>Manage emergency patient cases and admissions</p>
         </div>
-        <button className="btn-primary" onClick={() => navigate("/emergencies/new")}>
-          <Add /> Report Emergency
+
+        <button
+          className="btn-primary"
+          onClick={() => navigate("/emergencies/new")}
+        >
+          <Add />
+          Report Emergency
         </button>
       </div>
 
@@ -91,13 +101,13 @@ const Emergencies = () => {
           type="text"
           placeholder="Search by patient name or emergency type..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(event) => setSearchTerm(event.target.value)}
           className="search-input"
         />
 
         <select
           value={filterSeverity}
-          onChange={(e) => setFilterSeverity(e.target.value)}
+          onChange={(event) => setFilterSeverity(event.target.value)}
           className="filter-select"
         >
           <option value="all">All Severity</option>
@@ -127,34 +137,66 @@ const Emergencies = () => {
                 <th>Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {filteredEmergencies.map((emergency) => (
                 <tr key={emergency._id}>
-                  <td className="patient-name">{emergency.patientName}</td>
-                  <td>{emergency.emergencyType}</td>
+                  <td className="patient-name">
+                    {emergency.patientName || "-"}
+                  </td>
+
+                  <td>{emergency.emergencyType || "-"}</td>
+
                   <td>
-                    <span className={`badge ${getSeverityBadgeClass(emergency.severity)}`}>
-                      {emergency.severity}
+                    <span
+                      className={`badge ${getSeverityBadgeClass(
+                        emergency.severity
+                      )}`}
+                    >
+                      {emergency.severity || "-"}
                     </span>
                   </td>
+
                   <td>
-                    <span className={`badge ${getStatusBadgeClass(emergency.status)}`}>
-                      {emergency.status}
+                    <span
+                      className={`badge ${getStatusBadgeClass(
+                        emergency.status
+                      )}`}
+                    >
+                      {emergency.status || "-"}
                     </span>
                   </td>
-                  <td>{emergency.assignedDoctor || "Not assigned"}</td>
-                  <td>{new Date(emergency.createdAt).toLocaleDateString()}</td>
+
+                  <td>
+                    {emergency.assignedDoctor || "Not assigned"}
+                  </td>
+
+                  <td>
+                    {emergency.createdAt
+                      ? new Date(
+                          emergency.createdAt
+                        ).toLocaleDateString()
+                      : "-"}
+                  </td>
+
                   <td className="actions">
                     <button
                       className="btn-icon"
-                      onClick={() => handleViewDetails(emergency._id)}
+                      onClick={() =>
+                        navigate(`/emergencies/${emergency._id}`)
+                      }
                       title="View Details"
                     >
                       <Visibility />
                     </button>
+
                     <button
                       className="btn-icon btn-edit"
-                      onClick={() => navigate(`/emergencies/${emergency._id}/edit`)}
+                      onClick={() =>
+                        navigate(
+                          `/emergencies/${emergency._id}/edit`
+                        )
+                      }
                       title="Edit"
                     >
                       <Edit />

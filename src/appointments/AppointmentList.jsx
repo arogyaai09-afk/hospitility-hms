@@ -3,8 +3,9 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getAppointments,
-  // updateAppointment,
-  // deleteAppointment,
+  checkInAppointment,
+  updateAppointment,
+  deleteAppointment
 } from "../api/appointments";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
@@ -21,142 +22,9 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { useToast } from "../context/ToastContext";
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
-const appointmentsData = [
-  {
-    id: 1,
-    date: "30 Apr 2025 - 09:30 AM",
-    patient: "Alberto Ripley",
-    pPhone: "+1 56556 54565",
-    pColor: "#3b82f6",
-    doctor: "Dr. Mick Thompson",
-    dRole: "Cardiologist",
-    dColor: "#3b82f6",
-    dInitials: "MT",
-    mode: "In-person",
-    status: "Checked Out",
-  },
-  {
-    id: 2,
-    date: "15 Apr 2025 - 11:20 AM",
-    patient: "Susan Babin",
-    pPhone: "+1 65658 95654",
-    pColor: "#ec4899",
-    doctor: "Dr. Sarah Johnson",
-    dRole: "Orthopedic Surgeon",
-    dColor: "#10b981",
-    dInitials: "SJ",
-    mode: "Online",
-    status: "Checked In",
-  },
-  {
-    id: 3,
-    date: "02 Apr 2025 - 08:15 AM",
-    patient: "Carol Lam",
-    pPhone: "+1 55654 56647",
-    pColor: "#8b5cf6",
-    doctor: "Dr. Emily Carter",
-    dRole: "Pediatrician",
-    dColor: "#8b5cf6",
-    dInitials: "EC",
-    mode: "In-Person",
-    status: "Cancelled",
-  },
-  {
-    id: 4,
-    date: "27 Mar 2025 - 02:00 PM",
-    patient: "Marsha Noland",
-    pPhone: "+1 65668 54558",
-    pColor: "#f59e0b",
-    doctor: "Dr. David Lee",
-    dRole: "Gynecologist",
-    dColor: "#f59e0b",
-    dInitials: "DL",
-    mode: "In-person",
-    status: "Schedule",
-    schedDate: "30 Apr 2025",
-  },
-  {
-    id: 5,
-    date: "12 Mar 2025 - 05:40 PM",
-    patient: "Irma Armstrong",
-    pPhone: "+1 45214 66568",
-    pColor: "#ef4444",
-    doctor: "Dr. Anna Kim",
-    dRole: "Psychiatrist",
-    dColor: "#0d9488",
-    dInitials: "AK",
-    mode: "Online",
-    status: "Confirmed",
-  },
-  {
-    id: 6,
-    date: "24 Feb 2025 - 09:20 AM",
-    patient: "Ezra Belcher",
-    pPhone: "+1 65895 41247",
-    pColor: "#6366f1",
-    doctor: "Dr. John Smith",
-    dRole: "Neurosurgeon",
-    dColor: "#ef4444",
-    dInitials: "JS",
-    mode: "In-Person",
-    status: "Cancelled",
-  },
-  {
-    id: 7,
-    date: "16 Feb 2025 - 11:40 AM",
-    patient: "Glen Lentz",
-    pPhone: "+1 62458 45845",
-    pColor: "#0d9488",
-    doctor: "Dr. Lisa White",
-    dRole: "Oncologist",
-    dColor: "#ec4899",
-    dInitials: "LW",
-    mode: "Online",
-    status: "Confirmed",
-  },
-  {
-    id: 8,
-    date: "01 Feb 2025 - 04:00 PM",
-    patient: "Bernard Griffith",
-    pPhone: "+1 61422 45214",
-    pColor: "#f59e0b",
-    doctor: "Dr. Patricia Brown",
-    dRole: "Pulmonologist",
-    dColor: "#6366f1",
-    dInitials: "PB",
-    mode: "Online",
-    status: "Checked Out",
-  },
-  {
-    id: 9,
-    date: "25 Jan 2025 - 03:10 PM",
-    patient: "John Elsass",
-    pPhone: "+1 47851 26371",
-    pColor: "#3b82f6",
-    doctor: "Dr. Rachel Green",
-    dRole: "Urologist",
-    dColor: "#14b8a6",
-    dInitials: "RG",
-    mode: "Online",
-    status: "Schedule",
-    schedDate: "30 Apr 2025",
-  },
-  {
-    id: 10,
-    date: "12 Jan 2025 - 03:10 PM",
-    patient: "John Albert",
-    pPhone: "+1 47851 35267",
-    pColor: "#10b981",
-    doctor: "Dr. Michael Smith",
-    dRole: "Cardiologist",
-    dColor: "#f59e0b",
-    dInitials: "MS",
-    mode: "In-Person",
-    status: "Cancelled",
-  },
-];
 
 const SORT_OPTIONS = [
   "Recently Added",
@@ -165,31 +33,6 @@ const SORT_OPTIONS = [
   "Last Month",
   "Last 7 Days",
 ];
-
-// Calendar events for display
-const CAL_EVENTS = {
-  "2026-03-08": [{ label: "Alberto R.", color: "blue" }],
-  "2026-03-10": [{ label: "Susan B.", color: "green" }],
-  "2026-03-12": [
-    { label: "Carol L.", color: "red" },
-    { label: "Marsha N.", color: "orange" },
-  ],
-  "2026-03-15": [{ label: "Irma A.", color: "purple" }],
-  "2026-03-18": [{ label: "Ezra B.", color: "blue" }],
-  "2026-03-22": [{ label: "Glen L.", color: "green" }],
-  "2026-03-25": [{ label: "Bernard G.", color: "orange" }],
-  "2026-03-28": [
-    { label: "John E.", color: "blue" },
-    { label: "John A.", color: "red" },
-  ],
-};
-
-const WEEK_EVENTS = {
-  1: { day: 0, hour: 9, label: "Alberto R. - Dr. Mick", color: "blue" },
-  2: { day: 1, hour: 11, label: "Susan B. - Dr. Sarah", color: "green" },
-  3: { day: 3, hour: 14, label: "Carol L. - Dr. Emily", color: "purple" },
-  4: { day: 5, hour: 10, label: "Marsha N. - Dr. David", color: "orange" },
-};
 
 const STATUS_CLASS = (s) => {
   const m = {
@@ -525,20 +368,69 @@ const MONTHS = [
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const HOURS = Array.from({ length: 12 }, (_, i) => i + 8); // 8AM–7PM
 
-function CalendarView() {
-  const today = new Date(2026, 2, 8); // March 8 2026
-  const [calView, setCalView] = useState("month");
-  const [current, setCurrent] = useState({ year: 2026, month: 2 }); // March (0-indexed)
+function CalendarView({ appointments }) {
+  const today = new Date();
 
-  const goToday = () => setCurrent({ year: 2026, month: 2 });
-  const goPrev = () =>
-    setCurrent(({ year, month }) =>
-      month === 0 ? { year: year - 1, month: 11 } : { year, month: month - 1 },
-    );
-  const goNext = () =>
-    setCurrent(({ year, month }) =>
-      month === 11 ? { year: year + 1, month: 0 } : { year, month: month + 1 },
-    );
+  const [calView, setCalView] = useState("month");
+  const [current, setCurrent] = useState({
+    year: today.getFullYear(),
+    month: today.getMonth(),
+    day: today.getDate(),
+  });
+
+  const goToday = () =>
+    setCurrent({
+      year: today.getFullYear(),
+      month: today.getMonth(),
+      day: today.getDate(),
+    });
+  const goPrev = () => {
+    setCurrent((currentDate) => {
+      const date = new Date(
+        currentDate.year,
+        currentDate.month,
+        currentDate.day || 1,
+      );
+
+      if (calView === "month") {
+        date.setMonth(date.getMonth() - 1);
+      } else if (calView === "week") {
+        date.setDate(date.getDate() - 7);
+      } else if (calView === "day") {
+        date.setDate(date.getDate() - 1);
+      }
+
+      return {
+        year: date.getFullYear(),
+        month: date.getMonth(),
+        day: date.getDate(),
+      };
+    });
+  };
+
+  const goNext = () => {
+    setCurrent((currentDate) => {
+      const date = new Date(
+        currentDate.year,
+        currentDate.month,
+        currentDate.day || 1,
+      );
+
+      if (calView === "month") {
+        date.setMonth(date.getMonth() + 1);
+      } else if (calView === "week") {
+        date.setDate(date.getDate() + 7);
+      } else if (calView === "day") {
+        date.setDate(date.getDate() + 1);
+      }
+
+      return {
+        year: date.getFullYear(),
+        month: date.getMonth(),
+        day: date.getDate(),
+      };
+    });
+  };
 
   // Build month grid
   const buildMonthDays = () => {
@@ -570,8 +462,34 @@ function CalendarView() {
     `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
   // Current week start (for week view)
-  const weekStart = new Date(2026, 2, 8); // Sunday of current week
+  const weekStart = new Date(current.year, current.month, current.day || 1);
+
   weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+  weekStart.setHours(0, 0, 0, 0);
+
+  const calendarEvents = appointments.reduce((acc, appointment) => {
+    const date = new Date(appointment.date);
+
+    if (Number.isNaN(date.getTime())) {
+      return acc;
+    }
+
+    const dateKey = `${date.getFullYear()}-${String(
+      date.getMonth() + 1,
+    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+    if (!acc[dateKey]) {
+      acc[dateKey] = [];
+    }
+
+    acc[dateKey].push({
+      label: `${appointment.patient} - ${appointment.doctor}`,
+      hour: date.getHours(),
+      appointment,
+    });
+
+    return acc;
+  }, {});
 
   return (
     <>
@@ -588,7 +506,32 @@ function CalendarView() {
             <ChevronRightIcon />
           </button>
           <span className="cal-month-label">
-            {MONTHS[month]} {year}
+            {calView === "month" && `${MONTHS[month]} ${year}`}
+
+            {calView === "week" &&
+              `${weekStart.toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+              })} - ${new Date(
+                weekStart.getFullYear(),
+                weekStart.getMonth(),
+                weekStart.getDate() + 6,
+              ).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}`}
+
+            {calView === "day" &&
+              new Date(
+                current.year,
+                current.month,
+                current.day,
+              ).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })}
           </span>
         </div>
         <div className="cal-view-tabs">
@@ -617,7 +560,7 @@ function CalendarView() {
           <div className="cal-grid">
             {cells.map((cell, i) => {
               const key = cell.cur ? getDateKey(cell.day) : null;
-              const events = key ? CAL_EVENTS[key] || [] : [];
+              const events = key ? calendarEvents[key] || [] : [];
               return (
                 <div
                   key={i}
@@ -625,7 +568,7 @@ function CalendarView() {
                 >
                   <div className="cal-date">{cell.day}</div>
                   {events.map((ev, j) => (
-                    <div key={j} className={`cal-event ${ev.color}`}>
+                    <div key={j} className="cal-event">
                       {ev.label}
                     </div>
                   ))}
@@ -665,9 +608,18 @@ function CalendarView() {
                     </div>
                   </div>
                   {HOURS.map((h) => {
-                    const ev = Object.values(WEEK_EVENTS).find(
-                      (e) => e.day === i && e.hour === h,
-                    );
+                    const ev = Object.values(calendarEvents)
+                      .flat()
+                      .find((event) => {
+                        const date = new Date(event.appointment.date);
+
+                        return (
+                          date.getFullYear() === d.getFullYear() &&
+                          date.getMonth() === d.getMonth() &&
+                          date.getDate() === d.getDate() &&
+                          date.getHours() === h
+                        );
+                      });
                     return (
                       <div key={h} className="wg-hour-slot">
                         {ev && <div className={`wg-event`}>{ev.label}</div>}
@@ -694,12 +646,13 @@ function CalendarView() {
             </div>
             <div className="dg-event-col">
               {HOURS.map((h) => {
-                const ev =
-                  h === 9
-                    ? {
-                        label: "Alberto Ripley - Dr. Mick Thompson (In-person)",
-                      }
-                    : null;
+                const currentDateKey = `${current.year}-${String(
+                  current.month + 1,
+                ).padStart(2, "0")}-${String(current.day).padStart(2, "0")}`;
+
+                const ev = (calendarEvents[currentDateKey] || []).find(
+                  (event) => event.hour === h,
+                );
                 return (
                   <div key={h} className="dg-slot">
                     {ev && <div className="dg-event">{ev.label}</div>}
@@ -717,6 +670,7 @@ function CalendarView() {
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function Appointments() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [view, setView] = useState("list");
   const [search, setSearch] = useState("");
@@ -738,7 +692,6 @@ export default function Appointments() {
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [usingMockData, setUsingMockData] = useState(false);
 
   const exportRef = useRef();
   const sortRef = useRef();
@@ -772,20 +725,22 @@ export default function Appointments() {
               ? item.doctorId?._id
               : item.doctorId,
 
-          date: item.date
-            ? item.date
-            : item.appointmentDate
-              ? item.appointmentDate
-              : item.createdAt
-                ? new Date(item.createdAt).toLocaleString("en-IN", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                  })
-                : "Date not available",
+          visitId: item.visitId || null,
+
+          date: item.scheduledAt
+  ? new Date(item.scheduledAt).toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
+  : item.date
+    ? item.date
+    : item.appointmentDate
+      ? item.appointmentDate
+      : "Date not available",
 
           patient:
             item.patientName || item.patientId?.name || "Unknown Patient",
@@ -815,24 +770,99 @@ export default function Appointments() {
         }));
 
         setAppointments(formattedAppointments);
-        setUsingMockData(false);
       } else {
         setAppointments([]);
-        setUsingMockData(false);
       }
     } catch (error) {
       console.error("Fetch appointments error:", error);
 
       setAppointments([]);
-      setUsingMockData(false);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCheckIn = async (appointment) => {
+  if (!appointment.id) {
+    showToast("Appointment ID is missing.", "error");
+    return;
+  }
+
+  if (!appointment.patientId) {
+    showToast("Patient ID is missing for this appointment.", "error");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setOpenMenu(null);
+
+    await checkInAppointment(appointment.id);
+
+    showToast("Patient checked in successfully.", "success");
+
+    await fetchAppointments();
+  } catch (error) {
+    console.error("Check-in error:", error);
+
+    showToast(
+      error?.message ||
+        error?.error ||
+        "Failed to check in patient.",
+      "error"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleDelete = async (appointment) => {
+  if (!appointment?.id) {
+    showToast("Appointment ID is missing.", "error");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Are you sure you want to delete the appointment for ${appointment.patient}?`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    setLoading(true);
+    setOpenMenu(null);
+
+    await deleteAppointment(appointment.id);
+
+    showToast(
+      "Appointment deleted successfully.",
+      "success"
+    );
+
+    await fetchAppointments();
+  } catch (error) {
+    console.error("Delete appointment error:", error);
+
+    showToast(
+      error?.message ||
+        error?.error ||
+        "Failed to delete appointment.",
+      "error"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
   useEffect(() => {
-    const h = () => setOpenMenu(null);
+    const h = (event) => {
+      if (!event.target.closest(".row-ctx")) {
+        setOpenMenu(null);
+      }
+    };
+
     document.addEventListener("mousedown", h);
+
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
@@ -969,25 +999,7 @@ export default function Appointments() {
     <div className="appointments-page">
       {/* ── Page Top ── */}
       <div className="page-top">
-        <h1>
-          Appointment
-          {usingMockData && (
-            <span
-              style={{
-                marginLeft: "10px",
-                padding: "4px 8px",
-                borderRadius: "5px",
-                background: "#fff7ed",
-                color: "#ea580c",
-                fontSize: "11px",
-                fontWeight: "600",
-                border: "1px solid #fed7aa",
-              }}
-            >
-              MOCK DATA
-            </span>
-          )}
-        </h1>
+        <h1>Appointment</h1>
         <div className="page-actions">
           {/* Export */}
           <div className="export-wrap" ref={exportRef}>
@@ -1170,6 +1182,17 @@ export default function Appointments() {
                       </button>
                       {openMenu === appt.id && (
                         <div className="ctx-menu">
+                          {appt.status.toLowerCase() !== "checked in" &&
+                            appt.status.toLowerCase() !== "checked out" &&
+                            appt.status.toLowerCase() !== "cancelled" && (
+                              <div
+                                className="ctx-item"
+                                onClick={() => handleCheckIn(appt)}
+                              >
+                                Check In
+                              </div>
+                            )}
+
                           <div
                             className="ctx-item"
                             onClick={() => {
@@ -1179,6 +1202,7 @@ export default function Appointments() {
                           >
                             Edit
                           </div>
+
                           <div
                             className="ctx-item"
                             onClick={() => {
@@ -1188,14 +1212,13 @@ export default function Appointments() {
                           >
                             View
                           </div>
+
                           <div
-                            className="ctx-item danger"
-                            onClick={() => {
-                              setOpenMenu(null);
-                            }}
-                          >
-                            Delete
-                          </div>
+  className="ctx-item danger"
+  onClick={() => handleDelete(appt)}
+>
+  Delete
+</div>
                         </div>
                       )}
                     </div>
@@ -1252,7 +1275,7 @@ export default function Appointments() {
       )}
 
       {/* ══ CALENDAR VIEW ══ */}
-      {view === "calendar" && <CalendarView />}
+      {view === "calendar" && <CalendarView appointments={appointments} />}
 
       {/* Filter Panel */}
       {showFilter && (
