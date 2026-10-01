@@ -2,7 +2,11 @@ export {};
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const StorageFile = require('./storage.model');
+
+let s3Client;
 
 const allowedFolders = ['images', 'videos', 'files'];
 const mimeMap = {
@@ -76,10 +80,50 @@ function inferFolderFromFile(file) {
 function safeFilename(name) {
   const base = String(name || 'upload-file').split(/[\\/]/).pop();
   const cleaned = (base || 'upload-file').replace(/[^a-zA-Z0-9._-]/g, '-');
-  return `${Date.now()}-${cleaned}`;
+  return `${crypto.randomUUID()}-${cleaned}`;
+}
+
+function getS3Config() {
+  const region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION;
+  const bucket = process.env.AWS_S3_BUCKET || process.env.S3_BUCKET_NAME;
+  const endpoint = process.env.AWS_S3_ENDPOINT || process.env.S3_ENDPOINT_URL;
+  const forcePathStyle = (process.env.AWS_S3_FORCE_PATH_STYLE || process.env.S3_USE_PATH_STYLE) === 'true';
+  const prefix = String(process.env.S3_PREFIX || '').replace(/^\/+|\/+$/g, '');
+  const serverSideEncryption = process.env.S3_SERVER_SIDE_ENCRYPTION || 'AES256';
+  if (!region || !bucket) {
+    const error = new Error('S3 storage is not configured. Set AWS_REGION and AWS_S3_BUCKET or S3_BUCKET_NAME');
+    error.status = 503;
+    throw error;
+  }
+
+  if (!s3Client) {
+    s3Client = new S3Client({ region, endpoint, forcePathStyle });
+  }
+  return { client: s3Client, bucket, region, prefix, serverSideEncryption };
+}
+
+function getPublicApiBaseUrl() {
+  return String(process.env.API_BASE_URL || process.env.PUBLIC_API_URL || process.env.SERVER_URL || "").replace(/\/+$/g, "");
+}
+
+function getFileUrl(objectKey, folder, storedName) {
+  const relativeUrl = `/api/v1/storage/files/${folder}/${encodeURIComponent(storedName)}`;
+  const baseUrl = getPublicApiBaseUrl();
+  return baseUrl ? `${baseUrl}${relativeUrl}` : relativeUrl;
+}
+
+function requireTenantId(tenantId) {
+  if (!tenantId) {
+    const error = new Error('tenantId is required for storage operations');
+    error.status = 400;
+    throw error;
+  }
+  return tenantId;
 }
 
 async function uploadFile({ tenantId, userId, folder, file }) {
+  requireTenantId(tenantId);
+
   if (!file) {
     const error = new Error('No file uploaded');
     error.status = 400;
@@ -87,37 +131,57 @@ async function uploadFile({ tenantId, userId, folder, file }) {
   }
 
   const resolvedFolder = normalizeFolder(folder || inferFolderFromFile(file));
-  const baseDir = path.join(process.cwd(), 'uploads', String(tenantId), resolvedFolder);
-  await fs.promises.mkdir(baseDir, { recursive: true });
-
   const storedName = safeFilename(file.originalname || file.name || 'upload-file');
-  const destinationPath = path.join(baseDir, storedName);
-  const sourcePath = file.path;
-
-  if (sourcePath && sourcePath !== destinationPath) {
-    await fs.promises.rename(sourcePath, destinationPath).catch(async () => {
-      const content = await fs.promises.readFile(sourcePath);
-      await fs.promises.writeFile(destinationPath, content);
-      await fs.promises.unlink(sourcePath);
-    });
+  if (!file.buffer) {
+    const error = new Error('Uploaded file content is unavailable');
+    error.status = 400;
+    throw error;
   }
 
-  const record = await StorageFile.create({
-    tenantId,
-    userId,
-    folder: resolvedFolder,
-    originalName: file.originalname || file.name || storedName,
-    storedName,
-    mimeType: file.mimetype || 'application/octet-stream',
-    size: file.size || 0,
-    filePath: destinationPath,
-    url: `/uploads/${String(tenantId)}/${resolvedFolder}/${encodeURIComponent(storedName)}`
-  });
+  const { client, bucket, region, prefix, serverSideEncryption } = getS3Config();
+  const objectKey = [prefix, String(tenantId), resolvedFolder, storedName].filter(Boolean).join('/');
+  try {
+    await client.send(new PutObjectCommand({
+      Bucket: bucket,
+      Key: objectKey,
+      Body: file.buffer,
+      ContentType: file.mimetype || 'application/octet-stream',
+      ServerSideEncryption: serverSideEncryption
+    }));
+  } catch (cause) {
+    if (cause.name === 'NoSuchBucket' || cause.Code === 'NoSuchBucket') {
+      const error = new Error(`S3 bucket "${bucket}" was not found. Verify that it exists in region "${region}" and that the configured AWS credentials can access its account.`);
+      error.status = 503;
+      throw error;
+    }
+    throw cause;
+  }
+
+  let record;
+  try {
+    record = await StorageFile.create({
+      tenantId,
+      userId,
+      folder: resolvedFolder,
+      originalName: file.originalname || file.name || storedName,
+      storedName,
+      objectKey,
+      storageProvider: 's3',
+      mimeType: file.mimetype || 'application/octet-stream',
+      size: file.size || file.buffer.length,
+      url: getFileUrl(objectKey, resolvedFolder, storedName)
+    });
+  } catch (error) {
+    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey })).catch(() => {});
+    throw error;
+  }
 
   return record.toObject();
 }
 
 async function deleteFile({ tenantId, folder, filename }) {
+  requireTenantId(tenantId);
+
   const resolvedFolder = normalizeFolder(folder);
   const targetName = String(filename || '').trim();
   if (!targetName) {
@@ -126,31 +190,65 @@ async function deleteFile({ tenantId, folder, filename }) {
     throw error;
   }
 
-  const storagePath = path.join(process.cwd(), 'uploads', String(tenantId), resolvedFolder, targetName);
-
-  if (fs.existsSync(storagePath)) {
-    await fs.promises.unlink(storagePath);
-  }
-
-  const deletedRecord = await StorageFile.findOneAndDelete({
+  const record = await StorageFile.findOne({
     tenantId,
     folder: resolvedFolder,
     storedName: targetName
   });
 
-  if (!deletedRecord && !fs.existsSync(storagePath)) {
+  if (!record) {
     const error = new Error('File not found');
     error.status = 404;
     throw error;
   }
 
+  if (record.objectKey) {
+    const { client, bucket } = getS3Config();
+    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: record.objectKey }));
+  } else if (record.filePath && fs.existsSync(record.filePath)) {
+    await fs.promises.unlink(record.filePath);
+  }
+
+  await record.deleteOne();
   return {
     deleted: true,
     tenantId,
     folder: resolvedFolder,
-    filename: targetName,
-    path: storagePath
+    filename: targetName
   };
+}
+
+async function getFile({ tenantId, folder, filename }) {
+  requireTenantId(tenantId);
+
+  const resolvedFolder = normalizeFolder(folder);
+  const targetName = String(filename || '').trim();
+  if (!targetName) {
+    const error = new Error('Filename is required');
+    error.status = 400;
+    throw error;
+  }
+
+  const record = await StorageFile.findOne({ tenantId, folder: resolvedFolder, storedName: targetName }).lean();
+  if (!record) {
+    const error = new Error('File not found');
+    error.status = 404;
+    throw error;
+  }
+
+  if (record.objectKey) {
+    const { client, bucket } = getS3Config();
+    const result = await client.send(new GetObjectCommand({ Bucket: bucket, Key: record.objectKey }));
+    return { body: result.Body, mimeType: result.ContentType || record.mimeType, size: result.ContentLength || record.size };
+  }
+
+  const legacyPath = record.filePath || path.join(process.cwd(), 'uploads', String(tenantId), resolvedFolder, targetName);
+  if (!fs.existsSync(legacyPath)) {
+    const error = new Error('File not found');
+    error.status = 404;
+    throw error;
+  }
+  return { body: fs.createReadStream(legacyPath), mimeType: record.mimeType, size: fs.statSync(legacyPath).size };
 }
 
 module.exports = {
@@ -158,5 +256,8 @@ module.exports = {
   inferFolderFromFile,
   uploadFile,
   deleteFile,
+  getFile,
+  getFileUrl,
+  requireTenantId,
   allowedFolders
 };

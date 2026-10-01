@@ -8,9 +8,11 @@ const storageFileSchema = new mongoose.Schema({
   folder: { type: String, required: true, enum: ['images', 'videos', 'files'] },
   originalName: { type: String, required: true },
   storedName: { type: String, required: true },
+  objectKey: { type: String },
+  storageProvider: { type: String, enum: ['local', 's3'], default: 'local' },
   mimeType: { type: String, required: true },
   size: { type: Number, default: 0 },
-  filePath: { type: String, required: true },
+  filePath: { type: String },
   url: { type: String, required: true },
   status: { type: String, enum: ['active', 'deleted'], default: 'active' }
 }, { timestamps: true });

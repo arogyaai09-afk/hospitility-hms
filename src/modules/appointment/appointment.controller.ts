@@ -17,7 +17,11 @@ async function create(ctx) {
 
 async function index(ctx) {
   const { page, limit } = getPaginationParams(ctx);
-  const result = await listAppointments(ctx.state.user.tenantId, page, limit);
+  const filters = {
+    doctorId: ctx.query.doctorId,
+    date: ctx.query.date
+  };
+  const result = await listAppointments(ctx.state.user.tenantId, page, limit, filters);
   ctx.body = success(result.data, 'Appointments retrieved', result.pagination);
 }
 

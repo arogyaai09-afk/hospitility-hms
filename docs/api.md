@@ -793,8 +793,12 @@ Return all structured clinical and billing data associated with a single visit.
 
 ## Storage
 
+New uploads are stored in a private AWS S3 bucket under a tenant-specific object key. The API streams downloads through authenticated routes.
+
+Configure `AWS_REGION` to match the bucket's region and set `AWS_S3_BUCKET` (or `S3_BUCKET_NAME`). The bucket must already exist in the AWS account selected by the configured credentials, and the credentials need permission to put, get, and delete objects. A `NoSuchBucket` upload response means to verify the bucket name, region, and AWS account; the application does not create buckets. `S3_PREFIX` optionally adds a key prefix before the tenant folder, and `S3_SERVER_SIDE_ENCRYPTION` configures object encryption (defaults to `AES256`). Set `API_BASE_URL` (or `PUBLIC_API_URL` / `SERVER_URL`) to your live API origin when upload responses should return absolute URLs, for example `http://65.0.199.154:4000`. For S3-compatible providers, set `AWS_S3_ENDPOINT` (or `S3_ENDPOINT_URL`) to the endpoint supplied by the provider; set `AWS_S3_FORCE_PATH_STYLE=true` (or `S3_USE_PATH_STYLE=true`) only if that provider requires path-style bucket addressing. AWS credentials use the AWS SDK default credential provider chain; use an IAM role in deployed environments and do not commit access keys.
+
 ### POST /storage/upload
-Upload a file into a tenant-specific folder. Only image, video, and document formats are accepted.
+Upload a file using `multipart/form-data`. The maximum file size is 25 MB.
 
 **Authorization:**
 - Any authenticated user
@@ -802,11 +806,19 @@ Upload a file into a tenant-specific folder. Only image, video, and document for
 **Form Data:**
 - `file`: binary file
 - `folder` (optional): `images`, `videos`, or `files`
+- `tenantId` (required only for platform admin users)
 
 **Allowed file types:**
 - `images`: JPG, PNG, GIF, WEBP, BMP, SVG
 - `videos`: MP4, WEBM, MOV, AVI, MPEG
 - `files`: PDF, DOC, DOCX, XLS, XLSX, CSV, TXT, ZIP, JSON
+
+**Example:**
+```bash
+curl -X POST "https://api.example.com/api/v1/storage/upload" -H "Authorization: Bearer <accessToken>" -F "file=@clinic-logo.png" -F "folder=images"
+```
+
+Use the returned `data.url` as the value for fields such as staff `profileImage` and tenant `settings.profile.logoUrl`.
 
 **Response:**
 ```json
@@ -819,26 +831,41 @@ Upload a file into a tenant-specific folder. Only image, video, and document for
     "userId": "60d5ecb74b24c72b8c8b4567",
     "folder": "images",
     "originalName": "patient-photo.png",
-    "storedName": "1727000000000-patient-photo.png",
+    "storedName": "550e8400-e29b-41d4-a716-446655440000-patient-photo.png",
+    "objectKey": "60d5ecb74b24c72b8c8b4568/images/550e8400-e29b-41d4-a716-446655440000-patient-photo.png",
+    "storageProvider": "s3",
     "mimeType": "image/png",
     "size": 125432,
-    "filePath": "/home/trigital/Project/html/HMS/uploads/60d5ecb74b24c72b8c8b4568/images/1727000000000-patient-photo.png",
-    "url": "/uploads/60d5ecb74b24c72b8c8b4568/images/1727000000000-patient-photo.png",
+    "url": "/api/v1/storage/files/images/550e8400-e29b-41d4-a716-446655440000-patient-photo.png",
     "status": "active",
     "createdAt": "2026-09-22T12:00:00.000Z"
   }
 }
 ```
 
-### DELETE /storage/files/:folder/:filename
-Delete a previously uploaded file from the tenant-specific storage folder.
+`data.url` is always an authenticated API proxy URL. A public S3 or CloudFront URL is not required.
 
-**Authorization:**
-- Any authenticated user
+### GET /storage/files/:folder/:filename
+Download a file from S3. The route is tenant-scoped to the authenticated user. Existing local-storage records are also served when their files still exist.
 
 **Example:**
 ```http
-DELETE /api/v1/storage/files/images/1727000000000-patient-photo.png
+GET /api/v1/storage/files/images/550e8400-e29b-41d4-a716-446655440000-patient-photo.png
+Authorization: Bearer <accessToken>
+```
+
+Platform admin users must include `tenantId` as a query parameter when downloading, for example `/api/v1/storage/files/images/file.png?tenantId=<tenantId>`.
+
+### DELETE /storage/files/:folder/:filename
+Delete a file from S3 and remove its metadata record. The operation is scoped to the authenticated user's tenant.
+
+**Authorization:**
+- Any authenticated user
+- Platform admin users must include `tenantId` in the query string.
+
+**Example:**
+```http
+DELETE /api/v1/storage/files/images/550e8400-e29b-41d4-a716-446655440000-patient-photo.png
 ```
 
 **Response:**
@@ -850,8 +877,7 @@ DELETE /api/v1/storage/files/images/1727000000000-patient-photo.png
     "deleted": true,
     "tenantId": "60d5ecb74b24c72b8c8b4568",
     "folder": "images",
-    "filename": "1727000000000-patient-photo.png",
-    "path": "/home/trigital/Project/html/HMS/uploads/60d5ecb74b24c72b8c8b4568/images/1727000000000-patient-photo.png"
+    "filename": "550e8400-e29b-41d4-a716-446655440000-patient-photo.png"
   }
 }
 ```
@@ -1100,7 +1126,14 @@ List available beds.
 List appointments for the current tenant.
 
 **Authorization:**
-- `tenant` or `staff` via `ACCESS_GROUPS.APPOINTMENT_MANAGERS`
+- `admin`, `tenant`, or `staff` via `ACCESS_GROUPS.APPOINTMENT_MANAGERS`
+
+**Query Parameters:**
+- `doctorId` (optional): filter by doctor ID.
+- `date` (optional): filter by appointment date in `YYYY-MM-DD` format. The date is interpreted as a UTC calendar day.
+- `page` and `limit` (optional): pagination parameters.
+
+When both `doctorId` and `date` are provided, both filters must match. Invalid doctor IDs, malformed dates, and invalid calendar dates return `400`.
 
 **Response:**
 ```json
@@ -1109,12 +1142,21 @@ List appointments for the current tenant.
   "data": [
     {
       "_id": "60d5ecb74b24c72b8c8b4575",
-      "patientId": "60d5ecb74b24c72b8c8b4570",
+      "patientId": {
+        "_id": "60d5ecb74b24c72b8c8b4570",
+        "name": "Jane Doe",
+        "email": "jane@example.com",
+        "phone": "+91-9876543210"
+      },
       "patientName": "Jane Doe",
       "patientType": "local",
       "appointmentType": "OPD",
       "visitReason": "Routine checkup",
-      "doctorId": "60d5ecb74b24c72b8c8b4569",
+      "doctorId": {
+        "_id": "60d5ecb74b24c72b8c8b4569",
+        "name": "Dr. Smith",
+        "specialization": "Cardiology"
+      },
       "scheduledAt": "2026-09-28T09:30:00.000Z",
       "status": "scheduled",
       "tenantId": "60d5ecb74b24c72b8c8b4568",
@@ -2110,7 +2152,7 @@ Authorization: Bearer <accessToken>
 ## Appointments
 
 ### GET /appointments
-List appointments for tenant (admin, tenant, staff, doctor).
+List appointments for the authenticated user's tenant (admin, tenant, or staff). Supports optional doctor and date filters. See the Appointments section above for query parameter definitions and the populated response shape.
 
 **Headers:**
 ```
@@ -2124,12 +2166,22 @@ Authorization: Bearer <accessToken>
   "data": [
     {
       "_id": "60d5ecb74b24c72b8c8b4573",
-      "patientId": "60d5ecb74b24c72b8c8b4571",
+      "patientId": {
+        "_id": "60d5ecb74b24c72b8c8b4571",
+        "name": "Alice Johnson",
+        "email": "alice@example.com",
+        "phone": "+91-9876543210"
+      },
       "patientName": "Alice Johnson",
       "patientType": "local",
       "appointmentType": "OPD",
       "visitReason": "Regular checkup",
-      "doctorId": "60d5ecb74b24c72b8c8b4569",
+      "doctorId": {
+        "_id": "60d5ecb74b24c72b8c8b4569",
+        "name": "Dr. Smith",
+        "specialization": "Cardiology"
+      },
+      "scheduledAt": "2026-09-28T09:30:00.000Z",
       "status": "scheduled",
       "tenantId": "60d5ecb74b24c72b8c8b4568",
       "createdBy": "60d5ecb74b24c72b8c8b4567",
@@ -2564,3 +2616,245 @@ Authorization: Bearer <accessToken>
 - Patient codes should be unique within each tenant.
 - Bed numbers should be unique within each tenant.
 - Payment terminal IDs are optional and used for payment gateway integration.
+
+## API Flow Guide
+
+This section consolidates the request flow and workflow notes previously maintained in `api-flow.md`. The base URL is `/api/v1`. All protected endpoints require `Authorization: Bearer <accessToken>`.
+
+### Request Flow
+
+```mermaid
+flowchart LR
+  Client[Frontend / Postman] --> Base[GET /api/v1/health]
+  Client --> Auth[POST /api/v1/auth/login]
+  Auth --> Token[JWT accessToken]
+  Token --> API[Protected API request]
+  API --> Router[Koa router]
+  Router --> AuthMW[authenticate middleware]
+  AuthMW --> RoleMW[authorize middleware]
+  RoleMW --> Controller[Controller]
+  Controller --> Service[Service]
+  Service --> Mongo[(MongoDB)]
+  Controller --> Response[Standard success/error response]
+  Response --> Client
+```
+
+### Application Route Mounting
+
+`app.ts` mounts the application modules below the `/api/v1` prefix.
+
+```mermaid
+flowchart TD
+  App[app.ts] --> Prefix[/api/v1]
+  Prefix --> Auth[/auth]
+  Prefix --> Tenants[/tenants]
+  Prefix --> Patients[/patients]
+  Prefix --> Beds[/beds]
+  Prefix --> Appointments[/appointments]
+  Prefix --> Admissions[/admissions]
+  Prefix --> Emergencies[/emergencies]
+  Prefix --> Doctors[/doctors]
+  Prefix --> Staff[/staff]
+  Prefix --> Departments[/departments]
+  Prefix --> Discharge[/discharge]
+  Prefix --> Invoice[/invoices]
+  Prefix --> Tax[/taxes]
+  Prefix --> Dashboard[/dashboard]
+  Prefix --> Analytics[/analytics]
+  Prefix --> Visit[/visits]
+  Prefix --> Clinical[/clinical]
+  Prefix --> History[/history]
+  Prefix --> Storage[/storage]
+```
+
+There is currently no `/rooms` route mounted in `app.ts`.
+
+### Patient, Admission, and Bed Flow
+
+The current implementation connects a patient to a bed through an admission.
+
+```mermaid
+flowchart LR
+  Patient[Patient record\n/patients] -->|patientName currently copied| Admission[Admission record\n/admissions]
+  Admission -->|bedNumber| Bed[Bed record\n/beds]
+  Bed -->|status becomes occupied| Occupied[Occupied bed]
+  Admission -->|discharge| Available[Bed becomes available]
+  Available --> Bed
+```
+
+#### Current Database Relationship
+
+```mermaid
+erDiagram
+  TENANT ||--o{ PATIENT : owns
+  TENANT ||--o{ BED : owns
+  TENANT ||--o{ ADMISSION : owns
+  PATIENT {
+    ObjectId _id
+    string patientCode
+    string name
+    ObjectId tenantId
+  }
+  ADMISSION {
+    ObjectId _id
+    string patientName
+    string bedNumber
+    string status
+    ObjectId tenantId
+  }
+  BED {
+    ObjectId _id
+    string bedNumber
+    string ward
+    string status
+    ObjectId assignedAdmissionId
+    ObjectId tenantId
+  }
+```
+
+`ADMISSION` currently stores `patientName`, not `patientId`; the database does not enforce a direct Patient-to-Admission relationship.
+
+### Working Patient Admission Sequence
+
+#### 1. Login
+
+```http
+POST /api/v1/auth/login
+```
+
+Use the returned `data.accessToken` for the remaining requests.
+
+#### 2. Create a patient
+
+```http
+POST /api/v1/patients
+Authorization: Bearer <accessToken>
+Content-Type: application/json
+```
+
+```json
+{
+  "patientCode": "P-1001",
+  "name": "John Doe",
+  "gender": "male",
+  "phone": "5551234567"
+}
+```
+
+#### 3. Create a bed
+
+```http
+POST /api/v1/beds
+Authorization: Bearer <accessToken>
+Content-Type: application/json
+```
+
+```json
+{
+  "bedNumber": "B-101",
+  "ward": "General Ward",
+  "type": "general",
+  "status": "available"
+}
+```
+
+#### 4. Check available beds
+
+```http
+GET /api/v1/beds/available
+Authorization: Bearer <accessToken>
+```
+
+#### 5. Admit the patient to the bed
+
+The current IPD endpoint requires the patient's name and bed number.
+
+```http
+POST /api/v1/admissions/ipd
+Authorization: Bearer <accessToken>
+Content-Type: application/json
+```
+
+```json
+{
+  "patientName": "John Doe",
+  "admissionType": "IPD",
+  "bedNumber": "B-101"
+}
+```
+
+The bed should then have:
+
+```json
+{
+  "status": "occupied",
+  "assignedAdmissionId": "<admission-id>"
+}
+```
+
+#### 6. List admissions
+
+```http
+GET /api/v1/admissions
+Authorization: Bearer <accessToken>
+```
+
+#### 7. Discharge the patient
+
+```http
+PATCH /api/v1/admissions/<admission-id>/discharge
+Authorization: Bearer <accessToken>
+```
+
+This changes the admission to `discharged` and releases the bed back to `available`.
+
+### Role Access for Patient, Bed, and Admission APIs
+
+| API | Allowed roles |
+|---|---|
+| `POST /patients` | admin, tenant, doctor, staff |
+| `GET /patients` | admin, tenant, doctor, staff |
+| `POST /beds` | admin, tenant, staff |
+| `GET /beds` | admin, tenant, doctor, staff |
+| `GET /beds/available` | admin, tenant, doctor, staff |
+| `POST /admissions/ipd` | admin, tenant, doctor, staff |
+| `GET /admissions` | admin, tenant, doctor, staff |
+| `PATCH /admissions/:id/discharge` | admin, tenant, doctor, staff |
+
+### Room API Status
+
+A Room API is not implemented yet. There is currently no:
+
+- `src/modules/room/` module
+- `Room` model
+- `/api/v1/rooms` route
+- `roomId` field on the Bed model
+
+The planned relationship should be:
+
+```mermaid
+erDiagram
+  WARD ||--o{ ROOM : contains
+  ROOM ||--o{ BED : contains
+  BED ||--o| ADMISSION : assigned_to
+  PATIENT ||--o{ ADMISSION : has
+```
+
+The next model changes for this workflow are to add `patientId` to `Admission` and `roomId` to `Bed`, then create Room and Ward modules.
+
+### Appointment Doctor/Date Flow
+
+The `GET /appointments` endpoint accepts optional `doctorId` and `date` filters. Supplying both returns appointments for that doctor on that date within the authenticated user's tenant. See the Appointments API section above for the canonical query parameters, response fields, and date semantics.
+
+```mermaid
+flowchart LR
+  Client[Appointment list request] -->|doctorId and date query| Route[GET /appointments]
+  Route --> Auth[Authenticate and authorize]
+  Auth --> Controller[Read filters and pagination]
+  Controller --> Service[Validate filters]
+  Service --> Query[Match tenantId, doctorId, scheduledAt day range]
+  Query --> Mongo[(MongoDB appointments)]
+  Mongo --> Populate[Populate patientId and doctorId]
+  Populate --> Response[Return appointment fields and pagination]
+  Response --> Client
+```

@@ -10,13 +10,13 @@ async function createStaff(data) {
 async function listStaff(tenantId, page = 1, limit = 20) {
   const skip = calculateSkip(page, limit);
   const [staff, total] = await Promise.all([
-    Staff.find({ tenantId })
-      .select('name role phone email createdAt')
+    Staff.find({ tenantId, isDeleted: { $ne: true } })
+      .select('name role profileImage phone email createdAt')
       .lean()
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),
-    Staff.countDocuments({ tenantId })
+    Staff.countDocuments({ tenantId, isDeleted: { $ne: true } })
   ]);
 
   return {
@@ -31,7 +31,7 @@ async function listStaff(tenantId, page = 1, limit = 20) {
 }
 
 async function getStaffById(id, tenantId) {
-  const staff = await Staff.findOne({ _id: id, tenantId }).lean();
+  const staff = await Staff.findOne({ _id: id, tenantId, isDeleted: { $ne: true } }).lean();
   if (!staff) {
     const err = new Error('Staff member not found');
     err.status = 404;
@@ -41,14 +41,14 @@ async function getStaffById(id, tenantId) {
 }
 
 async function updateStaff(id, tenantId, data) {
-  const staff = await Staff.findOne({ _id: id, tenantId });
+  const staff = await Staff.findOne({ _id: id, tenantId, isDeleted: { $ne: true } });
   if (!staff) {
     const err = new Error('Staff member not found');
     err.status = 404;
     throw err;
   }
 
-  const allowedFields = ['name', 'role', 'phone', 'email'];
+  const allowedFields = ['name', 'role', 'profileImage', 'phone', 'email'];
   const update: any = {};
 
   for (const field of allowedFields) {
@@ -62,7 +62,7 @@ async function updateStaff(id, tenantId, data) {
   }
 
   const updated = await Staff.findOneAndUpdate(
-    { _id: id, tenantId },
+    { _id: id, tenantId, isDeleted: { $ne: true } },
     { $set: update },
     { new: true, runValidators: true }
   );
@@ -77,7 +77,11 @@ async function updateStaff(id, tenantId, data) {
 }
 
 async function deleteStaff(id, tenantId) {
-  const staff = await Staff.findOneAndDelete({ _id: id, tenantId });
+  const staff = await Staff.findOneAndUpdate(
+    { _id: id, tenantId, isDeleted: { $ne: true } },
+    { $set: { isDeleted: true, deletedAt: new Date() } },
+    { new: true }
+  );
   if (!staff) {
     const err = new Error('Staff member not found');
     err.status = 404;

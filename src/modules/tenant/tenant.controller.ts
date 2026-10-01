@@ -1,6 +1,6 @@
 export {};
 
-const { createTenant, listTenants, getTenantById } = require('./tenant.service');
+const { createTenant, listTenants, getTenantById, updateTenant } = require('./tenant.service');
 const { success } = require('../../utils/response');
 
 async function create(ctx) {
@@ -22,4 +22,12 @@ async function show(ctx) {
   ctx.body = success(tenant);
 }
 
-module.exports = { create, index, show };
+async function update(ctx) {
+  if (ctx.state.user.role === 'tenant' && String(ctx.state.user.tenantId) !== String(ctx.params.id)) {
+    ctx.throw(403, 'Tenant users can only update their own tenant record');
+  }
+  const tenant = await updateTenant(ctx.params.id, ctx.request.body);
+  ctx.body = success(tenant, 'Tenant settings updated');
+}
+
+module.exports = { create, index, show, update };
