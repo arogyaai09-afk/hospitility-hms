@@ -2,6 +2,7 @@ export {};
 
 const Appointment = require('./appointment.model');
 const Visit = require('../visit/visit.model');
+const { createVisit } = require('../visit/visit.service');
 const mongoose = require('mongoose');
 const { calculateSkip } = require('../../utils/pagination');
 
@@ -116,7 +117,7 @@ async function checkInAppointment(id, tenantId, userId) {
     return Visit.findOne({ _id: appointment.visitId, tenantId }).lean();
   }
 
-  const visit = await Visit.create({
+  const visit = await createVisit({
     patientId: appointment.patientId,
     tenantId,
     visitType: appointment.appointmentType === 'Emergency' ? 'emergency' : appointment.appointmentType,
@@ -128,7 +129,7 @@ async function checkInAppointment(id, tenantId, userId) {
     createdBy: userId
   });
   await Appointment.updateOne({ _id: id, tenantId }, { $set: { status: 'checked_in', visitId: visit._id } });
-  return visit.toObject();
+  return visit;
 }
 
 
