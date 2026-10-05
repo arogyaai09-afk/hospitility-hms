@@ -387,6 +387,129 @@ List departments for the current tenant.
 }
 ```
 
+## Dashboard
+
+### GET /dashboard
+Return the primary role-wise dashboard for the logged-in user.
+
+The response keeps common operational counts in `summary`, then adds
+role-specific metrics, widget keys, and quick actions that the frontend can use
+to render different dashboards from one endpoint.
+
+**Authorization:**
+- Any authenticated user with dashboard access via `authorize()`.
+
+**Query Parameters:**
+- `period` (optional): `today`, `yesterday`, `this_week`, `this_month`, `last_month`, `this_year`, `custom`
+- `dateFrom` (optional): start date for `custom` period
+- `dateTo` (optional): end date for `custom` period
+
+**Role Behavior:**
+
+| Role | Dashboard Type | Extra Summary Fields |
+| --- | --- | --- |
+| `admin` | `admin` | `tenants`, `doctors`, `staff`, `emergencyCases`, `pendingInvoices` |
+| `tenant` | `tenant` | `doctors`, `staff`, `emergencyCases`, `pendingInvoices` |
+| `doctor` | `doctor` | `todayAssignedAppointments`, `admittedPatients`, `emergencyCases` |
+| `staff` | `staff_<staff role>` when a staff profile is matched by email | `checkIns`, `pendingInvoices`, `openAdmissions`, `emergencyQueue` |
+| `patient` | `patient` | `appointments`, `activeAdmissions`, `pendingInvoices` |
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "role": "staff",
+    "dashboardType": "staff_billing",
+    "staffRole": "billing",
+    "summary": {
+      "totalPatients": 128,
+      "newPatients": 12,
+      "todayAppointments": 34,
+      "completedAppointments": 18,
+      "pendingAppointments": 10,
+      "activeAdmissions": 7,
+      "occupiedBeds": 21,
+      "availableBeds": 9,
+      "todayRevenue": 24500,
+      "monthlyRevenue": 24500,
+      "checkIns": 14,
+      "pendingInvoices": 6,
+      "openAdmissions": 7,
+      "emergencyQueue": 2
+    },
+    "widgets": [
+      "billing-summary",
+      "pending-invoices",
+      "collections",
+      "failed-payments"
+    ],
+    "quickActions": [
+      "Create Invoice",
+      "Collect Payment",
+      "View Pending Bills"
+    ],
+    "period": {
+      "from": "2026-10-05T00:00:00.000Z",
+      "to": "2026-10-05T23:59:59.999Z"
+    }
+  }
+}
+```
+
+### GET /dashboard/summary
+Return only the shared dashboard summary counts for the logged-in user.
+
+**Authorization:**
+- Any authenticated user with dashboard access via `authorize()`.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "totalPatients": 128,
+    "newPatients": 12,
+    "todayAppointments": 34,
+    "completedAppointments": 18,
+    "pendingAppointments": 10,
+    "activeAdmissions": 7,
+    "occupiedBeds": 21,
+    "availableBeds": 9,
+    "todayRevenue": 24500,
+    "monthlyRevenue": 24500
+  }
+}
+```
+
+### GET /dashboard/patients
+Return patient analytics for the logged-in user's tenant scope.
+
+**Authorization:**
+- Any authenticated user with dashboard access via `authorize()`.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "total": 128,
+    "byGender": [
+      { "_id": "female", "count": 68 },
+      { "_id": "male", "count": 60 }
+    ],
+    "ageGroups": [
+      { "label": "0-12", "count": 8 },
+      { "label": "13-18", "count": 11 },
+      { "label": "19-30", "count": 25 },
+      { "label": "31-45", "count": 34 },
+      { "label": "46-60", "count": 29 },
+      { "label": "61+", "count": 21 }
+    ]
+  }
+}
+```
+
 ## Analytics / BI
 
 ### GET /analytics

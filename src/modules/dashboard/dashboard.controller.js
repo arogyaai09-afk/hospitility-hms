@@ -7,10 +7,7 @@ async function index(ctx) {
 
   // Determine dashboard by role - service enforces tenant isolation
   try {
-    let data = {};
-    // route-level shortcuts - main endpoint returns role-appropriate summary
-    data.summary = await dashboardService.summary(user, query);
-    data.role = user.role;
+    const data = await dashboardService.dashboard(user, query);
     data.period = dashboardService.parsePeriod(query);
 
     ctx.body = { success: true, data };
