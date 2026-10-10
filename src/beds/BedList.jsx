@@ -2,12 +2,19 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Add, Edit, Delete } from "@mui/icons-material";
-import { getBeds } from "../api/beds";
+import { getBeds, updateBed, deleteBed } from "../api/beds";
+import { getAdmissions } from "../api/admissions";
 import "./beds.scss";
+import { useToast } from "../context/ToastContext";
+import ConfirmModal from "../components/ConfirmModal";
 
 const Beds = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [bedToDelete, setBedToDelete] = useState(null);
   const [beds, setBeds] = useState([]);
+  const [admissions, setAdmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,16 +27,31 @@ const Beds = () => {
   const fetchBeds = async () => {
     try {
       setLoading(true);
-      const response = await getBeds();
-      if (response?.status === "success") {
-        setBeds(Array.isArray(response.data) ? response.data : []);
+      setError("");
+
+      const [bedsResponse, admissionsResponse] = await Promise.all([
+        getBeds(),
+        getAdmissions(),
+      ]);
+
+      if (bedsResponse?.status === "success") {
+        setBeds(Array.isArray(bedsResponse.data) ? bedsResponse.data : []);
       } else {
         setBeds([]);
-        setError(response?.message || "Failed to fetch beds");
+        setError(bedsResponse?.message || "Failed to fetch beds");
+      }
+
+      if (admissionsResponse?.status === "success") {
+        setAdmissions(
+          Array.isArray(admissionsResponse.data) ? admissionsResponse.data : [],
+        );
+      } else {
+        setAdmissions([]);
       }
     } catch (err) {
-      setError(err.message || "Failed to fetch beds");
-      console.error("Beds fetch error:", err);
+      console.error("Beds/admissions fetch error:", err);
+
+      setError(err?.message || "Failed to fetch beds");
     } finally {
       setLoading(false);
     }
@@ -47,15 +69,57 @@ const Beds = () => {
     return status === "available" ? "badge-success" : "badge-warning";
   };
 
-  const handleDeleteBed = async (id) => {
-    if (window.confirm("Are you sure you want to delete this bed?")) {
-      try {
-        // Call delete API
-        console.log("Deleting bed:", id);
-        fetchBeds(); // Refresh list
-      } catch (err) {
-        setError("Failed to delete bed");
-      }
+  const getAssignedPatient = (bed) => {
+    if (!bed?.assignedAdmissionId) {
+      return null;
+    }
+
+    const admission = admissions.find(
+      (item) =>
+        String(item.id) === String(bed.assignedAdmissionId) ||
+        String(item._id) === String(bed.assignedAdmissionId),
+    );
+
+    console.log("BED:", bed.bedNumber);
+    console.log("ASSIGNED ADMISSION ID:", bed.assignedAdmissionId);
+    console.log("MATCHING ADMISSION:", admission);
+
+    return admission || null;
+  };
+
+  const handleDeleteBed = (bed) => {
+    if (!bed?._id) {
+      showToast("Bed ID is missing.", "error");
+      return;
+    }
+
+    setBedToDelete(bed);
+    setShowDeleteModal(true);
+  };
+
+  const handleEditBed = () => {
+    showToast("Bed edit API is not connected yet.", "error");
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!bedToDelete?._id) {
+      showToast("Bed ID is missing.", "error");
+      return;
+    }
+
+    try {
+      await deleteBed(bedToDelete._id);
+
+      showToast("Bed deleted successfully.", "success");
+
+      setShowDeleteModal(false);
+      setBedToDelete(null);
+
+      await fetchBeds();
+    } catch (err) {
+      console.error("Delete bed error:", err);
+
+      showToast(err?.message || err?.error || "Failed to delete bed.", "error");
     }
   };
 
@@ -116,20 +180,47 @@ const Beds = () => {
                   <span className="value">{bed.status}</span>
                 </p>
                 {bed.assignedAdmissionId && (
-                  <p>
-                    <span className="label">Assigned To:</span>
-                    <span className="value">{bed.assignedAdmissionId}</span>
-                  </p>
-                )}
+  <div className="assigned-patient">
+    <span className="label">Assigned To:</span>
+
+    {(() => {
+      const admission = getAssignedPatient(bed);
+
+      if (!admission) {
+        return (
+          <div className="patient-name">
+            Patient details unavailable
+          </div>
+        );
+      }
+
+      return (
+        <>
+          <div className="patient-name">
+            {admission.patientName}
+          </div>
+
+          <div className="admission-id">
+            Admission ID: {admission.id || admission._id}
+          </div>
+        </>
+      );
+    })()}
+  </div>
+)}
               </div>
 
               <div className="bed-actions">
-                <button className="btn-icon btn-edit" title="Edit">
+                <button
+                  className="btn-icon btn-edit"
+                  title="Edit"
+                  onClick={() => handleEditBed(bed)}
+                >
                   <Edit />
                 </button>
                 <button
                   className="btn-icon btn-delete"
-                  onClick={() => handleDeleteBed(bed._id)}
+                  onClick={() => handleDeleteBed(bed)}
                   title="Delete"
                 >
                   <Delete />
@@ -139,6 +230,22 @@ const Beds = () => {
           ))}
         </div>
       )}
+      <ConfirmModal
+        open={showDeleteModal}
+        title="Delete Bed"
+        message={
+          bedToDelete
+            ? `Are you sure you want to delete bed ${bedToDelete.bedNumber}?`
+            : "Are you sure you want to delete this bed?"
+        }
+        confirmText="Delete Bed"
+        cancelText="Cancel"
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setBedToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 };

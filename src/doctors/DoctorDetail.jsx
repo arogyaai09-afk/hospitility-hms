@@ -14,6 +14,7 @@ import WorkIcon from "@mui/icons-material/Work";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import { getDoctorById } from "../api/doctors";
+import axiosInstance from "../api/axiosInstance";
 
 // ─── MOCK DATA ─────────────────────────────────────────────────────────────────
 
@@ -35,6 +36,7 @@ export default function DoctorDetails() {
   const [doc, setDoc] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [profileImageUrl, setProfileImageUrl] = useState("");
 
   const [activeDay, setActiveDay] = useState("Monday");
   const [bioExpanded, setBioExpanded] = useState(false);
@@ -63,7 +65,8 @@ export default function DoctorDetails() {
           bio: "",
           availability: {},
           about: {
-            licenseNumber: doctorData.licenseNumber || "",
+            licenseNumber:
+              doctorData.medicalLicenseNumber || doctorData.licenseNumber || "",
             phone: doctorData.phone || "",
             email: doctorData.email || "",
             location: doctorData.location || "",
@@ -87,6 +90,35 @@ export default function DoctorDetails() {
     fetchDoctor();
   }, [id]);
 
+  useEffect(() => {
+    let objectUrl = "";
+
+    const loadProfileImage = async () => {
+      if (!doc?.profileImage) {
+        setProfileImageUrl("");
+        return;
+      }
+
+      try {
+        const blob = await axiosInstance.getBlob(doc.profileImage);
+
+        objectUrl = URL.createObjectURL(blob);
+        setProfileImageUrl(objectUrl);
+      } catch (error) {
+        console.error("Failed to load doctor profile image:", error);
+        setProfileImageUrl("");
+      }
+    };
+
+    loadProfileImage();
+
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [doc?.profileImage]);
+
   if (loading) {
     return <div>Loading doctor...</div>;
   }
@@ -100,6 +132,44 @@ export default function DoctorDetails() {
   const bioFull = doc?.bio || "";
   const hasBioMore = bioLines.length > 1;
 
+  const formatLocation = (location) => {
+    if (!location) return "";
+
+    try {
+      const parsed =
+        typeof location === "string" ? JSON.parse(location) : location;
+
+      return [
+        parsed.address1,
+        parsed.address2,
+        parsed.city,
+        parsed.state,
+        parsed.pincode,
+        parsed.country,
+      ]
+        .filter(Boolean)
+        .join(", ");
+    } catch {
+      return location;
+    }
+  };
+
+  const formatDate = (date) => {
+    if (!date) return "";
+
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return date;
+    }
+
+    return parsedDate.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
   const aboutItems = [
     {
       icon: <BadgeIcon />,
@@ -108,8 +178,16 @@ export default function DoctorDetails() {
     },
     { icon: <PhoneIcon />, label: "Phone Number", value: doc.about.phone },
     { icon: <EmailIcon />, label: "Email Address", value: doc.about.email },
-    { icon: <LocationOnIcon />, label: "Location", value: doc.about.location },
-    { icon: <CakeIcon />, label: "DOB", value: doc.about.dob },
+    {
+      icon: <LocationOnIcon />,
+      label: "Location",
+      value: formatLocation(doc.about.location),
+    },
+    {
+      icon: <CakeIcon />,
+      label: "DOB",
+      value: formatDate(doc.about.dob),
+    },
     {
       icon: <BloodtypeIcon />,
       label: "Blood Group",
@@ -132,22 +210,22 @@ export default function DoctorDetails() {
       {/* ── Profile Hero ── */}
       <div className="profile-hero">
         <div className="hero-img" style={{ background: doc.color + "18" }}>
-  {doc.profileImage ? (
-    <img
-      src={`http://16.4.26.131:4000${doc.profileImage}`}
-      alt={doc.name}
-      className="hero-profile-image"
-    />
-  ) : (
-    <span className="hero-initials" style={{ color: doc.color }}>
-      {doc.name
-        .split(" ")
-        .slice(0, 2)
-        .map((w) => w[0])
-        .join("")}
-    </span>
-  )}
-</div>
+          {profileImageUrl ? (
+            <img
+              src={profileImageUrl}
+              alt={doc.name}
+              className="hero-profile-image"
+            />
+          ) : (
+            <span className="hero-initials" style={{ color: doc.color }}>
+              {doc.name
+                .split(" ")
+                .slice(0, 2)
+                .map((w) => w[0])
+                .join("")}
+            </span>
+          )}
+        </div>
 
         <div className="hero-info">
           <div className="hero-name-row">
@@ -174,11 +252,11 @@ export default function DoctorDetails() {
             {doc.charge && doc.duration && <span>/ {doc.duration}</span>}
           </div>
           <button
-  className="btn-book"
-  onClick={() => navigate(`/doctors/${id}/today-appointments`)}
->
-  <CalendarBookmarkIcon /> Today's Appointment
-</button>
+            className="btn-book"
+            onClick={() => navigate(`/doctors/${id}/today-appointments`)}
+          >
+            <CalendarBookmarkIcon /> Today's Appointment
+          </button>
         </div>
       </div>
 

@@ -1,0 +1,519 @@
+.lab-reports-page {
+  padding: 24px;
+  max-width: 1500px;
+  margin: 0 auto;
+  color: #172033;
+}
+
+.lab-reports-page-header,
+.lab-patient-picker,
+.patient-summary-card,
+.lab-visit-card,
+.lab-empty {
+  box-sizing: border-box;
+}
+
+.lab-reports-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.lab-reports-title-row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.lab-reports-title-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #eef5ff;
+  color: #2563eb;
+}
+
+.lab-reports-title-row h1,
+.lab-section-heading h2,
+.patient-summary-main h2,
+.lab-visit-title h2 {
+  margin: 0;
+}
+
+.lab-reports-title-row h1 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.lab-reports-title-row p,
+.lab-section-heading p,
+.lab-visit-header p {
+  margin: 5px 0 0;
+  color: #7a8494;
+  font-size: 13px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e6eaf0;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(20, 35, 60, 0.035);
+}
+
+.lab-patient-picker {
+  padding: 20px;
+  margin-bottom: 18px;
+}
+
+.lab-section-heading {
+  margin-bottom: 14px;
+}
+
+.lab-section-heading h2 {
+  font-size: 16px;
+}
+
+.lab-search-wrap {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 13px;
+  border: 1px solid #dfe5ec;
+  border-radius: 9px;
+  background: #fff;
+  color: #8b95a3;
+}
+
+.lab-search-wrap:focus-within {
+  border-color: #8eb6ec;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.lab-search-wrap input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  font: inherit;
+  font-size: 13px;
+  color: #172033;
+}
+
+.patient-search-results {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.patient-result-row {
+  width: 100%;
+  border: 1px solid #e8ecf1;
+  background: #fff;
+  border-radius: 9px;
+  padding: 11px 13px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.patient-result-row:hover {
+  border-color: #bdd2f2;
+  background: #f8fbff;
+}
+
+.patient-result-avatar,
+.patient-large-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #eef5ff;
+  color: #2563eb;
+}
+
+.patient-result-avatar {
+  width: 34px;
+  height: 34px;
+}
+
+.patient-result-main {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+}
+
+.patient-result-main strong {
+  font-size: 13px;
+}
+
+.patient-result-main small {
+  color: #7a8494;
+  font-size: 11px;
+}
+
+.patient-result-arrow {
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.patient-summary-card {
+  padding: 17px 20px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.patient-summary-main {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.patient-large-avatar {
+  width: 48px;
+  height: 48px;
+}
+
+.patient-summary-main h2 {
+  font-size: 17px;
+}
+
+.patient-meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 16px;
+  margin-top: 7px;
+  color: #7a8494;
+  font-size: 12px;
+}
+
+.patient-meta-line strong {
+  color: #354052;
+  font-weight: 600;
+}
+
+.lab-secondary-btn,
+.lab-primary-btn,
+.lab-link-btn {
+  min-height: 40px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.lab-secondary-btn {
+  padding: 0 13px;
+  border: 1px solid #dfe5ec;
+  background: #fff;
+  color: #344054;
+}
+
+.lab-primary-btn {
+  padding: 0 15px;
+  border: 1px solid #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.lab-link-btn {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #dfe5ec;
+  background: #fff;
+  color: #2563eb;
+}
+
+.lab-primary-btn:disabled,
+.lab-secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lab-visit-list {
+  display: grid;
+  gap: 18px;
+}
+
+.lab-visit-card {
+  padding: 20px;
+}
+
+.lab-visit-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.lab-visit-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2563eb;
+}
+
+.lab-visit-title h2 {
+  color: #172033;
+  font-size: 16px;
+}
+
+.sample-id-badge {
+  min-width: 150px;
+  padding: 9px 12px;
+  border: 1px solid #dce8fa;
+  border-radius: 9px;
+  background: #f7faff;
+  display: grid;
+  gap: 2px;
+  text-align: right;
+}
+
+.sample-id-badge span {
+  color: #7a8494;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sample-id-badge strong {
+  color: #2563eb;
+  font-size: 12px;
+}
+
+.ordered-tests-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+}
+
+.ordered-tests-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #4b5565;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ordered-test-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.ordered-test-chip {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #f0f5fd;
+  color: #315d9f;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.lab-test-list {
+  display: grid;
+  gap: 11px;
+}
+
+.lab-test-card {
+  border: 1px solid #e8ecf1;
+  border-radius: 11px;
+  padding: 15px;
+  background: #fcfdff;
+}
+
+.lab-test-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.lab-test-card-header h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.lab-test-card-header p {
+  margin: 4px 0 0;
+  color: #7a8494;
+  font-size: 12px;
+}
+
+.lab-status {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #f0f1f4;
+  color: #667085;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.lab-status.completed {
+  background: #e8f7ef;
+  color: #23824d;
+}
+
+.lab-status.ordered,
+.lab-status.in_progress {
+  background: #eef5ff;
+  color: #2563eb;
+}
+
+.lab-result-form {
+  margin-top: 13px;
+  padding-top: 13px;
+  border-top: 1px solid #edf0f4;
+}
+
+.result-form-label,
+.completed-result-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 7px;
+}
+
+.lab-result-form textarea,
+.lab-result-form input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #dfe5ec;
+  border-radius: 8px;
+  padding: 10px 11px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  outline: 0;
+}
+
+.lab-result-form input {
+  margin-top: 9px;
+  height: 40px;
+}
+
+.lab-result-form textarea:focus,
+.lab-result-form input:focus {
+  border-color: #8eb6ec;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.result-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.completed-result {
+  margin-top: 13px;
+  padding: 12px;
+  border-radius: 9px;
+  background: #f8fbf9;
+  border: 1px solid #dceee4;
+}
+
+.completed-result-heading {
+  color: #23824d;
+}
+
+.result-text {
+  white-space: pre-wrap;
+  color: #3e4858;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.attachment-line {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e4eee8;
+  color: #657084;
+  font-size: 11px;
+  word-break: break-all;
+}
+
+.lab-empty {
+  padding: 24px;
+  color: #8993a0;
+  text-align: center;
+  font-size: 13px;
+}
+
+@media (max-width: 800px) {
+  .lab-reports-page {
+    padding: 15px;
+  }
+
+  .lab-reports-page-header,
+  .patient-summary-card,
+  .lab-visit-header,
+  .ordered-tests-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sample-id-badge {
+    width: 100%;
+    text-align: left;
+    box-sizing: border-box;
+  }
+}
+
+.patient-result-avatar-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.patient-large-avatar-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.patient-avatar-image-wrapper {
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef4ff;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.patient-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}

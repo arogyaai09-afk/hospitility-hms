@@ -34,6 +34,7 @@ import EditPatient from "./patients/EditPatient";
 
 // Consultation import statements
 import Consultation from "./consultations/Consultation";
+import LabReports from "./labReports/LabReports";
 
 //appointment import statements
 import Appointments from "./appointments/AppointmentList";
@@ -61,6 +62,7 @@ import AddBed from "./beds/AddBed";
 // Invoice import statements
 import Invoices from "./invoices/InvoiceList";
 import AddInvoice from "./invoices/AddInvoice";
+import InvoiceDetail from "./invoices/InvoiceDetail";
 
 // Tax import statement
 import TaxList from "./taxes/TaxList";
@@ -123,6 +125,10 @@ function App() {
                 element={<Consultation />}
               />
 
+              {/* Lab Reports section */}
+              <Route path="lab-reports" element={<LabReports />} />
+
+
               {/* Appointment section */}
               <Route path="appointments" element={<Appointments />} />
               <Route path="appointments/new" element={<NewAppointment />} />
@@ -151,6 +157,7 @@ function App() {
               {/* Invoices section */}
               <Route path="invoices" element={<Invoices />} />
               <Route path="invoices/new" element={<AddInvoice />} />
+              <Route path="invoices/:id" element={<InvoiceDetail />} />
 
               {/* Taxes section */}
               <Route path="taxes" element={<TaxList />} />

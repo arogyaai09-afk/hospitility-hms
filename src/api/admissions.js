@@ -44,6 +44,19 @@ export const createIPDAdmission = async (admissionData) => {
   }
 };
 
+// Update existing admission
+export const updateAdmission = async (admissionId, admissionData) => {
+  try {
+    const response = await axiosInstance.patch(
+      `/admissions/${admissionId}`,
+      admissionData
+    );
+    return response;
+  } catch (error) {
+    throw error || { message: "Failed to update admission" };
+  }
+};
+
 // Discharge admission
 export const dischargeAdmission = async (admissionId) => {
   try {

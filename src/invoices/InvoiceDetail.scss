@@ -1,0 +1,464 @@
+// invoices/InvoiceDetail.scss
+@import "../assets/styles/variables";
+
+.invoice-detail-page {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.invoice-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.invoice-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: $text-medium;
+  padding: 0;
+  margin-bottom: 14px;
+  cursor: pointer;
+  font-size: $font-size-sm;
+
+  svg {
+    font-size: 14px;
+  }
+
+  &:hover {
+    color: $primary;
+  }
+}
+
+.invoice-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  h1 {
+    margin: 0;
+    font-size: $font-size-2xl;
+    color: $text-dark;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: $text-medium;
+    font-size: $font-size-sm;
+  }
+}
+
+.invoice-title-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: $radius-md;
+  background: rgba($primary, 0.1);
+  color: $primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    font-size: 24px;
+  }
+}
+
+.pay-invoice-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: $primary;
+  color: white;
+  padding: 11px 18px;
+  border-radius: $radius-md;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: $primary-dark;
+  }
+
+  svg {
+    font-size: 19px;
+  }
+}
+
+.invoice-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.invoice-card {
+  background: white;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.invoice-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+
+  h2 {
+    margin: 0;
+    font-size: $font-size-lg;
+    color: $text-dark;
+  }
+}
+
+.invoice-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.invoice-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  span {
+    font-size: $font-size-sm;
+    color: $text-medium;
+  }
+
+  strong {
+    color: $text-dark;
+    font-size: $font-size-md;
+    word-break: break-word;
+  }
+}
+
+.invoice-status,
+.payment-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-paid,
+.payment-success {
+  background: rgba($success, 0.1);
+  color: $success;
+}
+
+.status-pending {
+  background: rgba($warning, 0.1);
+  color: $warning;
+}
+
+.status-partial {
+  background: rgba($info, 0.1);
+  color: $info;
+}
+
+.status-failed,
+.status-cancelled,
+.payment-failed {
+  background: rgba($danger, 0.1);
+  color: $danger;
+}
+
+.status-default {
+  background: rgba($text-medium, 0.1);
+  color: $text-medium;
+}
+
+.invoice-items-table-wrapper,
+.payment-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.invoice-items-table,
+.payment-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    padding: 12px;
+    background: $body-bg;
+    color: $text-medium;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    border-bottom: 1px solid $border-color;
+  }
+
+  td {
+    padding: 13px 12px;
+    color: $text-dark;
+    font-size: $font-size-md;
+    border-bottom: 1px solid $border-color;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.item-amount,
+.payment-amount {
+  font-weight: 600;
+}
+
+.invoice-totals {
+  width: 360px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-top: 20px;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 0;
+    color: $text-medium;
+
+    strong {
+      color: $text-dark;
+    }
+  }
+
+  .total-row {
+    border-top: 1px solid $border-color;
+    margin-top: 6px;
+    padding-top: 14px;
+
+    span,
+    strong {
+      font-size: $font-size-lg;
+      font-weight: 700;
+      color: $text-dark;
+    }
+  }
+
+  .paid-row strong {
+    color: $success;
+  }
+
+  .balance-row {
+    border-top: 1px dashed $border-color;
+    margin-top: 6px;
+    padding-top: 14px;
+
+    span,
+    strong {
+      font-weight: 700;
+      color: $warning;
+    }
+  }
+}
+
+.no-items,
+.no-payments {
+  padding: 25px;
+  text-align: center;
+  color: $text-medium;
+  background: $body-bg;
+  border-radius: $radius-md;
+}
+
+.invoice-loading,
+.invoice-error {
+  background: white;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  padding: 50px;
+  text-align: center;
+  color: $text-medium;
+}
+
+.invoice-back-btn {
+  margin-top: 15px;
+  border: none;
+  background: $primary;
+  color: white;
+  padding: 10px 16px;
+  border-radius: $radius-md;
+  cursor: pointer;
+}
+
+/* Payment Modal */
+
+.invoice-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.invoice-payment-modal {
+  width: 100%;
+  max-width: 520px;
+  background: white;
+  border-radius: $radius-md;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.payment-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+  border-bottom: 1px solid $border-color;
+
+  h2 {
+    margin: 0;
+    font-size: $font-size-xl;
+    color: $text-dark;
+  }
+
+  p {
+    margin: 5px 0 0;
+    color: $text-medium;
+    font-size: $font-size-sm;
+  }
+}
+
+.payment-modal-close {
+  border: none;
+  background: transparent;
+  color: $text-medium;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    color: $text-dark;
+  }
+}
+
+.invoice-payment-modal form {
+  padding: 20px;
+}
+
+.payment-form-group {
+  margin-bottom: 16px;
+
+  label {
+    display: block;
+    margin-bottom: 7px;
+    color: $text-dark;
+    font-size: $font-size-sm;
+    font-weight: 600;
+
+    span {
+      color: $danger;
+    }
+  }
+
+  input,
+  select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    font-family: inherit;
+    font-size: $font-size-md;
+    color: $text-dark;
+    background: white;
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    }
+  }
+}
+
+.payment-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid $border-color;
+}
+
+.payment-cancel-btn,
+.payment-submit-btn {
+  padding: 10px 17px;
+  border-radius: $radius-md;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.payment-cancel-btn {
+  background: white;
+  border: 1px solid $border-color;
+  color: $text-dark;
+
+  &:hover {
+    background: $body-bg;
+  }
+}
+
+.payment-submit-btn {
+  border: none;
+  background: $primary;
+  color: white;
+
+  &:hover {
+    background: $primary-dark;
+  }
+
+  &:disabled,
+  .payment-cancel-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 768px) {
+  .invoice-detail-page {
+    padding: 12px;
+  }
+
+  .invoice-detail-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .invoice-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .invoice-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .invoice-card {
+    padding: 15px;
+  }
+
+  .invoice-title-row h1 {
+    font-size: $font-size-xl;
+  }
+
+  .pay-invoice-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

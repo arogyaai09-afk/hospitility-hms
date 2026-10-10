@@ -1,3 +1,4 @@
+// components/toast.jsx
 import React from "react";
 import "./Toast.scss";
 

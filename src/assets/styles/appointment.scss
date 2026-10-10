@@ -22,7 +22,8 @@
       align-items: center;
       gap: 8px;
 
-      .btn-export, .btn-filter {
+      .btn-export,
+      .btn-filter {
         display: flex;
         align-items: center;
         gap: 6px;
@@ -36,8 +37,15 @@
         cursor: pointer;
         font-family: $font-family;
         transition: background 0.15s;
-        &:hover { background: $body-bg; }
-        svg { font-size: 15px; color: $text-medium; }
+
+        &:hover {
+          background: $body-bg;
+        }
+
+        svg {
+          font-size: 15px;
+          color: $text-medium;
+        }
       }
 
       .btn-new {
@@ -54,8 +62,14 @@
         cursor: pointer;
         font-family: $font-family;
         transition: background 0.15s;
-        &:hover { background: $primary-dark; }
-        svg { font-size: 16px; }
+
+        &:hover {
+          background: $primary-dark;
+        }
+
+        svg {
+          font-size: 16px;
+        }
       }
 
       .view-toggle {
@@ -66,36 +80,66 @@
         background: white;
 
         .vt-btn {
-          width: 36px; height: 36px;
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer; color: $text-light;
-          border: none; background: transparent;
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: $text-light;
+          border: none;
+          background: transparent;
           transition: background 0.15s, color 0.15s;
-          svg { font-size: 17px; }
 
-          &.active { background: $primary; color: white; }
-          &:not(.active):hover { background: $body-bg; color: $text-dark; }
+          svg {
+            font-size: 17px;
+          }
+
+          &.active {
+            background: $primary;
+            color: white;
+          }
+
+          &:not(.active):hover {
+            background: $body-bg;
+            color: $text-dark;
+          }
         }
       }
 
-      .export-wrap { position: relative; }
+      .export-wrap {
+        position: relative;
+      }
 
       .dropdown-menu {
         position: absolute;
-        right: 0; top: calc(100% + 6px);
+        right: 0;
+        top: calc(100% + 6px);
         background: white;
         border: 1px solid $border-color;
         border-radius: $radius-md;
         box-shadow: $shadow-md;
         min-width: 180px;
-        z-index: 50; overflow: hidden;
+        z-index: 50;
+        overflow: hidden;
 
         .dd-item {
-          display: flex; align-items: center; gap: 8px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
           padding: 10px 16px;
-          font-size: $font-size-sm; color: $text-medium; cursor: pointer;
-          &:hover { background: $body-bg; color: $text-dark; }
-          svg { font-size: 16px; }
+          font-size: $font-size-sm;
+          color: $text-medium;
+          cursor: pointer;
+
+          &:hover {
+            background: $body-bg;
+            color: $text-dark;
+          }
+
+          svg {
+            font-size: 16px;
+          }
         }
       }
     }
@@ -115,77 +159,141 @@
       gap: 10px;
 
       .search-wrap {
-        display: flex; align-items: center; gap: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
         background: white;
         border: 1px solid $border-color;
         border-radius: $radius-md;
-        padding: 8px 14px; width: 240px;
+        padding: 8px 14px;
+        width: 240px;
 
-        svg { font-size: 15px; color: $text-light; }
+        svg {
+          font-size: 15px;
+          color: $text-light;
+        }
+
         input {
-          border: none; outline: none;
-          font-size: $font-size-sm; color: $text-dark;
-          font-family: $font-family; width: 100%; background: transparent;
-          &::placeholder { color: $text-light; }
+          border: none;
+          outline: none;
+          font-size: $font-size-sm;
+          color: $text-dark;
+          font-family: $font-family;
+          width: 100%;
+          background: transparent;
+
+          &::placeholder {
+            color: $text-light;
+          }
         }
       }
 
       .date-btn {
-        display: flex; align-items: center; gap: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
         background: white;
         border: 1px solid $border-color;
         border-radius: $radius-md;
         padding: 8px 14px;
-        font-size: $font-size-sm; font-weight: 500; color: $text-dark;
-        cursor: pointer; font-family: $font-family; white-space: nowrap;
-        &:hover { background: $body-bg; }
-        svg { font-size: 15px; color: $text-light; }
+        font-size: $font-size-sm;
+        font-weight: 500;
+        color: $text-dark;
+        cursor: pointer;
+        font-family: $font-family;
+        white-space: nowrap;
+
+        &:hover {
+          background: $body-bg;
+        }
+
+        svg {
+          font-size: 15px;
+          color: $text-light;
+        }
       }
     }
 
     .toolbar-right {
-      display: flex; align-items: center; gap: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
 
       .btn-filter-sm {
-        display: flex; align-items: center; gap: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
         background: white;
         border: 1px solid $border-color;
         border-radius: $radius-md;
         padding: 8px 14px;
-        font-size: $font-size-sm; font-weight: 500; color: $text-dark;
-        cursor: pointer; font-family: $font-family;
-        &:hover { background: $body-bg; }
-        svg { font-size: 15px; color: $text-medium; }
+        font-size: $font-size-sm;
+        font-weight: 500;
+        color: $text-dark;
+        cursor: pointer;
+        font-family: $font-family;
+
+        &:hover {
+          background: $body-bg;
+        }
+
+        svg {
+          font-size: 15px;
+          color: $text-medium;
+        }
       }
 
       .sort-wrap {
         position: relative;
 
         .btn-sort {
-          display: flex; align-items: center; gap: 6px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
           background: white;
           border: 1px solid $border-color;
           border-radius: $radius-md;
           padding: 8px 14px;
-          font-size: $font-size-sm; font-weight: 500; color: $text-dark;
-          cursor: pointer; font-family: $font-family; white-space: nowrap;
-          &:hover { background: $body-bg; }
+          font-size: $font-size-sm;
+          font-weight: 500;
+          color: $text-dark;
+          cursor: pointer;
+          font-family: $font-family;
+          white-space: nowrap;
+
+          &:hover {
+            background: $body-bg;
+          }
         }
 
         .dropdown-menu {
-          position: absolute; right: 0; top: calc(100% + 6px);
+          position: absolute;
+          right: 0;
+          top: calc(100% + 6px);
           background: white;
           border: 1px solid $border-color;
           border-radius: $radius-md;
           box-shadow: $shadow-md;
           min-width: 180px;
-          z-index: 50; overflow: hidden;
+          z-index: 50;
+          overflow: hidden;
 
           .dd-item {
             padding: 10px 16px;
-            font-size: $font-size-sm; color: $text-medium; cursor: pointer;
-            &:hover { background: $body-bg; color: $text-dark; }
-            &.active { color: $primary; font-weight: 600; background: #eff6ff; }
+            font-size: $font-size-sm;
+            color: $text-medium;
+            cursor: pointer;
+
+            &:hover {
+              background: $body-bg;
+              color: $text-dark;
+            }
+
+            &.active {
+              color: $primary;
+              font-weight: 600;
+              background: #eff6ff;
+            }
           }
         }
       }
@@ -203,7 +311,10 @@
       width: 100%;
       border-collapse: collapse;
 
-      thead tr { background: $body-bg; border-bottom: 1px solid $border-color; }
+      thead tr {
+        background: $body-bg;
+        border-bottom: 1px solid $border-color;
+      }
 
       th {
         text-align: left;
@@ -224,100 +335,199 @@
         vertical-align: middle;
       }
 
-      tbody tr:last-child td { border-bottom: none; }
-      tbody tr:hover td { background: #fafafa; }
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      tbody tr:hover td {
+        background: #fafafa;
+      }
 
       .person-cell {
-        display: flex; align-items: center; gap: 10px; cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
 
         .p-avatar {
-          width: 38px; height: 38px; border-radius: 50%;
-          overflow: hidden; flex-shrink: 0;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 13px; font-weight: 700;
+          width: 38px;
+          height: 38px;
+          border-radius: 50%;
+          overflow: hidden;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 13px;
+          font-weight: 700;
         }
 
-        .p-name { font-size: $font-size-sm; font-weight: 600; color: $text-dark; transition: color 0.15s; }
-        .p-sub  { font-size: $font-size-xs; color: $text-light; margin-top: 1px; }
+        .p-name {
+          font-size: $font-size-sm;
+          font-weight: 600;
+          color: $text-dark;
+          transition: color 0.15s;
+        }
 
-        &:hover .p-name { color: $primary; }
+        .p-sub {
+          font-size: $font-size-xs;
+          color: $text-light;
+          margin-top: 1px;
+        }
+
+        &:hover .p-name {
+          color: $primary;
+        }
       }
 
       .appt-status {
-        font-size: $font-size-sm; font-weight: 600;
-        &.checked-out  { color: $primary; }
-        &.checked-in   { color: $warning; }
-        &.cancelled    { color: $danger;  }
-        &.schedule     { color: $info;    }
-        &.confirmed    { color: $success; }
+        font-size: $font-size-sm;
+        font-weight: 600;
+
+        &.checked-out {
+          color: $primary;
+        }
+
+        &.checked-in {
+          color: $warning;
+        }
+
+        &.cancelled {
+          color: $danger;
+        }
+
+        &.schedule {
+          color: $info;
+        }
+
+        &.confirmed {
+          color: $success;
+        }
       }
 
       .icon-btn {
-        width: 28px; height: 28px;
+        width: 28px;
+        height: 28px;
         border: 1px solid $border-color;
         border-radius: $radius-sm;
         background: white;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer; color: $text-medium;
-        &:hover { background: $body-bg; }
-        svg { font-size: 14px; }
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: $text-medium;
+
+        &:hover {
+          background: $body-bg;
+        }
+
+        svg {
+          font-size: 14px;
+        }
       }
 
-      .row-ctx { position: relative; }
+      .row-ctx {
+        position: relative;
+      }
 
       .ctx-menu {
-        position: absolute; right: 0; top: calc(100% + 4px);
+        position: absolute;
+        right: 0;
+        top: calc(100% + 4px);
         background: white;
         border: 1px solid $border-color;
         border-radius: $radius-md;
         box-shadow: $shadow-md;
         min-width: 130px;
-        z-index: 50; overflow: hidden;
+        z-index: 50;
+        overflow: hidden;
 
         .ctx-item {
           padding: 9px 16px;
-          font-size: $font-size-sm; color: $text-medium; cursor: pointer;
-          &:hover { background: $body-bg; color: $text-dark; }
-          &.danger:hover { background: #fff1f2; color: $danger; }
+          font-size: $font-size-sm;
+          color: $text-medium;
+          cursor: pointer;
+
+          &:hover {
+            background: $body-bg;
+            color: $text-dark;
+          }
+
+          &.danger:hover {
+            background: #fff1f2;
+            color: $danger;
+          }
         }
       }
     }
 
     // Pagination
     .table-pagination {
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 12px 20px;
       border-top: 1px solid $border-color;
 
       .page-info {
-        display: flex; align-items: center; gap: 8px;
-        font-size: $font-size-sm; color: $text-medium;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: $font-size-sm;
+        color: $text-medium;
 
         select {
-          border: 1px solid $border-color; border-radius: $radius-sm;
-          padding: 3px 8px; font-size: $font-size-sm;
-          font-family: $font-family; outline: none; color: $text-dark; background: white;
+          border: 1px solid $border-color;
+          border-radius: $radius-sm;
+          padding: 3px 8px;
+          font-size: $font-size-sm;
+          font-family: $font-family;
+          outline: none;
+          color: $text-dark;
+          background: white;
           cursor: pointer;
         }
       }
 
       .page-nav {
-        display: flex; align-items: center; gap: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
 
         .pg-btn {
-          width: 30px; height: 30px;
+          width: 30px;
+          height: 30px;
           border: 1px solid $border-color;
           border-radius: $radius-sm;
           background: white;
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer; color: $text-medium;
-          font-size: $font-size-sm; font-family: $font-family;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: $text-medium;
+          font-size: $font-size-sm;
+          font-family: $font-family;
           transition: all 0.15s;
 
-          &:hover:not(:disabled) { background: $body-bg; }
-          &.active { background: $primary; color: white; border-color: $primary; font-weight: 700; }
-          &:disabled { opacity: 0.4; cursor: not-allowed; }
-          svg { font-size: 13px; }
+          &:hover:not(:disabled) {
+            background: $body-bg;
+          }
+
+          &.active {
+            background: $primary;
+            color: white;
+            border-color: $primary;
+            font-weight: 700;
+          }
+
+          &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+          }
+
+          svg {
+            font-size: 13px;
+          }
         }
       }
     }
@@ -325,29 +535,51 @@
 
   // ── CALENDAR VIEW ──────────────────────────────────────
   .cal-toolbar {
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 16px;
 
     .cal-nav {
-      display: flex; align-items: center; gap: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
 
       .btn-today {
-        background: $primary; color: white;
-        border: none; border-radius: $radius-md;
-        padding: 8px 16px; font-size: $font-size-sm; font-weight: 600;
-        cursor: pointer; font-family: $font-family;
-        &:hover { background: $primary-dark; }
+        background: $primary;
+        color: white;
+        border: none;
+        border-radius: $radius-md;
+        padding: 8px 16px;
+        font-size: $font-size-sm;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: $font-family;
+
+        &:hover {
+          background: $primary-dark;
+        }
       }
 
       .btn-arrow {
-        width: 32px; height: 32px;
+        width: 32px;
+        height: 32px;
         border: 1px solid $border-color;
         border-radius: $radius-md;
         background: white;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer; color: $text-medium;
-        &:hover { background: $body-bg; }
-        svg { font-size: 17px; }
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: $text-medium;
+
+        &:hover {
+          background: $body-bg;
+        }
+
+        svg {
+          font-size: 17px;
+        }
       }
 
       .cal-month-label {
@@ -370,13 +602,29 @@
 
       .cv-btn {
         padding: 7px 18px;
-        font-size: $font-size-sm; font-weight: 500; color: $text-medium;
-        cursor: pointer; border: none; background: transparent;
-        font-family: $font-family; transition: background 0.15s, color 0.15s;
+        font-size: $font-size-sm;
+        font-weight: 500;
+        color: $text-medium;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        font-family: $font-family;
+        transition: background 0.15s, color 0.15s;
 
-        &:not(:last-child) { border-right: 1px solid $border-color; }
-        &.active { background: $primary; color: white; font-weight: 700; }
-        &:not(.active):hover { background: $body-bg; color: $text-dark; }
+        &:not(:last-child) {
+          border-right: 1px solid $border-color;
+        }
+
+        &.active {
+          background: $primary;
+          color: white;
+          font-weight: 700;
+        }
+
+        &:not(.active):hover {
+          background: $body-bg;
+          color: $text-dark;
+        }
       }
     }
   }
@@ -416,18 +664,30 @@
         cursor: default;
         transition: background 0.1s;
 
-        &:nth-child(7n) { border-right: none; }
-        &:hover { background: #fafafa; }
+        &:nth-child(7n) {
+          border-right: none;
+        }
 
-        &.other-month .cal-date { color: #cbd5e1; }
+        &:hover {
+          background: #fafafa;
+        }
+
+        &.other-month .cal-date {
+          color: #cbd5e1;
+        }
 
         &.today {
           background: #eff6ff;
+
           .cal-date {
-            background: $primary; color: white;
-            width: 26px; height: 26px;
+            background: $primary;
+            color: white;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
         }
 
@@ -436,8 +696,11 @@
           font-weight: 700;
           color: $text-dark;
           margin-bottom: 4px;
-          width: 26px; height: 26px;
-          display: flex; align-items: center; justify-content: center;
+          width: 26px;
+          height: 26px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .cal-event {
@@ -453,10 +716,29 @@
           text-overflow: ellipsis;
           border-left: 3px solid $primary;
 
-          &.green  { background: #dcfce7; color: #16a34a; border-color: #16a34a; }
-          &.red    { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
-          &.orange { background: #fef3c7; color: #d97706; border-color: #d97706; }
-          &.purple { background: #f5f3ff; color: #7c3aed; border-color: #7c3aed; }
+          &.green {
+            background: #dcfce7;
+            color: #16a34a;
+            border-color: #16a34a;
+          }
+
+          &.red {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #dc2626;
+          }
+
+          &.orange {
+            background: #fef3c7;
+            color: #d97706;
+            border-color: #d97706;
+          }
+
+          &.purple {
+            background: #f5f3ff;
+            color: #7c3aed;
+            border-color: #7c3aed;
+          }
         }
       }
     }
@@ -481,7 +763,10 @@
 
       .wg-day-col {
         border-right: 1px solid $border-color;
-        &:last-child { border-right: none; }
+
+        &:last-child {
+          border-right: none;
+        }
 
         .wg-day-header {
           text-align: center;
@@ -493,7 +778,9 @@
           text-transform: uppercase;
           letter-spacing: 0.5px;
 
-          &.today-col { color: $primary; }
+          &.today-col {
+            color: $primary;
+          }
 
           .wg-date {
             font-size: $font-size-md;
@@ -502,10 +789,14 @@
             margin-top: 2px;
 
             &.today-date {
-              width: 28px; height: 28px;
-              background: $primary; color: white;
+              width: 28px;
+              height: 28px;
+              background: $primary;
+              color: white;
               border-radius: 50%;
-              display: flex; align-items: center; justify-content: center;
+              display: flex;
+              align-items: center;
+              justify-content: center;
               margin: 4px auto 0;
             }
           }
@@ -519,7 +810,9 @@
 
           .wg-event {
             position: absolute;
-            left: 2px; right: 2px; top: 2px;
+            left: 2px;
+            right: 2px;
+            top: 2px;
             background: #eff6ff;
             border-left: 3px solid $primary;
             border-radius: 4px;
@@ -571,66 +864,115 @@
     }
   }
 
+
   // ── FILTER PANEL ────────────────────────────────────────
   .filter-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.2);
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.2);
     z-index: 200;
   }
 
   .filter-panel {
     position: fixed;
-    top: 0; right: 0;
-    width: 340px; height: 100vh;
+    top: 0;
+    right: 0;
+    width: 340px;
+    height: 100vh;
     background: white;
     box-shadow: $shadow-lg;
     z-index: 201;
-    display: flex; flex-direction: column;
-    animation: slideInRight 0.22s cubic-bezier(0.4,0,0.2,1);
+    display: flex;
+    flex-direction: column;
+    animation: slideInRight 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: $font-family;
 
     .fp-header {
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 18px 20px;
       border-bottom: 1px solid $border-color;
 
-      .fp-title { font-size: $font-size-lg; font-weight: 700; color: $text-dark; }
-      .fp-clear { font-size: $font-size-sm; color: $danger; font-weight: 600; cursor: pointer; &:hover { text-decoration: underline; } }
+      .fp-title {
+        font-size: $font-size-lg;
+        font-weight: 700;
+        color: $text-dark;
+      }
+
+      .fp-clear {
+        font-size: $font-size-sm;
+        color: $danger;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
     }
 
     .fp-body {
-      flex: 1; overflow-y: auto; padding: 16px 20px;
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
 
       .fp-group {
         margin-bottom: 20px;
 
         .fp-label {
-          display: flex; align-items: center; justify-content: space-between;
-          font-size: $font-size-sm; font-weight: 600; color: $text-dark;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: $font-size-sm;
+          font-weight: 600;
+          color: $text-dark;
           margin-bottom: 8px;
 
-          .fp-reset { font-weight: 500; color: $primary; font-size: $font-size-xs; cursor: pointer; &:hover { text-decoration: underline; } }
+          .fp-reset {
+            font-weight: 500;
+            color: $primary;
+            font-size: $font-size-xs;
+            cursor: pointer;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
         }
 
-        select, input[type="date"], .fp-date-range {
+        select,
+        input[type="date"],
+        .fp-date-range {
           width: 100%;
-          border: 1px solid $border-color; border-radius: $radius-md;
-          padding: 9px 12px; font-size: $font-size-sm;
-          font-family: $font-family; outline: none; background: white;
-          box-sizing: border-box; color: $text-dark;
+          border: 1px solid $border-color;
+          border-radius: $radius-md;
+          padding: 9px 12px;
+          font-size: $font-size-sm;
+          font-family: $font-family;
+          outline: none;
+          background: white;
+          box-sizing: border-box;
+          color: $text-dark;
           appearance: none;
           cursor: pointer;
 
-          &:focus { border-color: $primary; }
+          &:focus {
+            border-color: $primary;
+          }
         }
 
         .fp-select-wrap {
           position: relative;
+
           &::after {
             content: '';
-            position: absolute; right: 12px; top: 50%;
+            position: absolute;
+            right: 12px;
+            top: 50%;
             transform: translateY(-50%);
-            width: 0; height: 0;
+            width: 0;
+            height: 0;
             border-left: 4px solid transparent;
             border-right: 4px solid transparent;
             border-top: 5px solid #94a3b8;
@@ -641,13 +983,137 @@
     }
 
     .fp-footer {
-      padding: 16px 20px; border-top: 1px solid $border-color;
-      display: flex; gap: 10px;
+      padding: 16px 20px;
+      border-top: 1px solid $border-color;
+      display: flex;
+      gap: 10px;
 
-      .btn-close  { flex: 1; background: white; color: $text-dark; border: 1px solid $border-color; border-radius: $radius-md; padding: 10px; font-size: $font-size-sm; font-weight: 500; cursor: pointer; font-family: $font-family; &:hover { background: $body-bg; } }
-      .btn-apply  { flex: 1; background: $primary; color: white; border: none; border-radius: $radius-md; padding: 10px; font-size: $font-size-sm; font-weight: 600; cursor: pointer; font-family: $font-family; &:hover { background: $primary-dark; } }
+      .btn-close {
+        flex: 1;
+        background: white;
+        color: $text-dark;
+        border: 1px solid $border-color;
+        border-radius: $radius-md;
+        padding: 10px;
+        font-size: $font-size-sm;
+        font-weight: 500;
+        cursor: pointer;
+        font-family: $font-family;
+
+        &:hover {
+          background: $body-bg;
+        }
+      }
+
+      .btn-apply {
+        flex: 1;
+        background: $primary;
+        color: white;
+        border: none;
+        border-radius: $radius-md;
+        padding: 10px;
+        font-size: $font-size-sm;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: $font-family;
+
+        &:hover {
+          background: $primary-dark;
+        }
+      }
     }
   }
 }
 
-@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.date-picker-wrap {
+  position: relative;
+}
+
+.date-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.date-picker-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 280px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+  z-index: 1000;
+}
+
+.date-picker-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.date-picker-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.date-picker-field input {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  outline: none;
+  font-size: 13px;
+  color: #1e293b;
+}
+
+.date-picker-field input:focus {
+  border-color: #2563eb;
+}
+
+.date-picker-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.date-clear-btn,
+.date-apply-btn {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.date-clear-btn {
+  background: #fff;
+  color: #64748b;
+}
+
+.date-apply-btn {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}

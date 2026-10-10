@@ -3,8 +3,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 import AddIcon from "@mui/icons-material/Add";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -23,21 +31,76 @@ import { getDashboardSummary } from "../api/dashboard";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
-const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 const appointmentData = months.map((month, i) => ({
   month,
-  Completed: [1200, 1800, 2000, 2800, 3200, 2600, 3800, 3200, 2900, 2400, 2000, 1600][i],
-  Ongoing: [800, 1200, 1400, 1900, 2100, 1800, 2600, 2200, 2000, 1700, 1400, 1100][i],
-  Rescheduled: [400, 600, 700, 900, 1100, 900, 1300, 1100, 1000, 850, 700, 550][i],
+  Completed: [
+    1200, 1800, 2000, 2800, 3200, 2600, 3800, 3200, 2900, 2400, 2000, 1600,
+  ][i],
+  Ongoing: [
+    800, 1200, 1400, 1900, 2100, 1800, 2600, 2200, 2000, 1700, 1400, 1100,
+  ][i],
+  Rescheduled: [400, 600, 700, 900, 1100, 900, 1300, 1100, 1000, 850, 700, 550][
+    i
+  ],
 }));
 
 const calendarDays = [
-  null, null, null, 1, 2, 3, 4,
-  5, 6, 7, 8, 9, 10, 11,
-  12, 13, 14, 15, 16, 17, 18,
-  19, 20, 21, 22, 23, 24, 25,
-  26, 27, 28, 29, 30, 31, null,
-  null, null, null, null, null, null, null,
+  null,
+  null,
+  null,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
 ];
 
 const appointments = [
@@ -47,27 +110,112 @@ const appointments = [
 ];
 
 const topPatients = [
-  { name: "Jesus Adams", paid: "$6589", appointments: 80, initials: "JA", color: "#8b5cf6" },
-  { name: "Ezra Belcher", paid: "$5632", appointments: 60, initials: "EB", color: "#f59e0b" },
-  { name: "Glen Lentz", paid: "$4125", appointments: 40, initials: "GL", color: "#3b82f6" },
-  { name: "Bernard Griffith", paid: "$3140", appointments: 25, initials: "BG", color: "#10b981" },
-  { name: "John Elsass", paid: "$2654", appointments: 25, initials: "JE", color: "#0d9488" },
+  {
+    name: "Jesus Adams",
+    paid: "$6589",
+    appointments: 80,
+    initials: "JA",
+    color: "#8b5cf6",
+  },
+  {
+    name: "Ezra Belcher",
+    paid: "$5632",
+    appointments: 60,
+    initials: "EB",
+    color: "#f59e0b",
+  },
+  {
+    name: "Glen Lentz",
+    paid: "$4125",
+    appointments: 40,
+    initials: "GL",
+    color: "#3b82f6",
+  },
+  {
+    name: "Bernard Griffith",
+    paid: "$3140",
+    appointments: 25,
+    initials: "BG",
+    color: "#10b981",
+  },
+  {
+    name: "John Elsass",
+    paid: "$2654",
+    appointments: 25,
+    initials: "JE",
+    color: "#0d9488",
+  },
 ];
 
 const transactions = [
-  { name: "General Check-up", id: "#INV5889", amount: "+$234", type: "positive", icon: "S" },
-  { name: "Online Consultation", id: "#INV7874", amount: "+$234", type: "positive", icon: "P" },
-  { name: "Purchase Product", id: "#INV4458", amount: "-$88", type: "negative", icon: "S" },
-  { name: "Online Consultation", id: "#INV5456", amount: "+$234", type: "positive", icon: "P" },
-  { name: "Online Consultation", id: "#INV4557", amount: "+$234", type: "positive", icon: "S" },
+  {
+    name: "General Check-up",
+    id: "#INV5889",
+    amount: "+$234",
+    type: "positive",
+    icon: "S",
+  },
+  {
+    name: "Online Consultation",
+    id: "#INV7874",
+    amount: "+$234",
+    type: "positive",
+    icon: "P",
+  },
+  {
+    name: "Purchase Product",
+    id: "#INV4458",
+    amount: "-$88",
+    type: "negative",
+    icon: "S",
+  },
+  {
+    name: "Online Consultation",
+    id: "#INV5456",
+    amount: "+$234",
+    type: "positive",
+    icon: "P",
+  },
+  {
+    name: "Online Consultation",
+    id: "#INV4557",
+    amount: "+$234",
+    type: "positive",
+    icon: "S",
+  },
 ];
 
 const leaveRequests = [
-  { name: "James Allaire", reason: "4 Days - Personal Reason", initials: "JA", color: "#3b82f6" },
-  { name: "Esther Schmidt", reason: "2 Days - Going to Hospital", initials: "ES", color: "#10b981" },
-  { name: "Valerie Padgett", reason: "1 Day - Changing Account", initials: "VP", color: "#8b5cf6" },
-  { name: "Diane Nash", reason: "1 Day - Not Well", initials: "DN", color: "#f59e0b" },
-  { name: "Sally Cavazos", reason: "2 Days - Going to Checkup", initials: "SC", color: "#ef4444" },
+  {
+    name: "James Allaire",
+    reason: "4 Days - Personal Reason",
+    initials: "JA",
+    color: "#3b82f6",
+  },
+  {
+    name: "Esther Schmidt",
+    reason: "2 Days - Going to Hospital",
+    initials: "ES",
+    color: "#10b981",
+  },
+  {
+    name: "Valerie Padgett",
+    reason: "1 Day - Changing Account",
+    initials: "VP",
+    color: "#8b5cf6",
+  },
+  {
+    name: "Diane Nash",
+    reason: "1 Day - Not Well",
+    initials: "DN",
+    color: "#f59e0b",
+  },
+  {
+    name: "Sally Cavazos",
+    reason: "2 Days - Going to Checkup",
+    initials: "SC",
+    color: "#ef4444",
+  },
 ];
 
 const statusLabels = {
@@ -120,15 +268,17 @@ export default function Dashboard() {
       try {
         setLoading(true);
         setDashboardError("");
-        const response = await getDashboardSummary();
-        if (mounted) {
-          const payload = response?.data ?? response ?? {};
-          setDashboardData(payload);
-        }
+        const payload = await getDashboardSummary();
+
+if (mounted) {
+  setDashboardData(payload?.data ?? {});
+}
       } catch (error) {
         if (mounted) {
           setDashboardData(null);
-          setDashboardError(error?.message || "Dashboard data is unavailable right now.");
+          setDashboardError(
+            error?.message || "Dashboard data is unavailable right now.",
+          );
         }
       } finally {
         if (mounted) setLoading(false);
@@ -203,7 +353,9 @@ export default function Dashboard() {
       ? analytics.kpis.map((kpi) => ({
           label: kpi.label,
           value: kpi.value,
-          icon: kpiConfig[kpi.label]?.icon || <PersonIcon style={{ fontSize: 22 }} />,
+          icon: kpiConfig[kpi.label]?.icon || (
+            <PersonIcon style={{ fontSize: 22 }} />
+          ),
           colorClass: kpiConfig[kpi.label]?.colorClass || "blue",
           badge: kpi.delta || "",
           badgeType: String(kpi.delta || "").startsWith("-") ? "down" : "up",
@@ -213,25 +365,29 @@ export default function Dashboard() {
 
   const popularDoctorColors = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b"];
 
-  const dashboardPopularDoctors = (analytics.popularDoctors || []).map((doctor, index) => ({
-    ...doctor,
-    color: popularDoctorColors[index % popularDoctorColors.length],
-  }));
+  const dashboardPopularDoctors = (analytics.popularDoctors || []).map(
+    (doctor, index) => ({
+      ...doctor,
+      color: popularDoctorColors[index % popularDoctorColors.length],
+    }),
+  );
 
-  const deptData = (analytics.donutChart?.segments || []).map((segment) => ({
-    name: segment.label,
-    value: Number(segment.value) || 0,
-    color: segment.color,
-  }));
+  const deptData = (analytics.topDepartments || []).map((department) => ({
+  name: department.name,
+  value: Number(department.count) || 0,
+  color: department.color,
+}));
 
   const scheduleColors = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b"];
 
-  const scheduleData = (analytics.doctorsSchedule || []).map((doctor, index) => ({
-    name: doctor.name,
-    role: doctor.specialty,
-    initials: doctor.initials,
-    color: scheduleColors[index % scheduleColors.length],
-  }));
+  const scheduleData = (analytics.doctorsSchedule || []).map(
+    (doctor, index) => ({
+      name: doctor.name,
+      role: doctor.specialty,
+      initials: doctor.initials,
+      color: scheduleColors[index % scheduleColors.length],
+    }),
+  );
 
   const scheduleSummary = (analytics.doctorsSchedule || []).reduce(
     (summary, doctor) => ({
@@ -239,7 +395,7 @@ export default function Dashboard() {
       unavailable: summary.unavailable + (Number(doctor.unavailable) || 0),
       leave: summary.leave + (Number(doctor.leave) || 0),
     }),
-    { available: 0, unavailable: 0, leave: 0 }
+    { available: 0, unavailable: 0, leave: 0 },
   );
 
   const incomeData = (analytics.incomeByTreatment || []).map((item) => ({
@@ -248,7 +404,13 @@ export default function Dashboard() {
     amount: formatCurrency(item.value),
   }));
 
-  const appointmentColors = ["#3b82f6", "#ef4444", "#10b981", "#8b5cf6", "#f59e0b"];
+  const appointmentColors = [
+    "#3b82f6",
+    "#ef4444",
+    "#10b981",
+    "#8b5cf6",
+    "#f59e0b",
+  ];
 
   const getInitials = (name = "") =>
     name
@@ -259,26 +421,32 @@ export default function Dashboard() {
       .join("")
       .toUpperCase();
 
-  const allAppointments = (analytics.appointmentsTable || []).map((appt, index) => ({
-    doctor: appt.doctor,
-    dInitials: getInitials(appt.doctor),
-    dColor: appointmentColors[index % appointmentColors.length],
-    patient: appt.patient,
-    pInitials: getInitials(appt.patient),
-    pColor: appointmentColors[(index + 2) % appointmentColors.length],
-    dateTime: `${appt.date} - ${appt.time}`,
-    mode: appt.mode,
-    status: String(appt.status || "").toLowerCase().replace(" ", "-"),
-  }));
+  const allAppointments = (analytics.appointmentsTable || []).map(
+    (appt, index) => ({
+      doctor: appt.doctor,
+      dInitials: getInitials(appt.doctor),
+      dColor: appointmentColors[index % appointmentColors.length],
+      patient: appt.patient,
+      pInitials: getInitials(appt.patient),
+      pColor: appointmentColors[(index + 2) % appointmentColors.length],
+      dateTime: `${appt.date} - ${appt.time}`,
+      mode: appt.mode,
+      status: String(appt.status || "")
+        .toLowerCase()
+        .replace(" ", "-"),
+    }),
+  );
 
   return (
     <div className="dashboard">
-
       {/* Page Header */}
       <div className="page-header">
         <h1>Admin Dashboard</h1>
         <div className="header-actions">
-          <button className="btn-primary" onClick={() => navigate("/appointments/new")}>
+          <button
+            className="btn-primary"
+            onClick={() => navigate("/appointments/new")}
+          >
             <AddIcon style={{ fontSize: 16 }} /> New Appointment
           </button>
           <button className="btn-outline">
@@ -292,13 +460,22 @@ export default function Dashboard() {
         {statsCards.map((card) => (
           <div className="stat-card" key={card.label}>
             <div className="stat-left">
-              <div className={`stat-icon-wrap ${card.colorClass}`}>{card.icon}</div>
-              <div className="stat-label">{card.label}{card.isMock && <MockDataBadge />}</div>
+              <div className={`stat-icon-wrap ${card.colorClass}`}>
+                {card.icon}
+              </div>
+              <div className="stat-label">
+                {card.label}
+                {card.isMock && <MockDataBadge />}
+              </div>
               <div className="stat-value">{card.value}</div>
             </div>
             <div className="stat-right">
               <div className={`stat-badge ${card.badgeType}`}>
-                {card.badgeType === "up" ? <TrendingUpIcon style={{ fontSize: 11, marginRight: 2 }} /> : <TrendingDownIcon style={{ fontSize: 11, marginRight: 2 }} />}
+                {card.badgeType === "up" ? (
+                  <TrendingUpIcon style={{ fontSize: 11, marginRight: 2 }} />
+                ) : (
+                  <TrendingDownIcon style={{ fontSize: 11, marginRight: 2 }} />
+                )}
                 {card.badge}
               </div>
               <div style={{ fontSize: 11, color: "#94a3b8" }}>
@@ -310,7 +487,16 @@ export default function Dashboard() {
       </div>
 
       {dashboardError && !loading && (
-        <div style={{ margin: "8px 0 20px", padding: 12, background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, color: "#9a4d00" }}>
+        <div
+          style={{
+            margin: "8px 0 20px",
+            padding: 12,
+            background: "#fff7ed",
+            border: "1px solid #fed7aa",
+            borderRadius: 8,
+            color: "#9a4d00",
+          }}
+        >
           {dashboardError}
         </div>
       )}
@@ -320,9 +506,14 @@ export default function Dashboard() {
         {/* Appointment Statistics */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">Appointment Statistics<MockDataBadge /></span>
+            <span className="card-title">
+              Appointment Statistics
+              <MockDataBadge />
+            </span>
             <div className="card-actions">
-              <select className="filter-select"><option>Monthly</option></select>
+              <select className="filter-select">
+                <option>Monthly</option>
+              </select>
             </div>
           </div>
           <div className="card-body appt-stats">
@@ -345,18 +536,50 @@ export default function Dashboard() {
             <div className="chart-wrap">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={appointmentData} barSize={8} barGap={2}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#94a3b8" }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#94a3b8" }} tickFormatter={(v) => `${v / 1000}K`} />
-                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e2e8f0" }} />
-                  <Bar dataKey="Completed" fill="#3b82f6" radius={[3, 3, 0, 0]} />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#f1f5f9"
+                  />
+                  <XAxis
+                    dataKey="month"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: "#94a3b8" }}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: "#94a3b8" }}
+                    tickFormatter={(v) => `${v / 1000}K`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      fontSize: 12,
+                      borderRadius: 8,
+                      border: "1px solid #e2e8f0",
+                    }}
+                  />
+                  <Bar
+                    dataKey="Completed"
+                    fill="#3b82f6"
+                    radius={[3, 3, 0, 0]}
+                  />
                   <Bar dataKey="Ongoing" fill="#7dd3fc" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="Rescheduled" fill="#312e81" radius={[3, 3, 0, 0]} />
+                  <Bar
+                    dataKey="Rescheduled"
+                    fill="#312e81"
+                    radius={[3, 3, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
             <div className="chart-legend">
-              {[{ label: "Completed", color: "#3b82f6" }, { label: "Ongoing", color: "#7dd3fc" }, { label: "Rescheduled", color: "#312e81" }].map((l) => (
+              {[
+                { label: "Completed", color: "#3b82f6" },
+                { label: "Ongoing", color: "#7dd3fc" },
+                { label: "Rescheduled", color: "#312e81" },
+              ].map((l) => (
                 <div className="cl-item" key={l.label}>
                   <span className="cl-dot" style={{ background: l.color }} />
                   {l.label}
@@ -369,29 +592,54 @@ export default function Dashboard() {
         {/* Calendar + Appointments */}
         <div className="card calendar-card">
           <div className="card-header">
-            <span className="card-title">Appointments<MockDataBadge /></span>
+            <span className="card-title">
+              Appointments
+              <MockDataBadge />
+            </span>
             <div className="card-actions">
-              <select className="filter-select"><option>All Type</option></select>
-              <div style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <select className="filter-select">
+                <option>All Type</option>
+              </select>
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  border: "1px solid #e2e8f0",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                }}
+              >
                 <SettingsIcon style={{ fontSize: 14, color: "#94a3b8" }} />
               </div>
             </div>
           </div>
           {/* Calendar Navigation */}
           <div className="calendar-nav">
-            <button className="nav-btn"><ArrowBackIosNewIcon style={{ fontSize: 9 }} /></button>
+            <button className="nav-btn">
+              <ArrowBackIosNewIcon style={{ fontSize: 9 }} />
+            </button>
             <span className="month-label">March 2026</span>
-            <button className="nav-btn"><ArrowForwardIosIcon style={{ fontSize: 9 }} /></button>
+            <button className="nav-btn">
+              <ArrowForwardIosIcon style={{ fontSize: 9 }} />
+            </button>
           </div>
           <div className="calendar-grid">
             <div className="day-names">
               {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
-                <div className="day-name" key={d}>{d}</div>
+                <div className="day-name" key={d}>
+                  {d}
+                </div>
               ))}
             </div>
             <div className="days">
               {calendarDays.map((day, i) => (
-                <div key={i} className={`day ${day === 7 ? "today" : ""} ${!day ? "other-month" : ""}`}>
+                <div
+                  key={i}
+                  className={`day ${day === 7 ? "today" : ""} ${!day ? "other-month" : ""}`}
+                >
                   {day || ""}
                 </div>
               ))}
@@ -412,7 +660,10 @@ export default function Dashboard() {
                     <div
                       key={j}
                       className="avatar-placeholder"
-                      style={{ background: j === 0 ? "#dbeafe" : "#dcfce7", color: j === 0 ? "#2563eb" : "#16a34a" }}
+                      style={{
+                        background: j === 0 ? "#dbeafe" : "#dcfce7",
+                        color: j === 0 ? "#2563eb" : "#16a34a",
+                      }}
                     >
                       {av}
                     </div>
@@ -430,7 +681,9 @@ export default function Dashboard() {
         <div className="card-header">
           <span className="card-title">Popular Doctors</span>
           <div className="card-actions">
-            <select className="filter-select"><option>Weekly</option></select>
+            <select className="filter-select">
+              <option>Weekly</option>
+            </select>
           </div>
         </div>
         <div className="card-body popular-doctors">
@@ -438,13 +691,27 @@ export default function Dashboard() {
             {dashboardPopularDoctors.map((doc) => (
               <div className="doctor-card" key={doc.name}>
                 <div className="doctor-avatar">
-                  <div style={{ width: "100%", height: "100%", background: doc.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 18, color: doc.color }}>
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      background: doc.color + "22",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 700,
+                      fontSize: 18,
+                      color: doc.color,
+                    }}
+                  >
                     {doc.initials}
                   </div>
                 </div>
                 <div className="doctor-name">{doc.name}</div>
                 <div className="doctor-specialty">{doc.specialty}</div>
-                <div className="doctor-bookings"><span>{doc.bookings}</span> Bookings</div>
+                <div className="doctor-bookings">
+                  <span>{doc.bookings}</span> Bookings
+                </div>
               </div>
             ))}
           </div>
@@ -458,21 +725,43 @@ export default function Dashboard() {
           <div className="card-header">
             <span className="card-title">Top Departments</span>
             <div className="card-actions">
-              <select className="filter-select"><option>Weekly</option></select>
+              <select className="filter-select">
+                <option>Weekly</option>
+              </select>
             </div>
           </div>
           <div className="card-body">
             <div className="donut-wrap">
               <PieChart width={180} height={180}>
-                <Pie data={deptData} cx={85} cy={85} innerRadius={55} outerRadius={82} paddingAngle={3} dataKey="value">
+                <Pie
+                  data={deptData}
+                  cx={85}
+                  cy={85}
+                  innerRadius={55}
+                  outerRadius={82}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
                   {deptData.map((entry, index) => (
                     <Cell key={index} fill={entry.color} />
                   ))}
                 </Pie>
               </PieChart>
-              <div style={{ position: "absolute", textAlign: "center", pointerEvents: "none" }}>
-                <div style={{ fontSize: 11, color: "#94a3b8" }}>Total Patient</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#1e293b" }}>{analytics.donutChart?.total ?? 0}</div>
+              <div
+                style={{
+                  position: "absolute",
+                  textAlign: "center",
+                  pointerEvents: "none",
+                }}
+              >
+                <div style={{ fontSize: 11, color: "#94a3b8" }}>
+                  Total Patient
+                </div>
+                <div
+                  style={{ fontSize: 22, fontWeight: 700, color: "#1e293b" }}
+                >
+                  {deptData.reduce((total, department) => total + department.value, 0)}
+                </div>
               </div>
             </div>
             <div className="donut-legend">
@@ -490,17 +779,41 @@ export default function Dashboard() {
         <div className="card schedule-card">
           <div className="card-header">
             <span className="card-title">Doctors Schedule</span>
-            <span className="view-all" style={{ fontSize: 13, color: "#3b82f6", fontWeight: 500, cursor: "pointer" }}>View All</span>
+            <span
+              className="view-all"
+              style={{
+                fontSize: 13,
+                color: "#3b82f6",
+                fontWeight: 500,
+                cursor: "pointer",
+              }}
+            >
+              View All
+            </span>
           </div>
           <div className="card-body">
             <div className="schedule-summary">
               {[
-                { label: "Available", value: scheduleSummary.available, color: "#10b981" },
-                { label: "Unavailable", value: scheduleSummary.unavailable, color: "#ef4444" },
-                { label: "Leave", value: scheduleSummary.leave, color: "#f59e0b" },
+                {
+                  label: "Available",
+                  value: scheduleSummary.available,
+                  color: "#10b981",
+                },
+                {
+                  label: "Unavailable",
+                  value: scheduleSummary.unavailable,
+                  color: "#ef4444",
+                },
+                {
+                  label: "Leave",
+                  value: scheduleSummary.leave,
+                  color: "#f59e0b",
+                },
               ].map((s) => (
                 <div className="sum-item" key={s.label}>
-                  <div className="sum-value" style={{ color: s.color }}>{s.value}</div>
+                  <div className="sum-value" style={{ color: s.color }}>
+                    {s.value}
+                  </div>
                   <div className="sum-label">{s.label}</div>
                 </div>
               ))}
@@ -509,7 +822,10 @@ export default function Dashboard() {
               {scheduleData.map((doc) => (
                 <div className="sch-item" key={doc.name}>
                   <div className="sch-doc">
-                    <div className="doc-avatar" style={{ background: doc.color + "22", color: doc.color }}>
+                    <div
+                      className="doc-avatar"
+                      style={{ background: doc.color + "22", color: doc.color }}
+                    >
                       {doc.initials}
                     </div>
                     <div className="doc-info">
@@ -529,7 +845,9 @@ export default function Dashboard() {
           <div className="card-header">
             <span className="card-title">Income By Treatment</span>
             <div className="card-actions">
-              <select className="filter-select"><option>Weekly</option></select>
+              <select className="filter-select">
+                <option>Weekly</option>
+              </select>
             </div>
           </div>
           <div className="card-body">
@@ -552,7 +870,17 @@ export default function Dashboard() {
       <div className="card appointments-table" style={{ marginBottom: 16 }}>
         <div className="card-header">
           <span className="card-title">All Appointments</span>
-          <span className="view-all" style={{ fontSize: 13, color: "#3b82f6", fontWeight: 500, cursor: "pointer" }}>View All</span>
+          <span
+            className="view-all"
+            style={{
+              fontSize: 13,
+              color: "#3b82f6",
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
+          >
+            View All
+          </span>
         </div>
         <div className="table-wrap">
           <table>
@@ -570,26 +898,48 @@ export default function Dashboard() {
                 <tr key={`${appt.dateTime}-${appt.patient}-${i}`}>
                   <td>
                     <div className="doc-cell">
-                      <div className="cell-avatar" style={{ background: appt.dColor + "22", color: appt.dColor }}>{appt.dInitials}</div>
+                      <div
+                        className="cell-avatar"
+                        style={{
+                          background: appt.dColor + "22",
+                          color: appt.dColor,
+                        }}
+                      >
+                        {appt.dInitials}
+                      </div>
                       <div>
                         <div className="cell-name">{appt.doctor}</div>
-                        {appt.dRole && <div className="cell-sub">{appt.dRole}</div>}
+                        {appt.dRole && (
+                          <div className="cell-sub">{appt.dRole}</div>
+                        )}
                       </div>
                     </div>
                   </td>
                   <td>
                     <div className="patient-cell">
-                      <div className="cell-avatar" style={{ background: appt.pColor + "22", color: appt.pColor }}>{appt.pInitials}</div>
+                      <div
+                        className="cell-avatar"
+                        style={{
+                          background: appt.pColor + "22",
+                          color: appt.pColor,
+                        }}
+                      >
+                        {appt.pInitials}
+                      </div>
                       <div>
                         <div className="cell-name">{appt.patient}</div>
-                        {appt.pPhone && <div className="cell-sub">{appt.pPhone}</div>}
+                        {appt.pPhone && (
+                          <div className="cell-sub">{appt.pPhone}</div>
+                        )}
                       </div>
                     </div>
                   </td>
                   <td>{appt.dateTime}</td>
                   <td>{appt.mode}</td>
                   <td>
-                    <span className={`status-badge ${appt.status}`}>{statusLabels[appt.status] || appt.status}</span>
+                    <span className={`status-badge ${appt.status}`}>
+                      {statusLabels[appt.status] || appt.status}
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -603,14 +953,32 @@ export default function Dashboard() {
         {/* Top 5 Patients */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">Top 5 Patients<MockDataBadge /></span>
-            <span className="view-all" style={{ fontSize: 13, color: "#3b82f6", fontWeight: 500, cursor: "pointer" }}>View All</span>
+            <span className="card-title">
+              Top 5 Patients
+              <MockDataBadge />
+            </span>
+            <span
+              className="view-all"
+              style={{
+                fontSize: 13,
+                color: "#3b82f6",
+                fontWeight: 500,
+                cursor: "pointer",
+              }}
+            >
+              View All
+            </span>
           </div>
           <div className="card-body">
             {topPatients.map((p) => (
               <div className="patient-card-item" key={p.name}>
                 <div className="patient-info">
-                  <div className="p-avatar" style={{ background: p.color + "22", color: p.color }}>{p.initials}</div>
+                  <div
+                    className="p-avatar"
+                    style={{ background: p.color + "22", color: p.color }}
+                  >
+                    {p.initials}
+                  </div>
                   <div>
                     <div className="p-name">{p.name}</div>
                     <div className="p-paid">Total Paid: {p.paid}</div>
@@ -625,16 +993,29 @@ export default function Dashboard() {
         {/* Recent Transactions */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">Recent Transactions<MockDataBadge /></span>
+            <span className="card-title">
+              Recent Transactions
+              <MockDataBadge />
+            </span>
             <div className="card-actions">
-              <select className="filter-select"><option>Weekly</option></select>
+              <select className="filter-select">
+                <option>Weekly</option>
+              </select>
             </div>
           </div>
           <div className="card-body">
             {transactions.map((txn, i) => (
               <div className="transaction-item" key={i}>
                 <div className="txn-left">
-                  <div className="txn-icon" style={{ background: "#eff6ff", color: "#3b82f6", fontWeight: 700, fontSize: 13 }}>
+                  <div
+                    className="txn-icon"
+                    style={{
+                      background: "#eff6ff",
+                      color: "#3b82f6",
+                      fontWeight: 700,
+                      fontSize: 13,
+                    }}
+                  >
                     {txn.icon}
                   </div>
                   <div>
@@ -651,24 +1032,38 @@ export default function Dashboard() {
         {/* Leave Requests */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">Leave Requests<MockDataBadge /></span>
+            <span className="card-title">
+              Leave Requests
+              <MockDataBadge />
+            </span>
             <div className="card-actions">
-              <select className="filter-select"><option>Today</option></select>
+              <select className="filter-select">
+                <option>Today</option>
+              </select>
             </div>
           </div>
           <div className="card-body">
             {leaveRequests.map((lr) => (
               <div className="leave-item" key={lr.name}>
                 <div className="leave-person">
-                  <div className="l-avatar" style={{ background: lr.color + "22", color: lr.color }}>{lr.initials}</div>
+                  <div
+                    className="l-avatar"
+                    style={{ background: lr.color + "22", color: lr.color }}
+                  >
+                    {lr.initials}
+                  </div>
                   <div>
                     <div className="l-name">{lr.name}</div>
                     <div className="l-reason">{lr.reason}</div>
                   </div>
                 </div>
                 <div className="leave-actions">
-                  <button className="la-btn reject"><CloseIcon style={{ fontSize: 13 }} /></button>
-                  <button className="la-btn approve"><CheckIcon style={{ fontSize: 13 }} /></button>
+                  <button className="la-btn reject">
+                    <CloseIcon style={{ fontSize: 13 }} />
+                  </button>
+                  <button className="la-btn approve">
+                    <CheckIcon style={{ fontSize: 13 }} />
+                  </button>
                 </div>
               </div>
             ))}

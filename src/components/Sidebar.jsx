@@ -49,6 +49,9 @@ import EmergencyShareIcon from "@mui/icons-material/EmergencyShare";
 import HotelIcon from "@mui/icons-material/Hotel";
 import DescriptionIcon from "@mui/icons-material/Description";
 import BusinessIcon from "@mui/icons-material/Business";
+import BiotechIcon from "@mui/icons-material/Biotech";
+
+
 
 // Context to share collapsed state globally (used in Layout/Header)
 export const SidebarContext = createContext({
@@ -120,6 +123,12 @@ export default function Sidebar() {
             { label: "New Appointment", path: "/appointments/new" },
           ],
         },
+        {
+                  label: "Lab Reports",
+                  icon: <BiotechIcon style={{ fontSize: 18 }} />,
+                  key: "lab-reports",
+                  path: "/lab-reports",
+                },
         // {
         //   label: "Services",
         //   icon: <MedicalServicesIcon style={{ fontSize: 18 }} />,
@@ -199,6 +208,8 @@ export default function Sidebar() {
 
   return (
     <aside className={`sidebar ${collapsed ? "sidebar--collapsed" : ""}`}>
+      
+      
       {/* ── Logo ── */}
       <div className="sidebar-logo">
         <div className="logo-wrap">

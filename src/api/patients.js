@@ -1,3 +1,4 @@
+// ui/src/api/patients.js
 import axiosInstance from './axiosInstance';
 
 // Get all patients

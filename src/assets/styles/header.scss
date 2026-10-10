@@ -1,183 +1,422 @@
 @import 'variables';
 
+
+// ============================================================
+// HEADER
+// ============================================================
+
 .header {
   height: $header-height;
-  background: $white;
-  border-bottom: 1px solid $border-color;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
+
   position: fixed;
   top: 0;
   left: $sidebar-width;
   right: 0;
+
   z-index: 99;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 18px;
+
+  background: $header-bg;
+  border-bottom: 1px solid $border-color;
+
   font-family: $font-family;
 
+  transition:
+    left $transition-smooth,
+    box-shadow $transition-normal;
+
+
+  // ==========================================================
+  // LEFT — SEARCH
+  // ==========================================================
+
   .header-left {
+    display: flex;
+    align-items: center;
+
+    min-width: 0;
+
     .search-box {
+      width: 260px;
+      height: 36px;
+
       display: flex;
       align-items: center;
+
       gap: 8px;
-      background: $body-bg;
-      border: 1px solid $border-color;
+
+      padding: 0 10px;
+
+      background: $header-search-bg;
+      border: 1px solid $header-search-border;
       border-radius: $radius-md;
-      padding: 7px 14px;
-      width: 260px;
 
-      input {
-        border: none;
-        outline: none;
-        background: transparent;
-        font-size: $font-size-base;
-        color: $text-dark;
-        width: 100%;
-        font-family: $font-family;
+      transition:
+        background $transition-fast,
+        border-color $transition-fast,
+        box-shadow $transition-fast;
 
-        &::placeholder { color: $text-light; }
+      &:focus-within {
+        background: $white;
+        border-color: $primary-light;
+        box-shadow: $focus-ring;
       }
 
-      .search-icon { color: $text-light; font-size: 14px; }
+      .search-icon {
+        flex-shrink: 0;
+
+        color: $text-light;
+
+        font-size: 17px !important;
+
+        transition: color $transition-fast;
+      }
+
+      &:focus-within .search-icon {
+        color: $primary;
+      }
+
+      input {
+        width: 100%;
+        min-width: 0;
+
+        padding: 0;
+
+        border: none;
+        outline: none;
+
+        background: transparent;
+
+        color: $text-dark;
+
+        font-family: $font-family;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-regular;
+
+        &::placeholder {
+          color: $text-light;
+        }
+      }
 
       .search-shortcut {
+        flex-shrink: 0;
+
+        min-width: 30px;
+        height: 22px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 0 5px;
+
         background: $white;
+
         border: 1px solid $border-color;
-        border-radius: 4px;
-        padding: 1px 5px;
-        font-size: $font-size-xs;
+        border-radius: $radius-sm;
+
         color: $text-light;
-        font-weight: 500;
+
+        font-size: 10px;
+        font-weight: $font-weight-medium;
+
+        line-height: 1;
+
+        box-shadow: $shadow-xs;
       }
     }
   }
 
+
+  // ==========================================================
+  // RIGHT — ACTIONS
+  // ==========================================================
+
   .header-right {
     display: flex;
     align-items: center;
+
     gap: 8px;
 
-    .btn-ai {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: $primary;
-      color: white;
-      border: none;
-      border-radius: $radius-md;
-      padding: 7px 14px;
-      font-size: $font-size-sm;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: $font-family;
-      transition: background 0.15s;
 
-      &:hover { background: $primary-dark; }
-
-      .ai-dot {
-        width: 6px;
-        height: 6px;
-        background: #4ade80;
-        border-radius: 50%;
-        animation: pulse 1.5s infinite;
-      }
-    }
+    // ========================================================
+    // GENERIC HEADER ICON BUTTON
+    // ========================================================
 
     .header-icon-btn {
       width: 36px;
       height: 36px;
-      border-radius: $radius-md;
+
+      position: relative;
+
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      color: $text-medium;
+
       border: 1px solid $border-color;
+      border-radius: $radius-md;
+
       background: $white;
-      position: relative;
-      transition: all 0.15s;
+
+      color: $text-medium;
+
+      cursor: pointer;
+
+      transition:
+        background $transition-fast,
+        border-color $transition-fast,
+        color $transition-fast,
+        box-shadow $transition-fast,
+        transform $transition-fast;
 
       &:hover {
-        background: $body-bg;
+        background: $surface-soft;
+        border-color: #d0d5dd;
         color: $text-dark;
+
+        box-shadow: $shadow-xs;
       }
+
+      &:active {
+        transform: scale(0.96);
+      }
+
+      svg {
+        font-size: 18px !important;
+      }
+
+
+      // ======================================================
+      // NOTIFICATION BADGE
+      // ======================================================
 
       .badge {
         position: absolute;
-        top: -3px;
-        right: -3px;
-        width: 16px;
-        height: 16px;
-        background: $danger;
-        border-radius: 50%;
-        font-size: 9px;
-        color: white;
+
+        top: -4px;
+        right: -4px;
+
+        width: 17px;
+        height: 17px;
+
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
-        border: 2px solid white;
+
+        background: $danger;
+
+        border: 2px solid $white;
+        border-radius: $radius-full;
+
+        color: $white;
+
+        font-size: 8px;
+        font-weight: $font-weight-bold;
+
+        line-height: 1;
+
+        box-shadow: $shadow-xs;
       }
     }
+
+
+    // ========================================================
+    // AI BUTTON
+    // ========================================================
+
+    .btn-ai {
+      height: 36px;
+
+      display: flex;
+      align-items: center;
+
+      gap: 6px;
+
+      padding: 0 13px;
+
+      background: $primary;
+      color: $white;
+
+      border: none;
+      border-radius: $radius-md;
+
+      font-family: $font-family;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-semibold;
+
+      cursor: pointer;
+
+      transition:
+        background $transition-fast,
+        box-shadow $transition-fast,
+        transform $transition-fast;
+
+      &:hover {
+        background: $primary-dark;
+        box-shadow:
+          0 4px 10px rgba(37, 99, 235, 0.18);
+      }
+
+      &:active {
+        transform: scale(0.97);
+      }
+
+      .ai-dot {
+        width: 6px;
+        height: 6px;
+
+        background: #4ade80;
+
+        border-radius: $radius-full;
+
+        animation: pulse 1.5s infinite;
+      }
+    }
+
+
+    // ========================================================
+    // THEME TOGGLE
+    // ========================================================
 
     .theme-toggle {
       @extend .header-icon-btn;
     }
 
+
+    // ========================================================
+    // AVATAR
+    // ========================================================
+
     .header-avatar {
       width: 36px;
       height: 36px;
-      border-radius: 50%;
+
       object-fit: cover;
-      cursor: pointer;
+
       border: 2px solid $border-color;
+      border-radius: $radius-full;
+
+      cursor: pointer;
+
+      transition:
+        border-color $transition-fast,
+        box-shadow $transition-fast;
+
+      &:hover {
+        border-color: $primary-muted;
+
+        box-shadow:
+          0 0 0 3px rgba(37, 99, 235, 0.08);
+      }
     }
+
+
+    // ========================================================
+    // USER MENU
+    // ========================================================
 
     .user-menu-wrapper {
       position: relative;
 
+
+      // ======================================================
+      // USER AVATAR
+      // ======================================================
+
       .user-avatar {
+        transition:
+          transform $transition-fast,
+          box-shadow $transition-fast;
+
         &:hover {
-          transform: scale(1.05);
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+          transform: scale(1.04);
+
+          box-shadow:
+            0 0 0 3px rgba(37, 99, 235, 0.10);
+        }
+
+        &:active {
+          transform: scale(0.97);
         }
       }
 
+
+      // ======================================================
+      // DROPDOWN
+      // ======================================================
+
       .user-menu-dropdown {
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background: $white;
-        border: 1px solid $border-color;
-        border-radius: $radius-md;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         min-width: 180px;
-        margin-top: 8px;
-        z-index: 1000;
+
+        position: absolute;
+
+        top: calc(100% + 8px);
+        right: 0;
+
         overflow: hidden;
+
+        background: $white;
+
+        border: 1px solid $border-color;
+        border-radius: $radius-lg;
+
+        box-shadow: $shadow-lg;
+
+        z-index: 1000;
+
+        animation: userMenuIn 0.16s ease-out;
+
+
+        // ====================================================
+        // MENU ITEM
+        // ====================================================
 
         .menu-item {
           width: 100%;
+          min-height: 42px;
+
           display: flex;
           align-items: center;
-          gap: 12px;
-          padding: 12px 16px;
+
+          gap: 10px;
+
+          padding: 9px 14px;
+
           border: none;
+
           background: transparent;
+
           color: $text-dark;
-          cursor: pointer;
-          font-size: $font-size-md;
-          font-family: inherit;
-          transition: all 0.15s ease;
+
+          font-family: $font-family;
+          font-size: $font-size-sm;
+          font-weight: $font-weight-medium;
+
           text-align: left;
 
+          cursor: pointer;
+
+          transition:
+            background $transition-fast,
+            color $transition-fast;
+
           svg {
-            font-size: 18px;
-            color: $text-medium;
+            flex-shrink: 0;
+
+            color: $text-light;
+
+            font-size: 18px !important;
+
+            transition: color $transition-fast;
           }
 
           &:hover {
-            background: $body-bg;
+            background: $surface-soft;
             color: $primary;
 
             svg {
@@ -185,6 +424,8 @@
             }
           }
 
+
+          // Logout
           &.logout {
             color: $danger;
 
@@ -193,7 +434,7 @@
             }
 
             &:hover {
-              background: rgba($danger, 0.05);
+              background: $danger-light;
               color: $danger;
 
               svg {
@@ -203,17 +444,106 @@
           }
         }
 
+
+        // ====================================================
+        // DIVIDER
+        // ====================================================
+
         .menu-divider {
           height: 1px;
-          background: $border-color;
-          margin: 0;
+
+          margin: 2px 0;
+
+          background: $border-light;
         }
       }
     }
   }
 }
 
+
+// ============================================================
+// ANIMATIONS
+// ============================================================
+
 @keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.85); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(0.85);
+  }
+}
+
+
+@keyframes userMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+// ============================================================
+// RESPONSIVE
+// ============================================================
+
+@media (max-width: 900px) {
+  .header {
+    padding: 0 14px;
+
+    .header-left {
+      .search-box {
+        width: 220px;
+      }
+    }
+  }
+}
+
+
+@media (max-width: 640px) {
+  .header {
+    padding: 0 10px;
+
+    .header-left {
+      .search-box {
+        width: 180px;
+      }
+
+      .search-shortcut {
+        display: none;
+      }
+    }
+
+    .header-right {
+      gap: 5px;
+
+      .header-icon-btn,
+      .header-avatar,
+      .user-avatar {
+        width: 34px;
+        height: 34px;
+      }
+    }
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .header *,
+  .header *::before,
+  .header *::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }

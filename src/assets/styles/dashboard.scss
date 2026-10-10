@@ -1,3 +1,4 @@
+// src/assets\style/dashboard.scss
 @import 'variables';
 
 .dashboard {
@@ -834,6 +835,696 @@
           &.reject { color: $danger; &:hover { background: #fee2e2; border-color: $danger; } }
           &.approve { color: $success; &:hover { background: #dcfce7; border-color: $success; } }
         }
+      }
+    }
+  }
+}
+
+
+/* =========================================================
+   PREMIUM DASHBOARD UI
+   Visual-only improvements
+   ========================================================= */
+
+.dashboard {
+  padding-bottom: 28px;
+
+  /* ---------- PAGE HEADER ---------- */
+  .page-header {
+    margin-bottom: 22px;
+
+    h1 {
+      font-size: 23px;
+      letter-spacing: -0.3px;
+    }
+
+    .header-actions {
+      gap: 9px;
+
+      button {
+        min-height: 38px;
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease;
+
+        &:active {
+          transform: translateY(1px);
+        }
+      }
+
+      .btn-primary {
+        box-shadow: 0 5px 14px rgba(37, 99, 235, 0.18);
+
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 8px 18px rgba(37, 99, 235, 0.24);
+        }
+      }
+
+      .btn-outline {
+        &:hover {
+          transform: translateY(-1px);
+          background: #fff;
+          border-color: #cbd5e1;
+          box-shadow: 0 5px 14px rgba(15, 23, 42, 0.06);
+        }
+      }
+    }
+  }
+
+  /* ---------- STAT CARDS ---------- */
+  .stats-row {
+    gap: 14px;
+
+    .stat-card {
+      min-height: 124px;
+      padding: 18px 19px;
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+
+      &::after {
+        content: "";
+        position: absolute;
+        width: 90px;
+        height: 90px;
+        right: -38px;
+        bottom: -45px;
+        border-radius: 50%;
+        background: rgba(37, 99, 235, 0.035);
+        pointer-events: none;
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        border-color: #d7dee8;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.07);
+      }
+
+      .stat-left {
+        position: relative;
+        z-index: 1;
+
+        .stat-icon-wrap {
+          width: 40px;
+          height: 40px;
+          border-radius: 11px;
+          margin-bottom: 11px;
+
+          svg {
+            font-size: 19px;
+          }
+        }
+
+        .stat-label {
+          font-size: 12px;
+          letter-spacing: 0.1px;
+        }
+
+        .stat-value {
+          font-size: 26px;
+          letter-spacing: -0.5px;
+        }
+      }
+
+      .stat-right {
+        position: relative;
+        z-index: 1;
+        padding-top: 1px;
+
+        .stat-badge {
+          padding: 4px 8px;
+          font-size: 10px;
+          border-radius: 999px;
+        }
+      }
+    }
+  }
+
+  /* ---------- COMMON CARDS ---------- */
+  .card {
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.025);
+    transition:
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+
+    &:hover {
+      border-color: #dbe2ea;
+    }
+
+    .card-header {
+      min-height: 55px;
+      padding: 13px 18px;
+
+      .card-title {
+        font-size: 14px;
+        letter-spacing: -0.1px;
+      }
+
+      .filter-select {
+        min-height: 30px;
+        padding: 5px 28px 5px 10px;
+        border-radius: 7px;
+
+        &:focus {
+          border-color: #93c5fd;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+        }
+      }
+    }
+
+    .card-body {
+      padding: 17px 18px;
+    }
+  }
+
+  /* ---------- MAIN CHART ---------- */
+  .main-grid {
+    grid-template-columns: minmax(0, 1fr) 315px;
+    gap: 16px;
+  }
+
+  .appt-stats {
+    .stats-legend {
+      gap: 28px;
+      padding: 1px 2px 0;
+
+      .legend-item {
+        gap: 7px;
+
+        .dot {
+          width: 7px;
+          height: 7px;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.07);
+        }
+
+        .legend-label {
+          font-size: 10px;
+          margin-bottom: 1px;
+        }
+
+        .legend-count {
+          font-size: 15px;
+        }
+      }
+    }
+
+    .chart-wrap {
+      height: 220px;
+      margin-top: 4px;
+    }
+
+    .chart-legend {
+      margin-top: 12px;
+      gap: 20px;
+
+      .cl-item {
+        font-size: 10px;
+
+        .cl-dot {
+          width: 8px;
+          height: 8px;
+        }
+      }
+    }
+  }
+
+  /* ---------- CALENDAR ---------- */
+  .calendar-card {
+    .calendar-nav {
+      padding: 11px 14px;
+      margin-bottom: 8px;
+
+      .month-label {
+        font-size: 12px;
+      }
+
+      .nav-btn {
+        width: 27px;
+        height: 27px;
+        border-radius: 7px;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: #eff6ff;
+          border-color: #bfdbfe;
+          color: $primary;
+        }
+      }
+    }
+
+    .calendar-grid {
+      padding: 2px 12px 12px;
+
+      .day-names {
+        margin-bottom: 6px;
+
+        .day-name {
+          font-size: 9px;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+        }
+      }
+
+      .days {
+        gap: 3px;
+
+        .day {
+          padding: 6px 2px;
+          font-size: 11px;
+          border-radius: 7px;
+
+          &:hover {
+            background: #eff6ff;
+            color: $primary;
+          }
+
+          &.today {
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+          }
+        }
+      }
+    }
+
+    .appt-list {
+      padding: 9px 14px 11px;
+
+      .appt-item {
+        padding: 9px 0;
+
+        .appt-left {
+          .appt-type {
+            font-size: 11px;
+          }
+
+          .appt-time {
+            font-size: 9px;
+          }
+        }
+
+        .appt-avatars {
+          .avatar-placeholder {
+            width: 26px;
+            height: 26px;
+            font-size: 9px;
+          }
+        }
+      }
+
+      .view-all-btn {
+        padding: 9px;
+        margin-top: 5px;
+        border-radius: 8px;
+
+        &:hover {
+          background: #eff6ff;
+        }
+      }
+    }
+  }
+
+  /* ---------- POPULAR DOCTORS ---------- */
+  .popular-doctors {
+    .doctors-grid {
+      gap: 14px;
+
+      .doctor-card {
+        padding: 17px 14px;
+        border-radius: 12px;
+        background: #fff;
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease,
+          border-color 0.18s ease;
+
+        &:hover {
+          transform: translateY(-2px);
+          border-color: #dbeafe;
+          box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .doctor-avatar {
+          width: 54px;
+          height: 54px;
+          margin-bottom: 10px;
+          border: 3px solid #fff;
+          box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08);
+        }
+
+        .doctor-name {
+          font-size: 13px;
+        }
+
+        .doctor-specialty {
+          font-size: 10px;
+        }
+
+        .doctor-bookings {
+          font-size: 10px;
+        }
+      }
+    }
+  }
+
+  /* ---------- BOTTOM CARDS ---------- */
+  .bottom-grid {
+    gap: 16px;
+  }
+
+  .departments-card,
+  .schedule-card,
+  .income-card {
+    min-height: 300px;
+  }
+
+  .departments-card {
+    .donut-wrap {
+      height: 175px;
+    }
+
+    .donut-legend {
+      gap: 8px 14px;
+
+      .dl-item {
+        font-size: 10px;
+      }
+    }
+  }
+
+  .schedule-card {
+    .schedule-summary {
+      gap: 7px;
+
+      .sum-item {
+        padding: 9px 6px;
+        border: 1px solid #eef2f7;
+        background: #f8fafc;
+
+        .sum-value {
+          font-size: 20px;
+        }
+
+        .sum-label {
+          font-size: 9px;
+        }
+      }
+    }
+
+    .schedule-list {
+      .sch-item {
+        padding: 9px 0;
+
+        .sch-doc {
+          gap: 9px;
+
+          .doc-avatar {
+            width: 34px;
+            height: 34px;
+          }
+
+          .doc-info {
+            .doc-name {
+              font-size: 11px;
+            }
+
+            .doc-role {
+              font-size: 9px;
+            }
+          }
+        }
+
+        .btn-book {
+          padding: 6px 11px;
+          border-radius: 7px;
+          transition: all 0.15s ease;
+
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
+          }
+        }
+      }
+    }
+  }
+
+  .income-card {
+    .income-list {
+      .income-item {
+        padding: 11px 0;
+
+        .income-name {
+          font-size: 11px;
+        }
+
+        .income-count {
+          font-size: 9px;
+        }
+
+        .income-amount {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+
+  /* ---------- APPOINTMENTS TABLE ---------- */
+  .appointments-table {
+    .table-wrap {
+      scrollbar-width: thin;
+    }
+
+    table {
+      th {
+        padding: 11px 16px;
+        font-size: 9px;
+        background: #f8fafc;
+      }
+
+      td {
+        padding: 13px 16px;
+        font-size: 11px;
+      }
+
+      tbody tr {
+        transition: background 0.15s ease;
+
+        &:hover td {
+          background: #f8fbff;
+        }
+      }
+
+      .cell-avatar {
+        width: 32px;
+        height: 32px;
+      }
+
+      .cell-name {
+        font-size: 11px;
+      }
+
+      .cell-sub {
+        font-size: 9px;
+      }
+
+      .status-badge {
+        padding: 4px 9px;
+        font-size: 9px;
+      }
+    }
+  }
+
+  /* ---------- BOTTOM 3 CARDS ---------- */
+  .bottom-3-grid {
+    gap: 16px;
+
+    > .card {
+      min-height: 285px;
+    }
+
+    .patient-card-item,
+    .transaction-item,
+    .leave-item {
+      padding: 10px 0;
+    }
+
+    .patient-card-item {
+      .patient-info {
+        gap: 9px;
+
+        .p-avatar {
+          width: 34px;
+          height: 34px;
+        }
+
+        .p-name {
+          font-size: 11px;
+        }
+
+        .p-paid {
+          font-size: 9px;
+        }
+      }
+
+      .appt-badge {
+        padding: 4px 9px;
+        font-size: 9px;
+      }
+    }
+
+    .transaction-item {
+      .txn-left {
+        gap: 9px;
+
+        .txn-icon {
+          width: 34px;
+          height: 34px;
+        }
+
+        .txn-name {
+          font-size: 11px;
+        }
+
+        .txn-id {
+          font-size: 9px;
+        }
+      }
+
+      .txn-amount {
+        font-size: 11px;
+      }
+    }
+
+    .leave-item {
+      .leave-person {
+        gap: 9px;
+
+        .l-avatar {
+          width: 34px;
+          height: 34px;
+        }
+
+        .l-name {
+          font-size: 11px;
+        }
+
+        .l-reason {
+          font-size: 9px;
+        }
+      }
+
+      .leave-actions {
+        .la-btn {
+          width: 27px;
+          height: 27px;
+        }
+      }
+    }
+  }
+
+  /* ---------- MOCK DATA BADGE ---------- */
+  span {
+    &[style*="MOCK DATA"] {
+      vertical-align: middle;
+    }
+  }
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1200px) {
+  .dashboard {
+    .stats-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .main-grid {
+      grid-template-columns: minmax(0, 1fr) 290px;
+    }
+
+    .bottom-grid,
+    .bottom-3-grid {
+      grid-template-columns: 1fr 1fr;
+
+      > .card:last-child {
+        grid-column: span 2;
+      }
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard {
+    .main-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .calendar-card {
+      width: 100%;
+    }
+
+    .bottom-grid,
+    .bottom-3-grid {
+      grid-template-columns: 1fr;
+
+      > .card:last-child {
+        grid-column: auto;
+      }
+    }
+
+    .popular-doctors {
+      .doctors-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard {
+    .page-header {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 12px;
+
+      .header-actions {
+        width: 100%;
+
+        button {
+          flex: 1;
+          justify-content: center;
+        }
+      }
+    }
+
+    .stats-row {
+      grid-template-columns: 1fr;
+    }
+
+    .appt-stats {
+      .stats-legend {
+        flex-wrap: wrap;
+        gap: 12px 20px;
+      }
+    }
+
+    .popular-doctors {
+      .doctors-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .appointments-table {
+      table {
+        min-width: 700px;
       }
     }
   }

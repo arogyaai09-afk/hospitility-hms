@@ -1,12 +1,16 @@
 //appointments/AppointmentList.jsx
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import QuickBillingModal from "../components/QuickBillingModal";
 import {
   getAppointments,
   checkInAppointment,
   updateAppointment,
-  deleteAppointment
+  deleteAppointment,
 } from "../api/appointments";
+import { getPatientById } from "../api/patients";
+import { getDoctorById } from "../api/doctors";
+import axiosInstance from "../api/axiosInstance";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -22,6 +26,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import ConfirmModal from "../components/ConfirmModal";
 import { useToast } from "../context/ToastContext";
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
@@ -45,6 +50,7 @@ const STATUS_CLASS = (s) => {
   return m[s.toLowerCase()] || "confirmed";
 };
 
+// ─── HOOKS ───────────────────────────────────────────────────────────────────
 function useOutsideClick(ref, cb) {
   useEffect(() => {
     const h = (e) => {
@@ -53,6 +59,72 @@ function useOutsideClick(ref, cb) {
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, [ref, cb]);
+}
+
+// ─── SECURE IMAGE ─────────────────────────────────────────────────────────────
+function SecureImage({ image, alt, size = 38, color = "#3b82f6" }) {
+  const [imageUrl, setImageUrl] = useState("");
+
+  useEffect(() => {
+    let objectUrl = "";
+
+    const loadImage = async () => {
+      if (!image) {
+        setImageUrl("");
+        return;
+      }
+
+      try {
+        let endpoint = image;
+
+        // Backend may return a full API URL.
+        // axiosInstance expects the endpoint after /api/v1.
+        if (image.startsWith("http://") || image.startsWith("https://")) {
+          const url = new URL(image);
+
+          endpoint = url.pathname.replace(/^\/api\/v1/, "");
+
+          if (url.search) {
+            endpoint += url.search;
+          }
+        }
+
+        const blob = await axiosInstance.getBlob(endpoint);
+
+        objectUrl = URL.createObjectURL(blob);
+        setImageUrl(objectUrl);
+      } catch (error) {
+        console.error("Failed to load appointment image:", error);
+        setImageUrl("");
+      }
+    };
+
+    loadImage();
+
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [image]);
+
+  if (!imageUrl) {
+    return null;
+  }
+
+  return (
+    <img
+      src={imageUrl}
+      alt={alt}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        objectFit: "cover",
+        display: "block",
+      }}
+    />
+  );
 }
 
 // ─── FILTER FIELD ─────────────────────────────────────────────────────────────
@@ -680,6 +752,14 @@ export default function Appointments() {
   const [sortVal, setSortVal] = useState("Recently Added");
   const [openMenu, setOpenMenu] = useState(null);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [appointmentToDelete, setAppointmentToDelete] = useState(null);
+
   const [page, setPage] = useState(1);
   const [activeFilters, setActiveFilters] = useState({
     patient: [],
@@ -692,6 +772,10 @@ export default function Appointments() {
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [billingOpen, setBillingOpen] = useState(false);
+const [billingAppointment, setBillingAppointment] = useState(null);
+const [billingVisitId, setBillingVisitId] = useState("");
 
   const exportRef = useRef();
   const sortRef = useRef();
@@ -728,30 +812,34 @@ export default function Appointments() {
           visitId: item.visitId || null,
 
           date: item.scheduledAt
-  ? new Date(item.scheduledAt).toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    })
-  : item.date
-    ? item.date
-    : item.appointmentDate
-      ? item.appointmentDate
-      : "Date not available",
+            ? new Date(item.scheduledAt).toLocaleString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })
+            : item.date
+              ? item.date
+              : item.appointmentDate
+                ? item.appointmentDate
+                : "Date not available",
 
           patient:
             item.patientName || item.patientId?.name || "Unknown Patient",
 
           pPhone: item.patientId?.phone || item.patientPhone || "",
 
+          patientImage: item.patientId?.profileImage || "",
+
           pColor: "#3b82f6",
 
           doctor: item.doctorId?.name || item.doctorName || "Unknown Doctor",
 
           dRole: item.doctorId?.specialization || item.designation || "",
+
+          doctorImage: item.doctorId?.profileImage || "",
 
           dColor: "#8b5cf6",
 
@@ -769,7 +857,72 @@ export default function Appointments() {
             : "Scheduled",
         }));
 
-        setAppointments(formattedAppointments);
+        const uniquePatientIds = [
+          ...new Set(
+            formattedAppointments
+              .map((appointment) => appointment.patientId)
+              .filter(Boolean),
+          ),
+        ];
+
+        const uniqueDoctorIds = [
+          ...new Set(
+            formattedAppointments
+              .map((appointment) => appointment.doctorId)
+              .filter(Boolean),
+          ),
+        ];
+
+        const [patientResults, doctorResults] = await Promise.all([
+          Promise.all(
+            uniquePatientIds.map(async (patientId) => {
+              try {
+                const response = await getPatientById(patientId);
+                const patientData =
+                  response?.data?.data || response?.data || null;
+
+                return [patientId, patientData?.profileImage || ""];
+              } catch (error) {
+                console.error(
+                  `Failed to fetch patient ${patientId} profile image:`,
+                  error,
+                );
+                return [patientId, ""];
+              }
+            }),
+          ),
+
+          Promise.all(
+            uniqueDoctorIds.map(async (doctorId) => {
+              try {
+                const response = await getDoctorById(doctorId);
+                const doctorData =
+                  response?.data?.data || response?.data || null;
+
+                return [doctorId, doctorData?.profileImage || ""];
+              } catch (error) {
+                console.error(
+                  `Failed to fetch doctor ${doctorId} profile image:`,
+                  error,
+                );
+                return [doctorId, ""];
+              }
+            }),
+          ),
+        ]);
+
+        const patientImages = Object.fromEntries(patientResults);
+        const doctorImages = Object.fromEntries(doctorResults);
+
+        const appointmentsWithImages = formattedAppointments.map(
+          (appointment) => ({
+            ...appointment,
+            patientImage: patientImages[appointment.patientId] || "",
+            doctorImage: doctorImages[appointment.doctorId] || "",
+          }),
+        );
+
+        setAppointments(appointmentsWithImages);
       } else {
         setAppointments([]);
       }
@@ -783,13 +936,18 @@ export default function Appointments() {
   };
 
   const handleCheckIn = async (appointment) => {
-  if (!appointment.id) {
+  if (!appointment?.id) {
     showToast("Appointment ID is missing.", "error");
     return;
   }
 
-  if (!appointment.patientId) {
+  if (!appointment?.patientId) {
     showToast("Patient ID is missing for this appointment.", "error");
+    return;
+  }
+
+  if (!appointment?.doctorId) {
+    showToast("Doctor ID is missing for this appointment.", "error");
     return;
   }
 
@@ -797,11 +955,28 @@ export default function Appointments() {
     setLoading(true);
     setOpenMenu(null);
 
-    await checkInAppointment(appointment.id);
+    const checkInResponse = await checkInAppointment(
+      appointment.id
+    );
 
-    showToast("Patient checked in successfully.", "success");
+    const visit =
+      checkInResponse?.data?.data ||
+      checkInResponse?.data ||
+      checkInResponse;
 
-    await fetchAppointments();
+    const visitId = visit?._id || visit?.id;
+
+    if (!visitId) {
+      throw new Error(
+        "Visit ID was not returned after check-in."
+      );
+    }
+
+    // Open billing
+    setBillingAppointment(appointment);
+    setBillingVisitId(visitId);
+    setBillingOpen(true);
+
   } catch (error) {
     console.error("Check-in error:", error);
 
@@ -816,43 +991,45 @@ export default function Appointments() {
   }
 };
 
-const handleDelete = async (appointment) => {
-  if (!appointment?.id) {
-    showToast("Appointment ID is missing.", "error");
-    return;
-  }
+  const handleDelete = (appointment) => {
+    if (!appointment?.id) {
+      showToast("Appointment ID is missing.", "error");
+      return;
+    }
 
-  const confirmed = window.confirm(
-    `Are you sure you want to delete the appointment for ${appointment.patient}?`
-  );
-
-  if (!confirmed) return;
-
-  try {
-    setLoading(true);
+    setAppointmentToDelete(appointment);
     setOpenMenu(null);
+    setShowDeleteModal(true);
+  };
 
-    await deleteAppointment(appointment.id);
+  const handleConfirmDelete = async () => {
+    if (!appointmentToDelete?.id) {
+      showToast("Appointment ID is missing.", "error");
+      return;
+    }
 
-    showToast(
-      "Appointment deleted successfully.",
-      "success"
-    );
+    try {
+      setLoading(true);
 
-    await fetchAppointments();
-  } catch (error) {
-    console.error("Delete appointment error:", error);
+      await deleteAppointment(appointmentToDelete.id);
 
-    showToast(
-      error?.message ||
-        error?.error ||
-        "Failed to delete appointment.",
-      "error"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+      showToast("Appointment deleted successfully.", "success");
+
+      setShowDeleteModal(false);
+      setAppointmentToDelete(null);
+
+      await fetchAppointments();
+    } catch (error) {
+      console.error("Delete appointment error:", error);
+
+      showToast(
+        error?.message || error?.error || "Failed to delete appointment.",
+        "error",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const h = (event) => {
@@ -894,24 +1071,36 @@ const handleDelete = async (appointment) => {
         activeFilters.status.includes(a.status);
 
       const dateMatch = (() => {
-        if (!activeFilters.date) return true;
+  if (!dateFrom) return true;
 
-        const selectedDate = new Date(`${activeFilters.date}T00:00:00`);
-        const appointmentDate = new Date(a.date);
+  const appointmentDate = new Date(a.date);
 
-        if (
-          Number.isNaN(selectedDate.getTime()) ||
-          Number.isNaN(appointmentDate.getTime())
-        ) {
-          return false;
-        }
+  if (Number.isNaN(appointmentDate.getTime())) {
+    return false;
+  }
 
-        return (
-          selectedDate.getFullYear() === appointmentDate.getFullYear() &&
-          selectedDate.getMonth() === appointmentDate.getMonth() &&
-          selectedDate.getDate() === appointmentDate.getDate()
-        );
-      })();
+  const appointmentDay = new Date(
+    appointmentDate.getFullYear(),
+    appointmentDate.getMonth(),
+    appointmentDate.getDate()
+  );
+
+  const fromDate = new Date(`${dateFrom}T00:00:00`);
+
+  if (appointmentDay < fromDate) {
+    return false;
+  }
+
+  if (dateTo) {
+    const toDate = new Date(`${dateTo}T23:59:59`);
+
+    if (appointmentDay > toDate) {
+      return false;
+    }
+  }
+
+  return true;
+})();
 
       return (
         searchMatch &&
@@ -1062,9 +1251,88 @@ const handleDelete = async (appointment) => {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className="date-btn">
-            <CalendarTodayIcon /> 8 Mar 26 - 8 Mar 26
-          </div>
+          <div className="date-picker-wrap">
+  <button
+    type="button"
+    className="date-btn"
+    onClick={() => setDatePickerOpen((prev) => !prev)}
+  >
+    <CalendarTodayIcon />
+
+    {dateFrom
+      ? `${new Date(dateFrom).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "2-digit",
+        })} - ${
+          dateTo
+            ? new Date(dateTo).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "2-digit",
+              })
+            : new Date(dateFrom).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "2-digit",
+              })
+        }`
+      : "Select Date"}
+  </button>
+
+  {datePickerOpen && (
+    <div className="date-picker-dropdown">
+      <div className="date-picker-field">
+        <label>From</label>
+        <input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => {
+            setDateFrom(e.target.value);
+
+            if (dateTo && e.target.value > dateTo) {
+              setDateTo("");
+            }
+          }}
+        />
+      </div>
+
+      <div className="date-picker-field">
+        <label>To</label>
+        <input
+          type="date"
+          value={dateTo}
+          min={dateFrom || undefined}
+          onChange={(e) => setDateTo(e.target.value)}
+        />
+      </div>
+
+      <div className="date-picker-actions">
+        <button
+          type="button"
+          className="date-clear-btn"
+          onClick={() => {
+            setDateFrom("");
+            setDateTo("");
+            setDatePickerOpen(false);
+          }}
+        >
+          Clear
+        </button>
+
+        <button
+          type="button"
+          className="date-apply-btn"
+          onClick={() => {
+            setDatePickerOpen(false);
+          }}
+        >
+          Apply
+        </button>
+      </div>
+    </div>
+  )}
+</div>
         </div>
         <div className="toolbar-right">
           <button className="btn-filter-sm" onClick={() => setShowFilter(true)}>
@@ -1123,13 +1391,25 @@ const handleDelete = async (appointment) => {
                         style={{
                           background: appt.pColor + "22",
                           color: appt.pColor,
+                          overflow: "hidden",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                       >
-                        {appt.patient
-                          .split(" ")
-                          .map((w) => w[0])
-                          .join("")
-                          .slice(0, 2)}
+                        {appt.patientImage ? (
+                          <SecureImage
+                            image={appt.patientImage}
+                            alt={appt.patient}
+                            size={38}
+                          />
+                        ) : (
+                          appt.patient
+                            .split(" ")
+                            .map((w) => w[0])
+                            .join("")
+                            .slice(0, 2)
+                        )}
                       </div>
                       <div>
                         <div className="p-name">{appt.patient}</div>
@@ -1146,9 +1426,21 @@ const handleDelete = async (appointment) => {
                         style={{
                           background: appt.dColor + "22",
                           color: appt.dColor,
+                          overflow: "hidden",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                       >
-                        {appt.dInitials}
+                        {appt.doctorImage ? (
+                          <SecureImage
+                            image={appt.doctorImage}
+                            alt={appt.doctor}
+                            size={38}
+                          />
+                        ) : (
+                          appt.dInitials
+                        )}
                       </div>
                       <div>
                         <div className="p-name">{appt.doctor}</div>
@@ -1214,11 +1506,11 @@ const handleDelete = async (appointment) => {
                           </div>
 
                           <div
-  className="ctx-item danger"
-  onClick={() => handleDelete(appt)}
->
-  Delete
-</div>
+                            className="ctx-item danger"
+                            onClick={() => handleDelete(appt)}
+                          >
+                            Delete
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1286,6 +1578,42 @@ const handleDelete = async (appointment) => {
           onClose={() => setShowFilter(false)}
         />
       )}
+
+      {/* Quick Billing Modal */}
+      <QuickBillingModal
+  open={billingOpen}
+  appointment={billingAppointment}
+  visitId={billingVisitId}
+  onClose={() => {
+    setBillingOpen(false);
+    setBillingAppointment(null);
+    setBillingVisitId("");
+    fetchAppointments();
+  }}
+  onSuccess={() => {
+    showToast(
+      "Payment collected successfully.",
+      "success"
+    );
+  }}
+/>
+
+      <ConfirmModal
+        open={showDeleteModal}
+        title="Delete Appointment"
+        message={
+          appointmentToDelete
+            ? `Are you sure you want to delete the appointment for ${appointmentToDelete.patient}?`
+            : "Are you sure you want to delete this appointment?"
+        }
+        confirmText="Delete Appointment"
+        cancelText="Cancel"
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setAppointmentToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

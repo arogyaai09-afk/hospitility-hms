@@ -61,3 +61,15 @@ export const payInvoice = async (
     throw error || { message: "Failed to update invoice payment" };
   }
 };
+
+// Get invoice payment history
+export const getInvoicePayments = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/invoices/${id}/payments`);
+    return response;
+  } catch (error) {
+    throw error.response?.data || {
+      message: "Failed to fetch invoice payments",
+    };
+  }
+};

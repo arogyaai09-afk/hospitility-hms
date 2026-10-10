@@ -3,11 +3,13 @@ import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { updateDoctor } from "../api/doctors";
+import { useToast } from "../context/ToastContext";
 
 const EditDoctor = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
+  const { showToast } = useToast();
 
   const doctor = location.state?.doctor;
 
@@ -48,19 +50,27 @@ const handleSubmit = async (e) => {
 
     setSaved(true);
 
+    showToast(
+      "Doctor details updated successfully.",
+      "success"
+    );
+
     setTimeout(() => {
       navigate("/doctors");
-    }, 500);
+    }, 700);
+
   } catch (error) {
     console.error("Update doctor error:", error);
 
-    alert(
+    showToast(
       error?.message ||
         error?.error ||
-        "Failed to update doctor. Please try again."
+        "Failed to update doctor. Please try again.",
+      "error"
     );
   }
 };
+
   return (
     <div className="add-doctor-page">
 

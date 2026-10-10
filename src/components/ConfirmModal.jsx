@@ -1,3 +1,4 @@
+// COMPONENTS/CONFIRMMODAL.JSX
 import React from "react";
 import "./ConfirmModal.scss";
 

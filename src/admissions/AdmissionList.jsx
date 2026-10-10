@@ -150,15 +150,17 @@ const Admissions = () => {
                     >
                       <Visibility />
                     </button>
-                    <button
-                      className="btn-icon btn-edit"
-                      onClick={() =>
-                        navigate(`/admissions/${admission._id}/edit`)
-                      }
-                      title="Edit"
-                    >
-                      <Edit />
-                    </button>
+                    {admission.status !== "discharged" && (
+  <button
+    className="btn-icon btn-edit"
+    onClick={() =>
+      navigate(`/admissions/${admission._id}/edit`)
+    }
+    title="Edit"
+  >
+    <Edit />
+  </button>
+)}
                   </td>
                 </tr>
               ))}

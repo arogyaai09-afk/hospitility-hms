@@ -3,10 +3,10 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getPatients, searchPatients, deletePatient } from "../api/patients";
 import { getAppointments } from "../api/appointments";
-import { API_BASE_URL } from "../api/axiosInstance";
+import { getDoctors } from "../api/doctors";
+import axiosInstance, { API_BASE_URL } from "../api/axiosInstance";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import GridViewIcon from "@mui/icons-material/GridView";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -58,24 +58,35 @@ function Avatar({ name = "", color = "#3b82f6", image, size = 38 }) {
     .join("")
     .toUpperCase();
 
-  if (image) {
-    return (
-      <img
-        src={image}
-        alt={name}
-        style={{
-          width: size,
-          height: size,
-          borderRadius: "50%",
-          objectFit: "cover",
-          flexShrink: 0,
-        }}
-        onError={(e) => {
-          e.currentTarget.style.display = "none";
-        }}
-      />
-    );
-  }
+  const [imageUrl, setImageUrl] = useState("");
+
+  useEffect(() => {
+    let objectUrl = "";
+
+    const loadImage = async () => {
+      if (!image) {
+        setImageUrl("");
+        return;
+      }
+
+      try {
+        const blob = await axiosInstance.getBlob(image);
+        objectUrl = URL.createObjectURL(blob);
+        setImageUrl(objectUrl);
+      } catch (error) {
+        console.error("Failed to load patient image:", error);
+        setImageUrl("");
+      }
+    };
+
+    loadImage();
+
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [image]);
 
   return (
     <div
@@ -91,9 +102,22 @@ function Avatar({ name = "", color = "#3b82f6", image, size = 38 }) {
         fontWeight: 700,
         fontSize: size * 0.34,
         flexShrink: 0,
+        overflow: "hidden",
       }}
     >
-      {initials}
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={name}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      ) : (
+        initials
+      )}
     </div>
   );
 }
@@ -484,10 +508,8 @@ export default function Patients() {
       try {
         setLoading(true);
 
-        const [patientsResponse, appointmentsResponse] = await Promise.all([
-          getPatients(),
-          getAppointments(),
-        ]);
+        const [patientsResponse, appointmentsResponse, doctorsResponse] =
+          await Promise.all([getPatients(), getAppointments(), getDoctors()]);
 
         const backendPatients = Array.isArray(patientsResponse?.data)
           ? patientsResponse.data
@@ -500,6 +522,16 @@ export default function Patients() {
           : Array.isArray(appointmentsResponse?.data)
             ? appointmentsResponse.data
             : [];
+
+        const backendDoctors = Array.isArray(doctorsResponse?.data?.data)
+          ? doctorsResponse.data.data
+          : Array.isArray(doctorsResponse?.data)
+            ? doctorsResponse.data
+            : [];
+
+        const doctorsMap = new Map(
+          backendDoctors.map((doctor) => [String(doctor._id), doctor]),
+        );
 
         const normalizedPatients = backendPatients.map((patient) => {
           const age = patient.dateOfBirth
@@ -545,6 +577,15 @@ export default function Patients() {
             null,
           );
 
+          const doctorId =
+            typeof latestAppointment?.doctorId === "object"
+              ? latestAppointment?.doctorId?._id
+              : latestAppointment?.doctorId;
+
+          const appointmentDoctor = doctorId
+            ? doctorsMap.get(String(doctorId))
+            : null;
+
           const lastAppointmentDate = latestAppointment
             ? latestAppointment.date ||
               latestAppointment.appointmentDate ||
@@ -567,16 +608,25 @@ export default function Patients() {
 
             status: patient.status || "",
 
-            doctor:
-              latestAppointment?.doctorId?.name ||
-              latestAppointment?.doctorName ||
-              "",
-            docRole:
-              latestAppointment?.doctorId?.specialization ||
-              latestAppointment?.designation ||
-              "",
+            doctor: appointmentDoctor?.name || "",
+
+            docRole: appointmentDoctor?.specialization || "",
+
+            docImage: appointmentDoctor?.profileImage || "",
+
+            docId: appointmentDoctor?._id || "",
+
             docColor: "#3b82f6",
-            docInitials: "",
+
+            docInitials: appointmentDoctor?.name
+              ? appointmentDoctor.name
+                  .split(" ")
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((word) => word[0])
+                  .join("")
+                  .toUpperCase()
+              : "",
 
             lastVisit: lastAppointmentDate
               ? new Date(lastAppointmentDate).toLocaleDateString("en-IN", {
@@ -586,7 +636,7 @@ export default function Patients() {
                 })
               : "",
 
-              lastAppointment: latestAppointment,
+            lastAppointment: latestAppointment,
 
             location: patient.address || "",
             color: "#3b82f6",
@@ -611,33 +661,33 @@ export default function Patients() {
   }, []);
 
   useEffect(() => {
-  const query = search.trim().toLowerCase();
+    const query = search.trim().toLowerCase();
 
-  setVisibleCount(PAGE_SIZE);
+    setVisibleCount(PAGE_SIZE);
 
-  if (!query) {
-    setPatients(allPatients);
-    return;
-  }
+    if (!query) {
+      setPatients(allPatients);
+      return;
+    }
 
-  setSearchLoading(true);
+    setSearchLoading(true);
 
-  const timer = setTimeout(() => {
-    const filteredPatients = allPatients.filter((patient) => {
-      return (
-        patient.name?.toLowerCase().includes(query) ||
-        patient.patientCode?.toLowerCase().includes(query) ||
-        patient.phone?.toLowerCase().includes(query) ||
-        patient.email?.toLowerCase().includes(query)
-      );
-    });
+    const timer = setTimeout(() => {
+      const filteredPatients = allPatients.filter((patient) => {
+        return (
+          patient.name?.toLowerCase().includes(query) ||
+          patient.patientCode?.toLowerCase().includes(query) ||
+          patient.phone?.toLowerCase().includes(query) ||
+          patient.email?.toLowerCase().includes(query)
+        );
+      });
 
-    setPatients(filteredPatients);
-    setSearchLoading(false);
-  }, 200);
+      setPatients(filteredPatients);
+      setSearchLoading(false);
+    }, 200);
 
-  return () => clearTimeout(timer);
-}, [search, allPatients]);
+    return () => clearTimeout(timer);
+  }, [search, allPatients]);
 
   const filtered = patients
     .filter((p) => {
@@ -803,9 +853,6 @@ export default function Patients() {
           )}
         </div>
         <div className="toolbar-right">
-          <button className="btn-filter-sm" onClick={() => setShowFilter(true)}>
-            <FilterListIcon /> Filters
-          </button>
           <div className="sort-dropdown-wrap" ref={sortRef}>
             <button className="btn-sort" onClick={() => setSortOpen((o) => !o)}>
               Sort By : {sortLabel} <KeyboardArrowDownIcon />
@@ -875,32 +922,30 @@ export default function Patients() {
                   <td
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/doctors/${pat.id}`);
+                      navigate(`/doctors/${pat.docId}`);
                     }}
                   >
                     <div className="doctor-cell">
-                      <div
-                        style={{
-                          width: 38,
-                          height: 38,
-                          borderRadius: "50%",
-                          background: pat.docColor + "22",
-                          color: pat.docColor,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontWeight: 700,
-                          fontSize: 13,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {pat.docInitials}
-                      </div>
-                      <div>
-                        <div className="cell-name">{pat.doctor}</div>
-                        <div className="cell-sub">{pat.docRole}</div>
-                      </div>
-                    </div>
+  {pat.doctor ? (
+    <>
+      <Avatar
+        name={pat.doctor}
+        color={pat.docColor}
+        image={pat.docImage}
+        size={38}
+      />
+
+      <div>
+        <div className="cell-name">{pat.doctor}</div>
+        <div className="cell-sub">{pat.docRole}</div>
+      </div>
+    </>
+  ) : (
+    <div>
+      <div className="cell-name">No appointment</div>
+    </div>
+  )}
+</div>
                   </td>
                   <td>{pat.address}</td>
                   <td>{pat.lastVisit}</td>
@@ -918,13 +963,13 @@ export default function Patients() {
                         className="icon-btn"
                         title="Appointments"
                         onClick={() =>
-  navigate("/appointments/new", {
-    state: {
-      patient: pat,
-      lastAppointment: pat.lastAppointment,
-    },
-  })
-}
+                          navigate("/appointments/new", {
+                            state: {
+                              patient: pat,
+                              lastAppointment: pat.lastAppointment,
+                            },
+                          })
+                        }
                       >
                         <CalendarTodayIcon />
                       </button>
@@ -991,15 +1036,15 @@ export default function Patients() {
                 openMenu={openMenu}
                 setOpenMenu={setOpenMenu}
                 onCardClick={() => navigate(`/patients/${pat.id}`)}
-                onDoctorClick={() => navigate(`/doctors/${pat.id}`)}
+                onDoctorClick={() => navigate(`/doctors/${pat.docId}`)}
                 onApptClick={() =>
-  navigate("/appointments/new", {
-    state: {
-      patient: pat,
-      lastAppointment: pat.lastAppointment,
-    },
-  })
-}
+                  navigate("/appointments/new", {
+                    state: {
+                      patient: pat,
+                      lastAppointment: pat.lastAppointment,
+                    },
+                  })
+                }
                 onDelete={() => {
                   setPatientToDelete(pat.id);
                   setShowDeleteModal(true);
@@ -1062,28 +1107,12 @@ function PatientGridCard({
               overflow: "hidden",
             }}
           >
-            {pat.profileImage ? (
-              <img
-                src={pat.profileImage}
-                alt={pat.name}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                }}
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            ) : (
-              pat.name
-                .split(" ")
-                .filter(Boolean)
-                .slice(0, 2)
-                .map((w) => w[0])
-                .join("")
-                .toUpperCase()
-            )}
+            <Avatar
+              name={pat.name}
+              color={pat.color}
+              image={pat.profileImage}
+              size={50}
+            />
           </div>
           <div>
             <div className="pgc-name">{pat.name}</div>

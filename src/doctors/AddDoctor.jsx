@@ -246,7 +246,6 @@ export default function AddDoctor() {
       setAppointmentErrors((p) => ({ ...p, [field]: "" }));
   };
 
-
   // Country → State
   useEffect(() => {
     if (!address.country) {
@@ -414,19 +413,19 @@ export default function AddDoctor() {
         fees: Number(appointment.consultationCharge),
         profileImage: profileImage,
 
-        licenseNumber: contact.licenseNumber,
+        medicalLicenseNumber: contact.licenseNumber,
         dateOfBirth: contact.dob,
         bloodGroup: contact.bloodGroup,
         experience: Number(contact.experience),
 
-        location: {
+        location: JSON.stringify({
           address1: address.address1,
           address2: address.address2,
           country: address.country,
           state: address.state,
           city: address.city,
           pincode: address.pincode,
-        },
+        }),
       };
 
       console.log("DOCTOR PAYLOAD:", doctorData);
@@ -563,13 +562,13 @@ export default function AddDoctor() {
 
           <div className="form-row">
             <SelectField
-  label="Department"
-  required
-  options={DEPARTMENTS}
-  value={contact.department}
-  onChange={(e) => handleContact("department", e.target.value)}
-  error={contactErrors.department}
-/>
+              label="Department"
+              required
+              options={DEPARTMENTS}
+              value={contact.department}
+              onChange={(e) => handleContact("department", e.target.value)}
+              error={contactErrors.department}
+            />
             <SelectField
               label="Designation"
               required

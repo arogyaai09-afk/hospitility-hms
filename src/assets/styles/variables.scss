@@ -1,34 +1,108 @@
-// Color Variables
+// ============================================================
+// AAROGYA-AI — GLOBAL DESIGN SYSTEM
+// ============================================================
+
+
+// ============================================================
+// BRAND COLORS
+// ============================================================
+
 $primary: #2563eb;
 $primary-light: #3b82f6;
 $primary-dark: #1d4ed8;
+
+$primary-soft: #eff6ff;
+$primary-muted: #dbeafe;
+
 $sidebar-bg: #ffffff;
-$sidebar-width: 240px;
-$header-height: 60px;
-$body-bg: #f1f5f9;
+$header-bg: #ffffff;
+
+$body-bg: #f8fafc;
 $white: #ffffff;
-$text-dark: #1e293b;
-$text-medium: #475569;
-$text-light: #94a3b8;
-$border-color: #e2e8f0;
-$success: #10b981;
-$danger: #ef4444;
-$warning: #f59e0b;
-$info: #3b82f6;
-$purple: #8b5cf6;
 
-// Status Colors
-$confirmed-bg: #dcfce7;
-$confirmed-text: #16a34a;
-$cancelled-bg: #fee2e2;
-$cancelled-text: #dc2626;
-$checked-out-bg: #dbeafe;
-$checked-out-text: #2563eb;
-$schedule-bg: #ede9fe;
-$schedule-text: #7c3aed;
 
-// Typography
+// ============================================================
+// TEXT COLORS
+// ============================================================
+
+$text-dark: #172033;
+$text-medium: #475467;
+$text-light: #98a2b3;
+$text-muted: #667085;
+
+$text-white: #ffffff;
+
+
+// ============================================================
+// BORDER & SURFACE COLORS
+// ============================================================
+
+$border-color: #e4e7ec;
+$border-light: #eef1f5;
+
+$surface-soft: #f8fafc;
+$surface-hover: #f2f4f7;
+
+
+// ============================================================
+// STATUS COLORS
+// ============================================================
+
+$success: #12b76a;
+$success-light: #ecfdf3;
+$success-border: #abefc6;
+
+$danger: #f04438;
+$danger-light: #fef3f2;
+$danger-border: #fecdca;
+
+$warning: #f79009;
+$warning-light: #fffaeb;
+$warning-border: #fedf89;
+
+$info: #2e90fa;
+$info-light: #eff8ff;
+$info-border: #b2ddff;
+
+$purple: #7f56d9;
+$purple-light: #f4f3ff;
+$purple-border: #d9d6fe;
+
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+
+$sidebar-width: 240px;
+$sidebar-collapsed-width: 64px;
+
+$sidebar-active-bg: #eff6ff;
+$sidebar-hover-bg: #f8fafc;
+
+$sidebar-text: #475467;
+$sidebar-text-muted: #667085;
+$sidebar-icon: #98a2b3;
+
+$sidebar-active-text: $primary;
+$sidebar-active-icon: $primary;
+
+
+// ============================================================
+// HEADER
+// ============================================================
+
+$header-height: 60px;
+
+$header-search-bg: #f8fafc;
+$header-search-border: #e4e7ec;
+
+
+// ============================================================
+// TYPOGRAPHY
+// ============================================================
+
 $font-family: 'IBM Plex Sans', 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+
 $font-size-xs: 11px;
 $font-size-sm: 12px;
 $font-size-base: 13px;
@@ -36,23 +110,105 @@ $font-size-md: 14px;
 $font-size-lg: 16px;
 $font-size-xl: 18px;
 $font-size-2xl: 22px;
+$font-size-3xl: 28px;
 
-// Spacing
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+
+// ============================================================
+// SPACING
+// ============================================================
+
 $spacing-xs: 4px;
 $spacing-sm: 8px;
 $spacing-md: 12px;
 $spacing-lg: 16px;
 $spacing-xl: 20px;
 $spacing-2xl: 24px;
+$spacing-3xl: 32px;
+$spacing-4xl: 40px;
 
-// Border Radius
-$radius-sm: 4px;
+
+// ============================================================
+// BORDER RADIUS
+// ============================================================
+
+$radius-sm: 6px;
 $radius-md: 8px;
 $radius-lg: 12px;
 $radius-xl: 16px;
+$radius-2xl: 20px;
 $radius-full: 50%;
+$radius-pill: 999px;
 
-// Shadows
-$shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-$shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-$shadow-lg: 0 8px 24px rgba(0,0,0,0.10);
+
+// ============================================================
+// SHADOWS
+// ============================================================
+
+$shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+
+$shadow-sm:
+  0 1px 3px rgba(16, 24, 40, 0.06),
+  0 1px 2px rgba(16, 24, 40, 0.03);
+
+$shadow-md:
+  0 4px 12px rgba(16, 24, 40, 0.08);
+
+$shadow-lg:
+  0 8px 24px rgba(16, 24, 40, 0.10);
+
+$shadow-xl:
+  0 16px 40px rgba(16, 24, 40, 0.12);
+
+
+// ============================================================
+// COMPONENT TOKENS
+// ============================================================
+
+$card-bg: $white;
+$card-border: $border-color;
+$card-radius: $radius-lg;
+
+$input-height: 40px;
+$button-height: 38px;
+
+$transition-fast: 0.15s ease;
+$transition-normal: 0.2s ease;
+$transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+
+// ============================================================
+// APPOINTMENT / STATUS BADGES
+// ============================================================
+
+$confirmed-bg: #ecfdf3;
+$confirmed-text: #039855;
+
+$cancelled-bg: #fef3f2;
+$cancelled-text: #d92d20;
+
+$checked-out-bg: #eff8ff;
+$checked-out-text: #175cd3;
+
+$schedule-bg: #f4f3ff;
+$schedule-text: #6941c6;
+
+$checked-in-bg: #eff8ff;
+$checked-in-text: #175cd3;
+
+$completed-bg: #ecfdf3;
+$completed-text: #027a48;
+
+
+// ============================================================
+// FOCUS / INTERACTION
+// ============================================================
+
+$focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.12);
+
+$disabled-bg: #f2f4f7;
+$disabled-text: #98a2b3;

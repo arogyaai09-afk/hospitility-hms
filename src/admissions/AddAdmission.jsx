@@ -1,8 +1,12 @@
-// AddAdmission.jsx
+// admissions/AddAdmission.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import { createIPDAdmission, getAdmissions } from "../api/admissions";
+import {
+  createIPDAdmission,
+  updateAdmission,
+  getAdmissions,
+} from "../api/admissions";
 import { getPatients } from "../api/patients";
 import { getPatientVisits } from "../api/visits";
 import { getDoctors } from "../api/doctors";
@@ -169,7 +173,35 @@ export default function AddAdmission() {
 
       const selectedBed = beds.find((b) => (b._id || b.id) === form.bedId);
 
-      if (!selectedPatient || !selectedBed || !form.doctorId || !form.visitId) {
+      if (!form.doctorId || !form.admissionType) {
+        showToast("Please select doctor and admission type", "warning");
+        setLoading(false);
+        return;
+      }
+
+      // EDIT EXISTING ADMISSION
+      if (isEditMode) {
+        const payload = {
+          doctorId: form.doctorId,
+          bedNumber: selectedBed?.bedNumber || form.bedNumber,
+          admissionType: form.admissionType,
+        };
+
+        if (!payload.bedNumber) {
+          showToast("Please select a bed", "warning");
+          setLoading(false);
+          return;
+        }
+
+        await updateAdmission(id, payload);
+
+        showToast("Admission updated successfully", "success");
+        navigate("/admissions");
+        return;
+      }
+
+      // CREATE NEW ADMISSION
+      if (!selectedPatient || !selectedBed || !form.visitId) {
         showToast("Please select patient, visit, doctor and bed", "warning");
         setLoading(false);
         return;
@@ -178,17 +210,25 @@ export default function AddAdmission() {
       const payload = {
         patientId: form.patientId,
         visitId: form.visitId,
-        patientName: selectedPatient?.name,
-        admissionType: "IPD",
-        bedNumber: selectedBed?.bedNumber,
+        patientName: selectedPatient.name,
+        admissionType: form.admissionType,
+        bedNumber: selectedBed.bedNumber,
         doctorId: form.doctorId,
       };
 
       await createIPDAdmission(payload);
+
       showToast("Admission created successfully", "success");
       navigate("/admissions");
     } catch (error) {
-      showToast(error?.message || "Failed to create admission", "error");
+      console.error("Admission submit error:", error);
+
+      showToast(
+        error?.message ||
+          error?.response?.data?.message ||
+          "Failed to save admission",
+        "error",
+      );
     } finally {
       setLoading(false);
     }
@@ -299,7 +339,18 @@ export default function AddAdmission() {
               <label>Available Bed</label>
               <select
                 value={form.bedId}
-                onChange={(e) => setField("bedId", e.target.value)}
+                onChange={(e) => {
+                  const selectedBedId = e.target.value;
+                  const selectedBed = beds.find(
+                    (bed) => (bed._id || bed.id) === selectedBedId,
+                  );
+
+                  setForm((prev) => ({
+                    ...prev,
+                    bedId: selectedBedId,
+                    bedNumber: selectedBed?.bedNumber || "",
+                  }));
+                }}
               >
                 <option value="">Select bed</option>
                 {beds.map((bed) => (

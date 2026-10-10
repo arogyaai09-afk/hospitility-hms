@@ -1,5 +1,6 @@
 //appointments/AddAppointmentList.jsx
 import { useState, useEffect } from "react";
+import QuickBillingModal from "../components/QuickBillingModal";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -12,13 +13,14 @@ import {
   createAppointment,
   getAppointmentById,
   updateAppointment,
+  checkInAppointment,
 } from "../api/appointments";
 import { useToast } from "../context/ToastContext";
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const DEPARTMENTS = ["General Medicine", "Pediatrics", "Gynecology", "Cardiology", "Orthopedics", "Neurology", "Oncology", "Psychiatry", "Urology"];
 const APPT_TYPES = ["OPD", "IPD", "Emergency"];
-const STATUSES = ["Checked Out", "Checked In", "Cancelled", "Schedule", "Confirmed"];
+const STATUSES = ["Schedule", "Check In"];
 
 // ─── CUSTOM SELECT ────────────────────────────────────────────────────────────
 function CustomSelect({
@@ -158,6 +160,7 @@ export default function NewAppointment() {
     time: "",
     reason: "",
     status: "",
+    visitId: "",
   });
   const [errors, setErrors] = useState({});
   const [patients, setPatients] = useState([]);
@@ -166,6 +169,10 @@ export default function NewAppointment() {
   const [doctorsLoading, setDoctorsLoading] = useState(true);
   const [appointmentLoading, setAppointmentLoading] = useState(false);
   const [existingAppointment, setExistingAppointment] = useState(null);
+
+  const [billingOpen, setBillingOpen] = useState(false);
+  const [billingAppointment, setBillingAppointment] = useState(null);
+  const [billingVisitId, setBillingVisitId] = useState("");
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -218,125 +225,128 @@ export default function NewAppointment() {
   }, []);
 
   useEffect(() => {
-  if (!isEditMode || !id) return;
+    if (!isEditMode || !id) return;
 
-  const fetchAppointment = async () => {
-    try {
-      setAppointmentLoading(true);
+    const fetchAppointment = async () => {
+      try {
+        setAppointmentLoading(true);
 
-      const response = await getAppointmentById(id);
+        const response = await getAppointmentById(id);
 
-      const appointment =
-        response?.data?.data ||
-        response?.data ||
-        null;
+        const appointment =
+          response?.data?.data ||
+          response?.data ||
+          null;
 
-      if (!appointment) {
-        showToast("Appointment not found.", "error");
-        navigate("/appointments");
-        return;
-      }
+        if (!appointment) {
+          showToast("Appointment not found.", "error");
+          navigate("/appointments");
+          return;
+        }
 
-      setExistingAppointment(appointment);
-    } catch (error) {
-      console.error("Appointment API Error:", error);
+        setExistingAppointment(appointment);
+      } catch (error) {
+        console.error("Appointment API Error:", error);
 
-      showToast(
-        error?.message ||
+        showToast(
+          error?.message ||
           error?.error ||
           "Failed to load appointment.",
-        "error"
-      );
-    } finally {
-      setAppointmentLoading(false);
-    }
-  };
+          "error"
+        );
+      } finally {
+        setAppointmentLoading(false);
+      }
+    };
 
-  fetchAppointment();
-}, [id, isEditMode, navigate, showToast]);
+    fetchAppointment();
+  }, [id, isEditMode, navigate, showToast]);
 
-useEffect(() => {
-  if (!isEditMode || !existingAppointment) return;
+  useEffect(() => {
+    if (!isEditMode || !existingAppointment) return;
 
-  const patientId =
-    typeof existingAppointment.patientId === "object"
-      ? existingAppointment.patientId?._id
-      : existingAppointment.patientId;
+    const patientId =
+      typeof existingAppointment.patientId === "object"
+        ? existingAppointment.patientId?._id
+        : existingAppointment.patientId;
 
-  const doctorId =
-    typeof existingAppointment.doctorId === "object"
-      ? existingAppointment.doctorId?._id
-      : existingAppointment.doctorId;
+    const doctorId =
+      typeof existingAppointment.doctorId === "object"
+        ? existingAppointment.doctorId?._id
+        : existingAppointment.doctorId;
 
-  const patient = patients.find(
-    (item) => String(item._id) === String(patientId)
-  );
+    const patient = patients.find(
+      (item) => String(item._id) === String(patientId)
+    );
 
-  const doctor = doctors.find(
-    (item) => String(item._id) === String(doctorId)
-  );
+    const doctor = doctors.find(
+      (item) => String(item._id) === String(doctorId)
+    );
 
-  const statusMap = {
-    scheduled: "Schedule",
-    checked_in: "Checked In",
-    completed: "Checked Out",
-    cancelled: "Cancelled",
-  };
+    const statusMap = {
+      Schedule: "scheduled",
+    };
 
-  const { date, time } = getDateTimeParts(
-  existingAppointment.scheduledAt
-);
+    const { date, time } = getDateTimeParts(
+      existingAppointment.scheduledAt
+    );
 
-  setForm((current) => ({
-    ...current,
+    setForm((current) => ({
+      ...current,
 
-    appointmentId:
-      existingAppointment._id ||
-      existingAppointment.id ||
-      current.appointmentId,
+      appointmentId:
+        existingAppointment._id ||
+        existingAppointment.id ||
+        current.appointmentId,
 
-    patient:
-      patient?.name ||
-      existingAppointment.patientName ||
-      existingAppointment.patientId?.name ||
-      "",
+      patient:
+        patient?.name ||
+        existingAppointment.patientName ||
+        existingAppointment.patientId?.name ||
+        "",
 
-    patientId: patientId || "",
+      patientId: patientId || "",
 
-    patientType:
-      patient?.patientType ||
-      existingAppointment.patientType ||
-      "local",
+      patientType:
+        patient?.patientType ||
+        existingAppointment.patientType ||
+        "local",
 
-    department:
-      doctor?.specialization ||
-      existingAppointment.doctorId?.specialization ||
-      "",
+      department:
+        doctor?.specialization ||
+        existingAppointment.doctorId?.specialization ||
+        "",
 
-    doctor:
-      doctor?.name ||
-      existingAppointment.doctorId?.name ||
-      existingAppointment.doctorName ||
-      "",
+      doctor:
+        doctor?.name ||
+        existingAppointment.doctorId?.name ||
+        existingAppointment.doctorName ||
+        "",
 
-    doctorId: doctorId || "",
+      doctorId: doctorId || "",
 
-    appointmentType:
-      existingAppointment.appointmentType || "",
+      appointmentType:
+        existingAppointment.appointmentType || "",
 
-    reason:
-      existingAppointment.visitReason || "",
+      reason:
+        existingAppointment.visitReason || "",
 
-    status:
-      statusMap[existingAppointment.status] ||
-      existingAppointment.status ||
-      "",
-  }));
-}, [existingAppointment, patients, doctors, isEditMode]);
+      status:
+        statusMap[existingAppointment.status] ||
+        existingAppointment.status ||
+        "",
+    }));
+  }, [existingAppointment, patients, doctors, isEditMode]);
 
   useEffect(() => {
     const selectedPatient = location.state?.patient;
     const lastAppointment = location.state?.lastAppointment;
+    const selectedAppointment = location.state?.appointment;
+
+    // Patient Detail / Appointment List se Edit ke liye aaya hai
+    // Existing appointment ka data already edit API se aa raha hai,
+    // isliye is case mein ye prefill logic run nahi karna.
+    if (isEditMode) return;
 
     if (!selectedPatient) return;
 
@@ -345,7 +355,8 @@ useEffect(() => {
 
     const patientFromApi =
       patients.find(
-        (patient) => String(patient._id) === String(selectedPatient.id)
+        (patient) =>
+          String(patient._id) === String(selectedPatient.id)
       ) || selectedPatient;
 
     const lastDoctorId =
@@ -354,16 +365,27 @@ useEffect(() => {
         : lastAppointment?.doctorId;
 
     const doctorFromApi = doctors.find(
-      (doctor) => String(doctor._id) === String(lastDoctorId)
+      (doctor) =>
+        String(doctor._id) === String(lastDoctorId)
     );
 
     setForm((current) => ({
       ...current,
 
       // Patient details
-      patient: patientFromApi?.name || selectedPatient?.name || "",
-      patientId: patientFromApi?._id || selectedPatient?.id || "",
-      patientType: patientFromApi?.patientType || "local",
+      patient:
+        patientFromApi?.name ||
+        selectedPatient?.name ||
+        "",
+
+      patientId:
+        patientFromApi?._id ||
+        selectedPatient?.id ||
+        "",
+
+      patientType:
+        patientFromApi?.patientType ||
+        "local",
 
       // Latest appointment details
       doctor:
@@ -391,7 +413,13 @@ useEffect(() => {
 
       status: "Schedule",
     }));
-  }, [patients, doctors, location.state]);
+  }, [
+    patients,
+    doctors,
+    location.state,
+    isEditMode,
+  ]);
+
 
   const set = (field, val) => {
     setForm(p => ({ ...p, [field]: val }));
@@ -399,79 +427,148 @@ useEffect(() => {
   };
 
   const handleSubmit = async () => {
-  const errs = validate(form);
-  setErrors(errs);
+    const errs = validate(form);
+    setErrors(errs);
 
-  if (Object.keys(errs).length !== 0) {
-    const first = document.querySelector(".error-msg");
+    if (Object.keys(errs).length !== 0) {
+      const first = document.querySelector(".error-msg");
 
-    if (first) {
-      first.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+      if (first) {
+        first.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+
+      return;
     }
 
-    return;
-  }
+    try {
+      const scheduledAt = new Date(
+        `${form.date}T${form.time}:00`
+      ).toISOString();
 
-  try {
-    const scheduledAt = new Date(
-      `${form.date}T${form.time}:00`
-    ).toISOString();
+      const payload = {
+        patientId: form.patientId,
+        patientName: form.patient,
+        patientType: form.patientType || "local",
+        appointmentType: form.appointmentType,
+        visitReason: form.reason,
+        doctorId: form.doctorId,
+        status: "scheduled",
+        scheduledAt,
+      };
 
-    const payload = {
-      patientId: form.patientId,
-      patientName: form.patient,
-      patientType: form.patientType || "local",
-      appointmentType: form.appointmentType,
-      visitReason: form.reason,
-      doctorId: form.doctorId,
-      scheduledAt,
-    };
-
-    console.log(
-      isEditMode
-        ? "Updating appointment:"
-        : "Creating appointment:",
-      payload
-    );
-
-    if (isEditMode) {
-      await updateAppointment(form.appointmentId, payload);
-
-      showToast(
-        "Appointment updated successfully!",
-        "success"
+      console.log(
+        isEditMode
+          ? "Updating appointment:"
+          : "Creating appointment:",
+        payload
       );
-    } else {
-      await createAppointment(payload);
+
+      if (isEditMode) {
+        await updateAppointment(form.appointmentId, payload);
+
+        showToast(
+          "Appointment updated successfully!",
+          "success"
+        );
+
+        navigate("/appointments");
+        return;
+      }
+
+      const response = await createAppointment(payload);
+
+      const createdAppointment =
+        response?.data?.data ||
+        response?.data ||
+        response;
+
+      const appointmentId =
+        createdAppointment?._id ||
+        createdAppointment?.id;
+
+      if (!appointmentId) {
+        throw new Error("Appointment ID was not returned.");
+      }
+
+      // If Check In was selected, immediately check in the appointment
+      if (form.status === "Check In") {
+        const checkInResponse =
+          await checkInAppointment(appointmentId);
+
+        const visit =
+          checkInResponse?.data?.data ||
+          checkInResponse?.data ||
+          checkInResponse;
+
+        const visitId =
+          visit?._id ||
+          visit?.id;
+
+        if (!visitId) {
+          throw new Error(
+            "Visit ID was not returned after check-in."
+          );
+        }
+
+        setForm((current) => ({
+          ...current,
+          visitId,
+        }));
+
+        const billingAppointment = {
+          id: appointmentId,
+          patientId: form.patientId,
+          patient: form.patient,
+          doctorId: form.doctorId,
+          doctor: form.doctor,
+          dRole: form.department,
+          date: new Date(
+            `${form.date}T${form.time}:00`
+          ).toLocaleString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+        };
+
+        setBillingAppointment(billingAppointment);
+        setBillingVisitId(visitId);
+        setBillingOpen(true);
+
+        return;
+      }
 
       showToast(
         "Appointment created successfully!",
         "success"
       );
-    }
 
-    navigate("/appointments");
-  } catch (error) {
-    console.error(
-      isEditMode
-        ? "Update Appointment Error:"
-        : "Create Appointment Error:",
-      error
-    );
+      navigate("/appointments");
 
-    showToast(
-      error?.message ||
+    } catch (error) {
+      console.error(
+        isEditMode
+          ? "Update Appointment Error:"
+          : "Create Appointment Error:",
+        error
+      );
+
+      showToast(
+        error?.message ||
         error?.error ||
         (isEditMode
           ? "Failed to update appointment"
           : "Failed to create appointment"),
-      "error"
-    );
-  }
-};
+        "error"
+      );
+    }
+  };
 
   return (
     <div className="add-doctor-page">
@@ -639,10 +736,30 @@ useEffect(() => {
               required
               options={STATUSES}
               value={form.status}
-              onChange={v => set("status", v)}
+              onChange={(v) => set("status", v)}
               error={errors.status}
               dropUp
             />
+
+            {form.status === "Check In" && (
+              <div
+                className="form-group"
+                style={{ marginTop: 16 }}
+              >
+                <label>Visit ID</label>
+
+                <input
+                  type="text"
+                  value={form.visitId || ""}
+                  placeholder="Generated after check-in"
+                  readOnly
+                  style={{
+                    background: "#f8fafc",
+                    color: "#64748b",
+                  }}
+                />
+              </div>
+            )}
           </div>
 
         </div>
@@ -654,9 +771,28 @@ useEffect(() => {
           Cancel
         </button>
         <button className="btn-submit" onClick={handleSubmit}>
-  {isEditMode ? "Update Appointment" : "Create Appointment"}
-</button>
+          {isEditMode ? "Update Appointment" : "Create Appointment"}
+        </button>
       </div>
+
+      {/* Quick Billing Modal */}
+      <QuickBillingModal
+        open={billingOpen}
+        appointment={billingAppointment}
+        visitId={billingVisitId}
+        onClose={() => {
+          setBillingOpen(false);
+          setBillingAppointment(null);
+          setBillingVisitId("");
+          navigate("/appointments");
+        }}
+        onSuccess={() => {
+          showToast(
+            "Payment collected successfully.",
+            "success"
+          );
+        }}
+      />
 
     </div>
   );

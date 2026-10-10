@@ -1,0 +1,476 @@
+.quick-billing-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 9999;
+}
+
+.quick-billing-modal {
+  width: 100%;
+  max-width: 620px;
+  max-height: 92vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+}
+
+.quick-billing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 26px 20px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.quick-billing-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #172033;
+}
+
+.quick-billing-title svg {
+  color: #2563eb;
+}
+
+.quick-billing-header p {
+  margin: 6px 0 0;
+  color: #8a96a8;
+  font-size: 13px;
+}
+
+.quick-billing-close {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: #f5f7fa;
+  color: #64748b;
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-billing-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 20px 26px 0;
+}
+
+.quick-info-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  background: #f8fafc;
+  border: 1px solid #edf1f6;
+  border-radius: 12px;
+}
+
+.quick-info-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.quick-info-icon.patient {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.quick-info-icon.doctor {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.quick-info-card span,
+.quick-billing-details span,
+.quick-fee-card span {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.quick-info-card strong {
+  display: block;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.quick-info-card small {
+  display: block;
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.quick-billing-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px 26px;
+}
+
+.quick-billing-details > div {
+  padding: 12px 14px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.quick-billing-details strong {
+  display: block;
+  font-size: 13px;
+  color: #334155;
+  word-break: break-word;
+}
+
+.quick-fee-card {
+  margin: 4px 26px 20px;
+  padding: 18px;
+  background: #f8fafc;
+  border: 1px solid #e9eef5;
+  border-radius: 14px;
+}
+
+.quick-fee-card > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.quick-fee-card > div:first-child {
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.quick-fee-card strong {
+  color: #334155;
+  font-size: 15px;
+}
+
+.quick-fee-total {
+  padding-top: 14px;
+}
+
+.quick-fee-total span {
+  font-size: 14px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.quick-fee-total strong {
+  color: #2563eb;
+  font-size: 22px;
+}
+
+.quick-payment-section {
+  padding: 0 26px 20px;
+}
+
+.quick-payment-section > label {
+  display: block;
+  margin-bottom: 9px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.quick-payment-modes {
+  display: flex;
+  gap: 8px;
+}
+
+.payment-mode {
+  flex: 1;
+  height: 42px;
+  border: 1px solid #dbe2ea;
+  background: #fff;
+  border-radius: 9px;
+  color: #475569;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.payment-mode.active {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #2563eb;
+}
+
+.quick-billing-error {
+  margin: 0 26px 18px;
+  padding: 11px 13px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+.quick-billing-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 18px 26px 24px;
+  border-top: 1px solid #eef2f7;
+}
+
+.quick-btn-cancel,
+.quick-btn-pay,
+.quick-btn-print,
+.quick-btn-done {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 9px;
+  border: 0;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.quick-btn-cancel {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.quick-btn-pay {
+  background: #2563eb;
+  color: #fff;
+  min-width: 170px;
+}
+
+.quick-btn-pay:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.quick-receipt {
+  padding: 34px 30px 28px;
+  text-align: center;
+}
+
+.quick-receipt-success {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.quick-receipt h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 22px;
+}
+
+.quick-receipt-subtitle {
+  margin: 7px 0 22px;
+  color: #8a96a8;
+  font-size: 13px;
+}
+
+.quick-receipt-card {
+  text-align: left;
+  border: 1px solid #e7edf4;
+  border-radius: 13px;
+  overflow: hidden;
+}
+
+.quick-receipt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 15px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.quick-receipt-row span {
+  color: #8a96a8;
+  font-size: 12px;
+}
+
+.quick-receipt-row strong {
+  color: #334155;
+  font-size: 13px;
+  text-align: right;
+}
+
+.quick-receipt-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 15px;
+  background: #f8fafc;
+}
+
+.quick-receipt-total span {
+  font-weight: 600;
+  color: #475569;
+}
+
+.quick-receipt-total strong {
+  color: #2563eb;
+  font-size: 20px;
+}
+
+.quick-receipt-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.quick-btn-print {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #2563eb;
+  color: #fff;
+}
+
+.quick-btn-done {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+@media (max-width: 600px) {
+  .quick-billing-info,
+  .quick-billing-details {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-billing-header,
+  .quick-billing-info,
+  .quick-payment-section,
+  .quick-billing-footer {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .quick-fee-card,
+  .quick-billing-error {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .quick-billing-footer {
+    flex-direction: column-reverse;
+  }
+
+  .quick-btn-cancel,
+  .quick-btn-pay {
+    width: 100%;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    background: #ffffff !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .quick-billing-overlay,
+  .quick-billing-modal,
+  .quick-receipt,
+  .quick-receipt * {
+    visibility: visible !important;
+  }
+
+  .quick-billing-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+  }
+
+  .quick-billing-modal {
+    position: static !important;
+    width: 210mm !important;
+    max-width: none !important;
+    max-height: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .quick-receipt {
+    position: relative !important;
+    width: 210mm !important;
+    min-height: 0 !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 18mm 18mm 15mm !important;
+    background: #ffffff !important;
+
+    page-break-before: avoid !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-before: avoid-page !important;
+    break-after: avoid-page !important;
+    break-inside: avoid-page !important;
+  }
+
+  .quick-receipt-success {
+    margin-top: 0 !important;
+  }
+
+  .quick-receipt-card {
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+
+  .quick-receipt-row,
+  .quick-receipt-total {
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+
+  .quick-receipt-actions {
+    display: none !important;
+  }
+}

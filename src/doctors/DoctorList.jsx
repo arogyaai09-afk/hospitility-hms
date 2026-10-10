@@ -12,6 +12,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import { getDoctors, deleteDoctor } from "../api/doctors";
+import axiosInstance from "../api/axiosInstance";
 import { useToast } from "../context/ToastContext";
 import ConfirmModal from "../components/ConfirmModal";
 
@@ -61,9 +62,36 @@ function Avatar({ name, color, image, size = 38 }) {
     .map((word) => word[0])
     .join("");
 
-  const imageUrl = image
-    ? `http://16.4.26.131:4000${image}`
-    : "";
+  const [imageUrl, setImageUrl] = useState("");
+
+  useEffect(() => {
+    let objectUrl = "";
+
+    const loadImage = async () => {
+      if (!image) {
+        setImageUrl("");
+        return;
+      }
+
+      try {
+        const blob = await axiosInstance.getBlob(image);
+
+        objectUrl = URL.createObjectURL(blob);
+        setImageUrl(objectUrl);
+      } catch (error) {
+        console.error("Failed to load doctor list image:", error);
+        setImageUrl("");
+      }
+    };
+
+    loadImage();
+
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [image]);
 
   return (
     <div
@@ -929,11 +957,11 @@ export default function Doctors() {
                     <td>
                       <div className="doc-name-cell">
                         <Avatar
-  name={doctor.name}
-  color={doctor.color}
-  image={doctor.profileImage}
-  size={38}
-/>
+                          name={doctor.name}
+                          color={doctor.color}
+                          image={doctor.profileImage}
+                          size={38}
+                        />
 
                         <div>
                           <div className="doc-name">{doctor.name}</div>
@@ -1117,26 +1145,12 @@ function GridCard({
           background: doc.color + "18",
         }}
       >
-        {doc.profileImage ? (
-  <img
-    src={`http://16.4.26.131:4000${doc.profileImage}`}
-    alt={doc.name}
-    style={{
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      borderRadius: "inherit",
-    }}
-  />
-) : (
-  <div className="img-placeholder" style={{ color: doc.color }}>
-    {doc.name
-      .split(" ")
-      .slice(0, 2)
-      .map((word) => word[0])
-      .join("")}
-  </div>
-)}
+        <Avatar
+          name={doc.name}
+          color={doc.color}
+          image={doc.profileImage}
+          size={120}
+        />
       </div>
 
       <div className="card-body">

@@ -1,3 +1,4 @@
+// appointments/AppointmentDetail.jsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -242,13 +243,19 @@ function AppointmentDetail() {
             </div>
 
             <div className="appointment-info-item">
-              <span>Appointment Type</span>
-              <strong>
-                {appointment.appointmentType ||
-                  appointment.mode ||
-                  "N/A"}
-              </strong>
-            </div>
+  <span>Appointment Type</span>
+  <strong>
+    {appointment.appointmentType ||
+      appointment.mode ||
+      "N/A"}
+  </strong>
+</div>
+
+<div className="appointment-info-item">
+  <span>Date & Time</span>
+  <strong>{formatDate(appointment.scheduledAt)}</strong>
+</div>
+
 
             <div className="appointment-info-item">
               <span>Status</span>

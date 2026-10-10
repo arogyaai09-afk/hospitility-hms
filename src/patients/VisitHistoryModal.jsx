@@ -89,13 +89,26 @@ const renderObject = (obj) => {
     <div className="vh-record-grid">
       {Object.entries(obj)
         .filter(([key]) => !hiddenFields.includes(key))
+        .filter(
+          ([key]) =>
+            ![
+              "patientId",
+              "visitId",
+              "tenantId",
+              "createdBy",
+              "updatedBy",
+              "doctorId",
+            ].includes(key)
+        )
         .map(([key, value]) => (
           <div className="vh-field" key={key}>
             <span className="vh-field-label">
               {formatLabel(key)}
             </span>
 
-            {renderValue(key, value)}
+            <div className="vh-field-value">
+              {renderValue(key, value)}
+            </div>
           </div>
         ))}
     </div>
@@ -264,52 +277,264 @@ export default function VisitHistoryModal({
 
               {/* Consultation */}
               <section className="vh-section">
-                <h3>Consultation</h3>
+  <div className="vh-section-header">
+    <div>
+      <h3>Consultation</h3>
+      <p>Clinical information recorded during this visit.</p>
+    </div>
+  </div>
 
-                {history?.consultation ? (
-                  renderSectionContent(history.consultation)
-                ) : (
-                  <div className="vh-empty">
-                    No consultation recorded
-                  </div>
-                )}
-              </section>
+  {history?.consultation ? (
+    <div className="vh-consultation-grid">
+      {[
+        ["Chief Complaint", history.consultation.chiefComplaint],
+        ["Symptoms", history.consultation.symptoms],
+        ["Assessment", history.consultation.assessment],
+        ["Diagnosis", history.consultation.diagnosis],
+        ["Examination", history.consultation.examination],
+        ["Treatment Plan", history.consultation.treatmentPlan],
+        ["Clinical Notes", history.consultation.clinicalNotes],
+        ["Follow-up Date", history.consultation.followUpDate],
+      ].map(([label, value]) => (
+        <div className="vh-consultation-item" key={label}>
+          <span>{label}</span>
+          <strong>
+            {value === null ||
+            value === undefined ||
+            value === ""
+              ? "N/A"
+              : label === "Follow-up Date"
+  ? new Date(value).toLocaleDateString("en-GB")
+  : formatValue(label, value)}
+          </strong>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="vh-empty">
+      No consultation recorded
+    </div>
+  )}
+</section>
 
               {/* Prescriptions */}
-              <section className="vh-section">
-                <h3>Prescriptions</h3>
+              {/* Prescriptions */}
+<section className="vh-section">
+  <div className="vh-section-header">
+    <div>
+      <h3>Prescriptions</h3>
+      <p>Medicines prescribed during this visit.</p>
+    </div>
+  </div>
 
-                {renderSectionContent(
-                  history?.prescriptions
-                )}
-              </section>
+  {history?.prescriptions?.some(
+    (prescription) =>
+      Array.isArray(prescription?.items) &&
+      prescription.items.length > 0
+  ) ? (
+    <div className="vh-data-table">
+      <div className="vh-table-header">
+        <span>Medicine</span>
+        <span>Dosage</span>
+        <span>Frequency</span>
+        <span>Duration</span>
+      </div>
+
+      {history.prescriptions.flatMap((prescription, prescriptionIndex) =>
+        Array.isArray(prescription?.items)
+          ? prescription.items.map((item, itemIndex) => (
+              <div
+                className="vh-table-row"
+                key={
+                  item?._id ||
+                  item?.id ||
+                  `${prescriptionIndex}-${itemIndex}`
+                }
+              >
+                <strong>
+                  {item?.medicineName || "N/A"}
+                </strong>
+
+                <span>
+                  {item?.dosage || "N/A"}
+                </span>
+
+                <span>
+                  {item?.frequency || "N/A"}
+                </span>
+
+                <span>
+                  {item?.duration || "N/A"}
+                </span>
+              </div>
+            ))
+          : []
+      )}
+    </div>
+  ) : (
+    <div className="vh-empty">
+      No prescriptions recorded.
+    </div>
+  )}
+</section>
 
               {/* Lab Orders */}
               <section className="vh-section">
-                <h3>Lab Orders</h3>
+  <div className="vh-section-header">
+    <div>
+      <h3>Lab Orders</h3>
+      <p>Laboratory investigations ordered during this visit.</p>
+    </div>
+  </div>
 
-                {renderSectionContent(
-                  history?.labOrders
-                )}
-              </section>
+  {history?.labOrders?.length > 0 ? (
+    <div className="vh-data-table">
+      <div className="vh-table-header">
+        <span>Test</span>
+        <span>Instructions</span>
+        <span>Status</span>
+        <span>Ordered At</span>
+      </div>
+
+      {history.labOrders.map((item, index) => (
+        <div className="vh-table-row" key={item?._id || item?.id || index}>
+          <strong>{item?.testName || "N/A"}</strong>
+          <span>{item?.instructions || "N/A"}</span>
+          <span>
+            <span className={`vh-status ${item?.status || ""}`}>
+              {item?.status || "N/A"}
+            </span>
+          </span>
+          <span>
+            {item?.orderedAt
+              ? new Date(item.orderedAt).toLocaleString("en-GB")
+              : "N/A"}
+          </span>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="vh-empty">No lab orders recorded.</div>
+  )}
+</section>
 
               {/* Reports */}
-              <section className="vh-section">
-                <h3>Reports</h3>
+              {/* Lab Reports */}
+<section className="vh-section">
+  <div className="vh-section-header">
+    <div>
+      <h3>Lab Reports</h3>
+      <p>Laboratory results reported for this visit.</p>
+    </div>
+  </div>
 
-                {renderSectionContent(
-                  history?.reports
-                )}
-              </section>
+  {history?.reports?.length > 0 ? (
+    <div className="vh-data-table">
+      <div className="vh-table-header">
+        <span>Test</span>
+        <span>Result</span>
+        <span>Reported At</span>
+        <span>Attachment</span>
+      </div>
+
+      {history.reports.map((item, index) => {
+        const reportLabOrderId =
+          typeof item?.labOrderId === "object"
+            ? item.labOrderId?._id || item.labOrderId?.id
+            : item?.labOrderId;
+
+        const matchedLabOrder = history?.labOrders?.find(
+          (order) =>
+            String(order?._id || order?.id) ===
+            String(reportLabOrderId)
+        );
+
+        return (
+          <div
+            className="vh-table-row"
+            key={item?._id || item?.id || index}
+          >
+            <strong>
+              {matchedLabOrder?.testName || "Lab Test"}
+            </strong>
+
+            <span>
+              {item?.resultText || "N/A"}
+            </span>
+
+            <span>
+              {item?.reportedAt
+                ? new Date(item.reportedAt).toLocaleString("en-GB")
+                : "N/A"}
+            </span>
+
+            <span>
+              {item?.attachmentUrl ? (
+                <a
+                  href={item.attachmentUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="vh-attachment"
+                >
+                  View Attachment
+                </a>
+              ) : (
+                "N/A"
+              )}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  ) : (
+    <div className="vh-empty">
+      No lab reports recorded.
+    </div>
+  )}
+</section>
 
               {/* Procedures */}
               <section className="vh-section">
-                <h3>Procedures</h3>
+  <div className="vh-section-header">
+    <div>
+      <h3>Procedures</h3>
+      <p>Procedures planned or performed during this visit.</p>
+    </div>
+  </div>
 
-                {renderSectionContent(
-                  history?.procedures
-                )}
-              </section>
+  {history?.procedures?.length > 0 ? (
+    <div className="vh-data-table">
+      <div className="vh-table-header">
+        <span>Procedure</span>
+        <span>Status</span>
+        <span>Performed At</span>
+        <span>Outcome</span>
+      </div>
+
+      {history.procedures.map((item, index) => (
+        <div className="vh-table-row" key={item?._id || item?.id || index}>
+          <strong>{item?.procedureName || "N/A"}</strong>
+
+          <span>
+            <span className={`vh-status ${item?.status || ""}`}>
+              {item?.status || "N/A"}
+            </span>
+          </span>
+
+          <span>
+            {item?.performedAt
+              ? new Date(item.performedAt).toLocaleString("en-GB")
+              : "N/A"}
+          </span>
+
+          <span>{item?.outcome || "N/A"}</span>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="vh-empty">No procedures recorded.</div>
+  )}
+</section>
 
               {/* Notes */}
               <section className="vh-section">
