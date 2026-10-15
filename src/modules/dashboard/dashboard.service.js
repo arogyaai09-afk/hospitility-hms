@@ -11,6 +11,35 @@ const Tenant = require('../tenant/tenant.model');
 const Emergency = require('../emergency/emergency.model');
 const Invoice = require('../invoice/invoice.model');
 const Payment = require('../invoice/payment.model') || require('../invoice/payment.model');
+const User = require('../auth/auth.model');
+
+const DEFAULT_ANALYTICS_ROLES = ['tenant'];
+
+async function analyticsEnabledFor(user) {
+  if (user.role === ROLES.ADMIN || user.role === ROLES.TENANT) return true;
+  if (!user.tenantId) return false;
+  const tenant = await Tenant.findById(user.tenantId).select('settings.dashboard.analyticsRoles').lean();
+  const allowedRoles = tenant && tenant.settings && tenant.settings.dashboard &&
+    Array.isArray(tenant.settings.dashboard.analyticsRoles)
+    ? tenant.settings.dashboard.analyticsRoles
+    : DEFAULT_ANALYTICS_ROLES;
+  if (user.role !== ROLES.STAFF) return allowedRoles.includes(user.role);
+  if (allowedRoles.includes(ROLES.STAFF)) return true;
+  const staffProfile = await getStaffProfile(user);
+  if (!staffProfile || !staffProfile.role) return false;
+  const normalizedStaffRole = staffProfile.role.toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
+  return allowedRoles.includes(`staff:${normalizedStaffRole}`);
+}
+
+async function ensureAnalyticsAccess(user) {
+  if (!await analyticsEnabledFor(user)) {
+    const err = new Error('Analytics dashboard access is disabled for your role');
+    err.status = 403;
+    throw err;
+  }
+}
 
 function parsePeriod(query) {
   const { period, dateFrom, dateTo } = query || {};
@@ -161,7 +190,9 @@ async function getPatientProfile(user) {
 
 async function getStaffProfile(user) {
   if (!user || user.role !== ROLES.STAFF || !user.tenantId) return null;
-  return Staff.findOne({ email: user.email, tenantId: user.tenantId, isDeleted: { $ne: true } }).lean();
+  const account = await User.findById(user.id || user._id).select('email').lean();
+  if (!account || !account.email) return null;
+  return Staff.findOne({ email: account.email, tenantId: user.tenantId, isDeleted: { $ne: true } }).lean();
 }
 
 async function roleMetrics(user, query, profile = {}) {
@@ -283,6 +314,18 @@ function quickActionsForRole(user, staffProfile) {
 }
 
 async function dashboard(user, query) {
+  if (!await analyticsEnabledFor(user)) {
+    const account = await User.findById(user.id || user._id).select('name').lean();
+    return {
+      role: user.role,
+      dashboardType: 'welcome',
+      analyticsEnabled: false,
+      welcomeMessage: `Welcome, ${account && account.name ? account.name : 'User'}`,
+      widgets: [],
+      quickActions: []
+    };
+  }
+
   const [baseSummary, doctor, patient, staff] = await Promise.all([
     summary(user, query),
     getDoctorProfile(user),
@@ -346,6 +389,8 @@ async function patients(user, query) {
 
 module.exports = {
   dashboard,
+  ensureAnalyticsAccess,
+  analyticsEnabledFor,
   summary,
   patients,
   parsePeriod,

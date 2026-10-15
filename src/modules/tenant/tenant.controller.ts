@@ -1,6 +1,6 @@
 export {};
 
-const { createTenant, listTenants, getTenantById, updateTenant } = require('./tenant.service');
+const { createTenant, listTenants, getTenantById, updateTenant, setTenantStatus, deleteTenant } = require('./tenant.service');
 const { success } = require('../../utils/response');
 
 async function create(ctx) {
@@ -10,7 +10,7 @@ async function create(ctx) {
 }
 
 async function index(ctx) {
-  const tenants = await listTenants();
+  const tenants = await listTenants(ctx.query.includeDeleted === 'true');
   ctx.body = success(tenants);
 }
 
@@ -30,4 +30,18 @@ async function update(ctx) {
   ctx.body = success(tenant, 'Tenant settings updated');
 }
 
-module.exports = { create, index, show, update };
+async function changeStatus(ctx) {
+  const status = ctx.request.body && ctx.request.body.status;
+  if (!['active', 'inactive'].includes(status)) {
+    ctx.throw(400, 'status must be active or inactive');
+  }
+  const tenant = await setTenantStatus(ctx.params.id, status);
+  ctx.body = success(tenant, 'Tenant status updated');
+}
+
+async function remove(ctx) {
+  const tenant = await deleteTenant(ctx.params.id);
+  ctx.body = success(tenant, 'Tenant deactivated and archived');
+}
+
+module.exports = { create, index, show, update, changeStatus, remove };

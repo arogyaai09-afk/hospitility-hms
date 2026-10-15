@@ -12,6 +12,12 @@ const addressSchema = new mongoose.Schema({
 }, { _id: false });
 
 const tenantSettingsSchema = new mongoose.Schema({
+  dashboard: {
+    analyticsRoles: {
+      type: [String],
+      default: ['tenant']
+    }
+  },
   profile: {
     legalName: { type: String, trim: true },
     displayName: { type: String, trim: true },
@@ -36,6 +42,8 @@ const tenantSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   state: { type: String, required: true },
   country: { type: String, default: 'India' },
+  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  deletedAt: { type: Date },
   settings: { type: tenantSettingsSchema, default: () => ({}) },
   metadata: { type: Object, default: {} },
   createdAt: { type: Date, default: Date.now }

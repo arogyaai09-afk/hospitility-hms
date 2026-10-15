@@ -113,6 +113,9 @@ List all tenants.
 **Authorization:**
 - `admin` only via `ACCESS_GROUPS.PLATFORM_ADMINS`
 
+**Query Parameters:**
+- `includeDeleted` (optional): pass `true` to include archived tenants.
+
 **Response:**
 ```json
 {
@@ -123,6 +126,7 @@ List all tenants.
       "name": "City Hospital",
       "state": "Maharashtra",
       "country": "India",
+      "status": "active",
       "metadata": {},
       "createdAt": "2023-05-11T10:00:00.000Z"
     }
@@ -142,6 +146,7 @@ Create a new tenant.
   "name": "City Hospital",
   "state": "Maharashtra",
   "country": "India",
+  "status": "active",
   "metadata": {
     "address": "123 Main St",
     "phone": "+91-1234567890"
@@ -159,6 +164,7 @@ Create a new tenant.
     "name": "City Hospital",
     "state": "Maharashtra",
     "country": "India",
+    "status": "active",
     "metadata": {
       "address": "123 Main St",
       "phone": "+91-1234567890"
@@ -191,6 +197,36 @@ Get tenant details.
   }
 }
 ```
+
+### PATCH /tenants/:id
+Update tenant profile/settings. A tenant user can update only their own tenant; platform admins can update any tenant. `status` cannot be changed here.
+
+**Request Body:** supports `name`, `state`, `country`, `settings.profile`, `settings.branding`, and `settings.dashboard.analyticsRoles`.
+
+Use `settings.dashboard.analyticsRoles` to choose who sees analytics on the tenant dashboard. The tenant owner is always included so the setting cannot lock the tenant owner out. Supported role values are `tenant`, `doctor`, `staff`, `patient`, and `staff:<normalized-staff-role>` (for example, `staff:hr` or `staff:billing`). Staff role names are lowercased, with punctuation/spacing converted to underscores.
+
+```json
+{
+  "settings": {
+    "dashboard": {
+      "analyticsRoles": ["doctor", "staff:hr"]
+    }
+  }
+}
+```
+
+The API stores `["tenant", "doctor", "staff:hr"]` because `tenant` is always retained. A staff user whose role is not enabled receives only a welcome response from `GET /dashboard`; direct requests to analytics data endpoints return `403`.
+
+### PATCH /tenants/:id/status
+Enable or disable a tenant. Platform admin only. Disabling blocks new sign-ins, token refreshes, and authenticated requests for all users in that tenant. Setting status to `active` also restores an archived tenant.
+
+**Request Body:**
+```json
+{ "status": "inactive" }
+```
+
+### DELETE /tenants/:id
+Archive (soft-delete) a tenant. Platform admin only. This sets `status` to `inactive` and `deletedAt`; it preserves the tenant's clinical and financial records. Archived tenants are hidden from `GET /tenants` unless `includeDeleted=true`.
 
 ## Doctors
 
@@ -311,6 +347,7 @@ Update a doctor profile.
 **Notes:**
 - `tenantId` cannot be changed from this endpoint.
 - `userId` can be reassigned only if the target user belongs to the same tenant and has the `doctor` role.
+- `status` can be set to `active` or `inactive`. Inactive doctor accounts cannot sign in, refresh tokens, or use existing authenticated sessions.
 
 **Response:**
 ```json
@@ -410,9 +447,27 @@ to render different dashboards from one endpoint.
 | --- | --- | --- |
 | `admin` | `admin` | `tenants`, `doctors`, `staff`, `emergencyCases`, `pendingInvoices` |
 | `tenant` | `tenant` | `doctors`, `staff`, `emergencyCases`, `pendingInvoices` |
-| `doctor` | `doctor` | `todayAssignedAppointments`, `admittedPatients`, `emergencyCases` |
-| `staff` | `staff_<staff role>` when a staff profile is matched by email | `checkIns`, `pendingInvoices`, `openAdmissions`, `emergencyQueue` |
-| `patient` | `patient` | `appointments`, `activeAdmissions`, `pendingInvoices` |
+| `doctor` | `doctor` when enabled by tenant settings; otherwise `welcome` | `todayAssignedAppointments`, `admittedPatients`, `emergencyCases` |
+| `staff` | `staff_<staff role>` when enabled by tenant settings; otherwise `welcome` | `checkIns`, `pendingInvoices`, `openAdmissions`, `emergencyQueue` |
+| `patient` | `patient` when enabled by tenant settings; otherwise `welcome` | `appointments`, `activeAdmissions`, `pendingInvoices` |
+
+For a role excluded by `settings.dashboard.analyticsRoles`, the endpoint returns no analytics summary, widgets, or quick actions. The response includes the authenticated account's display name:
+
+```json
+{
+  "success": true,
+  "data": {
+    "role": "staff",
+    "dashboardType": "welcome",
+    "analyticsEnabled": false,
+    "welcomeMessage": "Welcome, Riya Reception",
+    "widgets": [],
+    "quickActions": []
+  }
+}
+```
+
+The same access setting is enforced for `GET /dashboard/summary`, `GET /dashboard/patients`, `GET /analytics`, and `GET /analytics/overview`; excluded roles receive `403` from those data endpoints.
 
 **Response:**
 ```json
@@ -520,9 +575,13 @@ Get the primary BI dashboard overview for the current tenant and user role.
 
 **Query Parameters:**
 - `period` (optional): `today`, `weekly`, `monthly`, `quarterly`, `yearly`, `custom`
-- `department` (optional): department filter
-- `doctor` (optional): doctor filter
+- `dateFrom`, `dateTo` (optional): custom date range for `period=custom`
+- `tenantId` (optional, admin only): limit results to one tenant
+- `department` (optional): department name filter
+- `doctor` (optional): doctor ID or name filter
 - `status` (optional): appointment status filter
+
+KPI values, deltas, filter options, doctors, departments, schedules, revenue treatments, and appointment rows are computed from MongoDB records within the caller's tenant scope (or all tenants for a platform admin). Empty collections produce zero-valued KPIs and empty result arrays; the sample response values below are illustrative, not hard-coded dashboard data.
 
 **Response:**
 ```json
@@ -536,68 +595,47 @@ Get the primary BI dashboard overview for the current tenant and user role.
         "key": "period",
         "label": "Period",
         "value": "weekly",
-        "options": ["Weekly", "Monthly", "Quarterly", "Yearly", "Custom"]
+        "options": ["Today", "Weekly", "Monthly", "Quarterly", "Yearly", "Custom"]
       },
       {
         "key": "department",
         "label": "Department",
         "value": "All",
-        "options": ["All", "Cardiology", "Radiology", "Dental Surgery", "Orthopaedics", "General Medicine"]
+        "options": ["All"]
       }
     ],
     "kpis": [
       {
-        "label": "Total Patients",
-        "value": "638",
-        "delta": "+12.4%",
+        "label": "New Patients",
+        "value": 0,
+        "delta": "0%",
         "type": "primary"
       },
       {
         "label": "Appointments",
-        "value": "2,184",
-        "delta": "+8.7%",
+        "value": 0,
+        "delta": "0%",
         "type": "info"
-      }
-    ],
-    "popularDoctors": [
+      },
       {
-        "initials": "AM",
-        "name": "Dr. Alex Morgan",
-        "specialty": "Cardiologist",
-        "bookings": 258
-      }
-    ],
-    "topDepartments": [
-      { "name": "Cardiology", "count": 214, "color": "#1f7ae0" },
-      { "name": "Neurology", "count": 150, "color": "#24c789" }
-    ],
-    "doctorsSchedule": [
+        "label": "Admissions",
+        "value": 0,
+        "delta": "0%",
+        "type": "success"
+      },
       {
-        "initials": "SJ",
-        "name": "Dr. Sarah Johnson",
-        "specialty": "Orthopedic Surgeon",
-        "available": 48,
-        "unavailable": 28,
-        "leave": 12
+        "label": "Revenue",
+        "value": 0,
+        "delta": "0%",
+        "type": "warning"
       }
     ],
-    "incomeByTreatment": [
-      {
-        "treatment": "Cardiology",
-        "appointments": 4,
-        "value": 5985
-      }
-    ],
-    "appointmentsTable": [
-      {
-        "doctor": "Dr. Sarah Johnson",
-        "patient": "Alice Turner",
-        "date": "2026-09-17",
-        "time": "09:00 AM",
-        "mode": "In Person",
-        "status": "Confirmed"
-      }
-    ],
+    "popularDoctors": [],
+    "topDepartments": [],
+    "donutChart": { "total": 0, "segments": [] },
+    "doctorsSchedule": [],
+    "incomeByTreatment": [],
+    "appointmentsTable": [],
     "reports": [
       { "key": "dashboard-overview", "label": "Dashboard Overview", "type": "summary" },
       { "key": "doctor-performance", "label": "Doctor Performance", "type": "trend" }
@@ -615,6 +653,72 @@ Alias endpoint for the BI overview data.
 
 **Response:**
 Same structure as `GET /analytics`.
+
+## Support Tickets, Notifications, and In-App Messages
+
+These APIs provide a tenant-scoped support workflow. Tenant users and staff can create and reply to tickets. Platform admins triage tickets and can update status, priority, and assignment. Ticket creation, updates, and replies create persistent in-app notifications for the tenant users (and the ticket creator/assignee where applicable).
+
+Ticket statuses: `open`, `in_progress`, `waiting_on_tenant`, `resolved`, `closed`. Priorities: `low`, `normal`, `high`, `urgent`.
+
+### POST /tickets
+Create a ticket. Tenant and staff callers are scoped to their authenticated tenant. Platform admins must provide `tenantId`.
+
+```json
+{
+  "tenantId": "60d5ecb74b24c72b8c8b4568",
+  "subject": "Unable to add a doctor",
+  "description": "The doctor form returns a validation error.",
+  "category": "Technical",
+  "priority": "high"
+}
+```
+
+### GET /tickets
+List tickets, newest activity first. Tenant/staff callers see only their tenant's tickets. Platform admins may filter by `tenantId`. Optional query parameters: `status`, `page`, `limit`.
+
+### GET /tickets/:id
+Retrieve a ticket and its replies. Tenant/staff access is restricted to their own tenant.
+
+### PATCH /tickets/:id
+Platform admin only. Update `status`, `priority`, and/or `assignedTo` (user ID, or `null` to unassign).
+
+### POST /tickets/:id/messages
+Add a reply to a ticket. Request body: `{"body":"We are investigating this issue."}`. Replies are visible to the ticket participants and create notifications for tenant users, the creator, and the assignee.
+
+### GET /notifications
+List notifications for the authenticated user. Optional query parameters: `unreadOnly=true`, `page`, `limit`. The pagination object includes the unread count.
+
+### PATCH /notifications/:id/read
+Mark one of the caller's notifications as read.
+
+### PATCH /notifications/read-all
+Mark all of the caller's notifications as read.
+
+### POST /messages/conversations
+Start a tenant-scoped in-app conversation. Tenant/staff users use their own tenant; platform admins must supply `tenantId`. Participant IDs must belong to that tenant (platform administrators may also participate).
+
+```json
+{
+  "tenantId": "60d5ecb74b24c72b8c8b4568",
+  "participantIds": ["60d5ecb74b24c72b8c8b4567"],
+  "subject": "Billing question",
+  "body": "Could you clarify this month's invoice?"
+}
+```
+
+### GET /messages/conversations
+List conversations in which the caller participates, ordered by latest message.
+
+### GET /messages/conversations/:id/messages
+List conversation messages in chronological order. Optional query parameters: `page`, `limit`.
+
+### POST /messages/conversations/:id/messages
+Send a message in a conversation. Request body: `{"body":"Thanks, I will review it."}`. Other participants receive in-app notifications.
+
+### PATCH /messages/:messageId/read
+Mark a message as read by the authenticated participant.
+
+**Data model recommendation:** keep support tickets (status, priority, assignment, tenant, audit timestamps) separate from direct-message conversations. Store notifications as recipient-specific records with `type`, `entityType`/`entityId`, `createdAt`, and nullable `readAt`; this permits unread counts and read receipts without duplicating message content. Conversations hold `tenantId`, participant user IDs, optional subject, and `lastMessageAt`; messages hold `conversationId`, `tenantId`, `senderId`, `body`, `createdAt`, and `readBy`. The implemented APIs persist notifications and messages in MongoDB; clients can poll their list endpoints for updates.
 
 ## Patients
 

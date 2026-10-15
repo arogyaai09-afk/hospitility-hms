@@ -12,8 +12,9 @@ async function createTenant(data) {
   return Tenant.create(data);
 }
 
-async function listTenants() {
-  return Tenant.find().sort({ createdAt: -1 });
+async function listTenants(includeDeleted = false) {
+  const filter = includeDeleted ? {} : { deletedAt: { $exists: false } };
+  return Tenant.find(filter).sort({ createdAt: -1 });
 }
 
 async function getTenantById(id) {
@@ -40,6 +41,20 @@ async function updateTenant(id, data) {
   const settings = data.settings;
 
   if (settings && typeof settings === 'object' && !Array.isArray(settings)) {
+    if (settings.dashboard && typeof settings.dashboard === 'object' && !Array.isArray(settings.dashboard) &&
+      settings.dashboard.analyticsRoles !== undefined) {
+      const roles = settings.dashboard.analyticsRoles;
+      const allowedRoles = ['tenant', 'doctor', 'staff', 'patient'];
+      const isSupportedRole = role =>
+        allowedRoles.includes(role) ||
+        (typeof role === 'string' && /^staff:[a-z0-9]+(?:_[a-z0-9]+)*$/.test(role));
+      if (!Array.isArray(roles) || roles.some(role => !isSupportedRole(role))) {
+        const err = new Error('settings.dashboard.analyticsRoles must contain tenant, doctor, staff, patient, or staff:<staff-role>');
+        err.status = 400;
+        throw err;
+      }
+      update['settings.dashboard.analyticsRoles'] = [...new Set(['tenant', ...roles])];
+    }
     if (settings.profile && typeof settings.profile === 'object' && !Array.isArray(settings.profile)) {
       for (const field of profileFields) {
         if (settings.profile[field] !== undefined) {
@@ -76,4 +91,31 @@ async function updateTenant(id, data) {
   return tenant;
 }
 
-module.exports = { createTenant, listTenants, getTenantById, updateTenant };
+async function setTenantStatus(id, status) {
+  const update = status === 'active'
+    ? { $set: { status }, $unset: { deletedAt: 1 } }
+    : { $set: { status } };
+  const tenant = await Tenant.findByIdAndUpdate(id, update, { new: true, runValidators: true });
+  if (!tenant) {
+    const err = new Error('Tenant not found');
+    err.status = 404;
+    throw err;
+  }
+  return tenant;
+}
+
+async function deleteTenant(id) {
+  const tenant = await Tenant.findOneAndUpdate(
+    { _id: id, deletedAt: { $exists: false } },
+    { $set: { status: 'inactive', deletedAt: new Date() } },
+    { new: true }
+  );
+  if (!tenant) {
+    const err = new Error('Tenant not found');
+    err.status = 404;
+    throw err;
+  }
+  return tenant;
+}
+
+module.exports = { createTenant, listTenants, getTenantById, updateTenant, setTenantStatus, deleteTenant };

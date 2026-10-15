@@ -34,6 +34,9 @@ import taxRoutes = require('./src/modules/tax/tax.routes');
 import departmentRoutes = require('./src/modules/department/department.routes');
 import dashboardRoutes = require('./src/modules/dashboard/dashboard.routes');
 import analyticsRoutes = require('./src/modules/analytics/analytics.routes');
+import ticketRoutes = require('./src/modules/ticket/ticket.routes');
+import notificationRoutes = require('./src/modules/notification/notification.routes');
+import messageRoutes = require('./src/modules/message/message.routes');
 import visitRoutes = require('./src/modules/visit/visit.routes');
 import clinicalRoutes = require('./src/modules/clinical/clinical.routes');
 import historyRoutes = require('./src/modules/history/history.routes');
@@ -71,6 +74,9 @@ router.use((dischargeRoutes as any).routes());
 router.use((invoiceRoutes as any).routes());
 router.use((dashboardRoutes as any).routes());
 router.use((analyticsRoutes as any).routes());
+router.use((ticketRoutes as any).routes());
+router.use((notificationRoutes as any).routes());
+router.use((messageRoutes as any).routes());
 
 app.use(router.routes()).use(router.allowedMethods());
 

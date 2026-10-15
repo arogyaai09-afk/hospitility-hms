@@ -3,7 +3,29 @@ export {};
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('./auth.model');
+const Tenant = require('../tenant/tenant.model');
+const Doctor = require('../doctor/doctor.model');
 const { JWT_SECRET, JWT_EXPIRES, REFRESH_EXPIRES } = require('../../../config/index');
+
+async function ensureAccountCanLogin(user) {
+  if (user.role !== 'admin' && user.tenantId) {
+    const tenant = await Tenant.findById(user.tenantId).select('status deletedAt');
+    if (!tenant || tenant.status === 'inactive' || tenant.deletedAt) {
+      const err = new Error('This tenant account is inactive');
+      err.status = 403;
+      throw err;
+    }
+  }
+
+  if (user.role === 'doctor') {
+    const doctor = await Doctor.findOne({ userId: user._id || user.id }).select('status');
+    if (doctor && doctor.status === 'inactive') {
+      const err = new Error('This doctor account is inactive');
+      err.status = 403;
+      throw err;
+    }
+  }
+}
 
 async function hashPassword(password) {
   return bcrypt.hash(password, 10);
@@ -54,6 +76,7 @@ async function loginUser({ email, password }) {
     err.status = 401;
     throw err;
   }
+  await ensureAccountCanLogin(user);
   const accessToken = createAccessToken(user);
   const refreshToken = createRefreshToken(user);
   user.refreshToken = refreshToken;
@@ -62,28 +85,32 @@ async function loginUser({ email, password }) {
 }
 
 async function refreshTokens(refreshToken) {
+  let payload;
   try {
-    const payload = jwt.verify(refreshToken, JWT_SECRET);
-    const user = await User.findById(payload.id);
-    if (!user || user.refreshToken !== refreshToken) {
-      const err = new Error('Invalid refresh token');
-      err.status = 401;
-      throw err;
-    }
-    const accessToken = createAccessToken(user);
-    const newRefreshToken = createRefreshToken(user);
-    user.refreshToken = newRefreshToken;
-    await user.save();
-    return { accessToken, refreshToken: newRefreshToken };
+    payload = jwt.verify(refreshToken, JWT_SECRET);
   } catch (err) {
     const error = new Error('Invalid refresh token');
     error.status = 401;
     throw error;
   }
+
+  const user = await User.findById(payload.id);
+  if (!user || user.refreshToken !== refreshToken) {
+    const err = new Error('Invalid refresh token');
+    err.status = 401;
+    throw err;
+  }
+  await ensureAccountCanLogin(user);
+  const accessToken = createAccessToken(user);
+  const newRefreshToken = createRefreshToken(user);
+  user.refreshToken = newRefreshToken;
+  await user.save();
+  return { accessToken, refreshToken: newRefreshToken };
 }
 
 module.exports = {
   registerUser,
   loginUser,
-  refreshTokens
+  refreshTokens,
+  ensureAccountCanLogin
 };

@@ -16,7 +16,7 @@ const doctorSchema = new mongoose.Schema({
   location: { type: String, trim: true },
   departmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
   fees: { type: Number, min: 0 },
-  status: { type: String, enum: ['active', 'inactive'] },
+  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
   availabilityDate: { type: Date },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: true, sparse: true },
   tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },

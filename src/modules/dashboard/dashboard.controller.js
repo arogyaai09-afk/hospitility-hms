@@ -19,6 +19,7 @@ async function index(ctx) {
 async function summary(ctx) {
   const user = ctx.state.user;
   const query = ctx.request.query || {};
+  await dashboardService.ensureAnalyticsAccess(user);
   const data = await dashboardService.summary(user, query);
   ctx.body = { success: true, data };
 }
@@ -26,6 +27,7 @@ async function summary(ctx) {
 async function patients(ctx) {
   const user = ctx.state.user;
   const query = ctx.request.query || {};
+  await dashboardService.ensureAnalyticsAccess(user);
   const data = await dashboardService.patients(user, query);
   ctx.body = { success: true, data };
 }

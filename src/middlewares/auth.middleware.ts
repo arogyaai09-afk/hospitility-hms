@@ -2,20 +2,26 @@ export {};
 
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../../config/index');
+const { ensureAccountCanLogin } = require('../modules/auth/auth.service');
 
 function authenticate() {
   return async (ctx, next) => {
     const header = ctx.headers.authorization;
-    if (!header || !header.startsWith('Bearer ')) {
+    if (!header || !/^Bearer\s+/i.test(header)) {
       ctx.throw(401, 'Authorization token required');
     }
-    const token = header.split(' ')[1];
+    const token = header.replace(/^Bearer\s+/i, '').trim();
+    if (!token) {
+      ctx.throw(401, 'Authorization token required');
+    }
+    let payload;
     try {
-      const payload = jwt.verify(token, JWT_SECRET);
-      ctx.state.user = payload;
+      payload = jwt.verify(token, JWT_SECRET);
     } catch (err) {
       ctx.throw(401, 'Invalid or expired token');
     }
+    await ensureAccountCanLogin(payload);
+    ctx.state.user = payload;
     await next();
   };
 }
