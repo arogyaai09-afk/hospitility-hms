@@ -1,5 +1,6 @@
 export {};
 
+const mongoose = require('mongoose');
 const Visit = require('../visit/visit.model');
 const Patient = require('../patient/patient.model');
 const { Consultation, Prescription, LabOrder, LabReport, Procedure } = require('./clinical.model');
@@ -11,7 +12,9 @@ function validationError(message) {
 }
 
 async function getVisit(visitId, tenantId) {
-  const visit = await Visit.findOne({ _id: visitId, tenantId }).select('_id patientId doctorId status').lean();
+  const visit = await Visit.findOne({ _id: visitId, tenantId })
+  .select('_id patientId doctorId status')
+  .lean();
   if (!visit) {
     const error = new Error('Visit not found');
     error.status = 404;
@@ -41,19 +44,93 @@ async function validateVisitPatient(visitId, patientId, tenantId) {
   return visit;
 }
 
+
+
 async function saveConsultation(visitId, tenantId, data, userId) {
   const visit = await getVisit(visitId, tenantId);
+
   const doctorId = data.doctorId || visit.doctorId;
+
   if (!doctorId) {
     throw validationError('doctorId is required for a consultation');
   }
-  const consultation = await Consultation.findOneAndUpdate(
-    { visitId, tenantId },
-    { ...data, visitId, patientId: visit.patientId, doctorId, tenantId, createdBy: userId },
-    { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
-  ).lean();
-  return consultation;
+
+  const patient = await getPatient(visit.patientId, tenantId);
+
+  let updatedAllergies;
+
+  if (data.allergies !== undefined) {
+    if (Array.isArray(data.allergies)) {
+      updatedAllergies = data.allergies;
+    } else if (typeof data.allergies === 'string') {
+      updatedAllergies = data.allergies.split(',');
+    } else {
+      throw validationError(
+        'Allergies must be an array or comma-separated string'
+      );
+    }
+
+    updatedAllergies = updatedAllergies
+      .map((item) => {
+        if (typeof item !== 'string') {
+          throw validationError('Each allergy must be a string');
+        }
+        return item.trim();
+      })
+      .filter(Boolean);
+  }
+
+  const session = await mongoose.startSession();
+
+  let consultation;
+
+  try {
+    await session.withTransaction(async () => {
+
+      // STEP 1: Save consultation inside transaction
+      consultation = await Consultation.findOneAndUpdate(
+        { visitId, tenantId },
+        {
+          ...data,
+          visitId,
+          patientId: visit.patientId,
+          doctorId,
+          tenantId,
+          createdBy: userId
+        },
+        {
+          new: true,
+          upsert: true,
+          runValidators: true,
+          setDefaultsOnInsert: true,
+          session
+        }
+      ).lean();
+
+      // STEP 2: Update permanent patient allergies
+      if (updatedAllergies !== undefined) {
+        const result = await Patient.updateOne(
+          { _id: patient._id, tenantId },
+          { $set: { allergies: updatedAllergies } },
+          { runValidators: true, session }
+        );
+
+        if (result.matchedCount !== 1) {
+          throw new Error('Patient allergy update failed');
+        }
+      }
+
+    });
+
+    // Both operations committed successfully
+    return consultation;
+
+  } finally {
+    await session.endSession();
+  }
 }
+
+
 
 async function getConsultation(visitId, tenantId) {
   return Consultation.findOne({ visitId, tenantId }).populate('doctorId', 'name specialization').lean();

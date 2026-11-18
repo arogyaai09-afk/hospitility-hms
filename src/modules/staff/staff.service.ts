@@ -1,17 +1,23 @@
-export {};
+export { };
 
 const Staff = require('./staff.model');
 const { calculateSkip } = require('../../utils/pagination');
 
 async function createStaff(data) {
-  return Staff.create(data);
+  const payload = { ...data };
+
+  if (typeof payload.department === 'string') {
+    payload.department = payload.department.trim();
+  }
+
+  return Staff.create(payload);
 }
 
 async function listStaff(tenantId, page = 1, limit = 20) {
   const skip = calculateSkip(page, limit);
   const [staff, total] = await Promise.all([
     Staff.find({ tenantId, isDeleted: { $ne: true } })
-      .select('name role profileImage phone email createdAt')
+      .select('name role department profileImage phone email status createdAt')
       .lean()
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -48,12 +54,23 @@ async function updateStaff(id, tenantId, data) {
     throw err;
   }
 
-  const allowedFields = ['name', 'role', 'profileImage', 'phone', 'email'];
+  const allowedFields = [
+    'name',
+    'role',
+    'department',
+    'profileImage',
+    'phone',
+    'email',
+    'status'
+  ];
   const update: any = {};
 
   for (const field of allowedFields) {
     if (data[field] !== undefined) {
-      update[field] = data[field];
+      update[field] =
+        field === 'department' && typeof data[field] === 'string'
+          ? data[field].trim()
+          : data[field];
     }
   }
 

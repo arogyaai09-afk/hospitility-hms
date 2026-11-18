@@ -8,6 +8,7 @@ const consultationSchema = new mongoose.Schema({
   tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
   doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Doctor', required: true },
   chiefComplaint: { type: String, trim: true },
+    allergies: { type: String, trim: true },
   symptoms: { type: String },
   examination: { type: String },
   vitals: { type: mongoose.Schema.Types.Mixed },
